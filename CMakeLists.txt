@@ -18,8 +18,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 include_directories(${Torch_INCLUDE_DIRS})
 
 add_executable(Dylann main.cu
-        dylann/tensor/cuTensor.cu
-        dylann/tensor/cuTensor.cuh
+        dylann/tensor/cuTensorBase.cu
+        dylann/tensor/cuTensorBase.cuh
 
         cudautil/assertion.cu
         cudautil/assertion.cuh
@@ -28,7 +28,12 @@ add_executable(Dylann main.cu
         io/logging/Color.cuh
         io/logging/LogUtils.cu
         io/logging/LogUtils.cuh
-        dylann/tensor/cuTensorOps.cu dylann/tensor/cuTensorOps.cuh)
+        dylann/ops/cuTensorOps.cu
+        dylann/ops/cuTensorOps.cuh
+        dylann/ops/opRegistry.cuh
+        dylann/ops/opRegistry.cu
+        dylann/tensor/cuTensor.cu
+        dylann/tensor/cuTensor.cuh dylann/tensor/shell.cu dylann/tensor/shell.cuh)
 
 target_link_libraries(Dylann ${TORCH_LIBRARIES} ${OpenCV_LIBS} ${TORCHVISION_DIR}/lib/torchvision.lib)
 

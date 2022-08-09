@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "dylann/tensor/cuTensor.cuh"
+#include "dylann/tensor/cuTensorBase.cuh"
 
 int main() {
 
