@@ -5,6 +5,7 @@
 #ifndef DYLANN_CUTENSOR_CUH
 #define DYLANN_CUTENSOR_CUH
 
+#include <stack>
 #include "cuTensorBase.cuh"
 #include "../ops/opRegistry.cuh"
 #include "../ops/cuTensorOps.cuh"
@@ -88,6 +89,17 @@ namespace dylann{
         
         [[nodiscard]] int getDev() const{ return impl->data->deviceID; }
         
+        //initializer
+        [[nodiscard]] cuTensor randNormal(double mean, double stddev){
+            randNormalOp(this->impl, mean, stddev);
+            return *this;
+        }
+        
+        [[nodiscard]] cuTensor randUniform(double min, double max){
+            randUniformOp(this->impl, min, max);
+            return *this;
+        }
+       
         //state
         [[nodiscard]] bool isAllocated() const{ return impl->desc.isAllocated; }
         [[nodiscard]] bool withGrad() const{ return impl->desc.withGrad; }
@@ -112,8 +124,12 @@ namespace dylann{
         [[nodiscard]] void* gradPtr() const{ return impl->grad->data; }
         [[nodiscard]] void* gradBufPtr() const{ return impl->gradBuf->data; }
         
+        //debug
+        void print() const;
+        
         //operators
         cuTensor operator+=(const cuTensor& other) const;
+        cuTensor operator-=(const cuTensor& other) const;
     };
 }
 

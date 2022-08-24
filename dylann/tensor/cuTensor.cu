@@ -3,9 +3,115 @@
 //
 
 #include "cuTensor.cuh"
+#define h2f(x) ((x&0x8000)<<16) | (((x&0x7c00)+0x1C000)<<13) | ((x&0x03FF)<<13)
+
 
 namespace dylann{
     cuTensor cuTensor::operator+=(const cuTensor& A) const {
         add(this->impl, A.impl, 1, 1);
+        return *this;
+    }
+    
+    cuTensor cuTensor::operator-=(const cuTensor &other) const {
+        add(this->impl, other.impl, 1, -1);
+        return *this;
+    }
+    
+    template<typename T>
+    inline void printLoop(void *data, TDescriptor& desc){
+        T* ptr = (T*)data;
+        for(auto n = 0 ; n < desc.sizes.n; n ++){
+            for(auto c = 0 ; c < desc.sizes.c; c ++){
+                for(auto h = 0 ; h < desc.sizes.h; h ++){
+                    for(auto w = 0 ; w < desc.sizes.w; w ++){
+                        cout << ptr[n*desc.sizes.c*desc.sizes.h*desc.sizes.w
+                        + c*desc.sizes.h*desc.sizes.w
+                        + h*desc.sizes.w
+                        + w] << " ";
+                    }
+                    cout << endl;
+                }
+                cout << endl;
+            }
+            cout << endl;
+        }
+    }
+    
+    inline void printHalf(void *data, TDescriptor& desc){
+        half* ptr = (half*)data;
+        for(auto n = 0 ; n < desc.sizes.n; n ++){
+            for(auto c = 0 ; c < desc.sizes.c; c ++){
+                for(auto h = 0 ; h < desc.sizes.h; h ++){
+                    for(auto w = 0 ; w < desc.sizes.w; w ++){
+                        float val = __half2float(ptr[n*desc.sizes.c*desc.sizes.h*desc.sizes.w
+                                                     + c*desc.sizes.h*desc.sizes.w
+                                                     + h*desc.sizes.w
+                                                     + w]);
+                        cout << val << " ";
+                    }
+                    cout << endl;
+                }
+                cout << endl;
+            }
+            cout << endl;
+        }
+    }
+    
+    inline void printElement(void* data, TDescriptor& desc){
+        switch (desc.dType) {
+            case CUDNN_DATA_FLOAT:
+                printLoop<float>(data, desc);
+                break;
+            case CUDNN_DATA_DOUBLE:
+                printLoop<double>(data, desc);
+                break;
+            case CUDNN_DATA_HALF:
+                printHalf(data, desc);
+                break;
+            case CUDNN_DATA_INT8:
+                printLoop<int8_t>(data, desc);
+                break;
+            case CUDNN_DATA_INT32:
+                printLoop<int32_t>(data, desc);
+                break;
+            case CUDNN_DATA_INT64:
+                printLoop<int64_t>(data, desc);
+                break;
+            case CUDNN_DATA_UINT8:
+                printLoop<uint8_t>(data, desc);
+                break;
+            default:
+                throw std::runtime_error("unsupported dtype");
+        }
+    }
+    
+    void cuTensor::print() const {
+
+        if (!impl->desc.isAllocated) return;
+        void* view;
+        cudaMallocHost(&view, impl->data->memSize);
+        assertCuda(__FILE__, __LINE__);
+        cudaSetDevice(impl->data->deviceID);
+        
+        cout<<"------ DATA -------"<<endl;
+        cudaMemcpy(view, impl->data->data, impl->data->memSize, cudaMemcpyDeviceToHost);
+        assertCuda(__FILE__, __LINE__);
+        printElement(view, impl->desc);
+    
+        if (impl->desc.withGrad) {
+            cout << "------ GRAD -------" << endl;
+            cudaMemcpy(view, impl->grad->data, impl->grad->memSize, cudaMemcpyDeviceToHost);
+            assertCuda(__FILE__, __LINE__);
+            printElement(view, impl->desc);
+        }
+        
+        if (impl->desc.withGradBuf) {
+            cout << "------ GRADBUF -------" << endl;
+            cudaMemcpy(view, impl->gradBuf->data, impl->gradBuf->memSize, cudaMemcpyDeviceToHost);
+            assertCuda(__FILE__, __LINE__);
+            printElement(view, impl->desc);
+        }
+        
+        cudaFreeHost(view);
     }
 }

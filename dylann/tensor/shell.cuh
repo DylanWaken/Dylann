@@ -14,6 +14,16 @@ namespace dylann{
     cuTensor add(cuTensor& A, cuTensor& B, float alpha, float beta);
     
     cuTensor scale(cuTensor& A, float alpha);
+    
+    template<typename T>
+    cuTensor randUniform(cuTensor& A, T min, T max){
+        return A.template randUniform(min, max);
+    }
+    
+    template<typename T>
+    cuTensor randNormal(cuTensor& A, T mean, T stddev){
+        return A.template randNormal(mean, stddev);
+    }
 }
 
 

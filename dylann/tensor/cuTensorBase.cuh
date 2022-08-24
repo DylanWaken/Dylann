@@ -5,10 +5,13 @@
 #ifndef DYLANN_CUTENSORBASE_CUH
 #define DYLANN_CUTENSORBASE_CUH
 
-#include <torch/torch.h>
+//#include <torch/torch.h>
 #include <cudnn.h>
 #include <string>
+#include <cuda_fp16.h>
 #include "../../cudautil/assertion.cuh"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 
 #define checkCUDNN(expression){                              \

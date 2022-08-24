@@ -7,6 +7,8 @@
 
 #include "../tensor/cuTensorBase.cuh"
 #include "../ops/opRegistry.cuh"
+#include <curand.h>
+#include <curand_kernel.h>
 
 
 namespace dylann{
@@ -16,6 +18,11 @@ namespace dylann{
     
     //multiply by constant (data)
     cuTensorBase* scale(cuTensorBase* A, float alpha);
+    
+    cuTensorBase* randUniformOp(cuTensorBase* A, double min, double max);
+    
+    cuTensorBase* randNormalOp(cuTensorBase* A, double mean, double stddev);
 }
+
 
 #endif //DYLANN_CUTENSOROPS_CUH
