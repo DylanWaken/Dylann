@@ -9,10 +9,15 @@ namespace dylann{
         add(A.impl, B.impl, alpha, beta);
         
         GradTracker* t1 = new GRAD_ADD_A(alpha);
-        A.gradStack.push(Pair(&A, t1));
+        A.gradStack.emplace(&A, t1);
         
         GradTracker* t2 = new GRAD_ADD_B(beta, B.impl);
-        A.gradStack.push(Pair(&B, t2));
+        A.gradStack.emplace(&B, t2);
+        
+        //grad buf is needed in branching structure
+        if(!B.withGradBuf()){
+            B.instantiateGradBuf();
+        }
         
         return A;
     }
@@ -21,7 +26,7 @@ namespace dylann{
         scale(A.impl, alpha);
         
         GradTracker* t = new GRAD_SCALE(alpha);
-        A.gradStack.push(Pair(&A, t));
+        A.gradStack.emplace(&A, t);
     
         return A;
     }

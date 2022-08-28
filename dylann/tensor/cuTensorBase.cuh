@@ -12,6 +12,7 @@
 #include "../../cudautil/assertion.cuh"
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 
 
 #define checkCUDNN(expression){                              \
@@ -22,12 +23,24 @@
                 << cudnnGetErrorString(status) << std::endl; \
       assert(false);                                         \
     }                                                        \
-  }
+}
 
+#define checkCUBLAS(expression){ \
+    cublasStatus_t status = (expression); \
+    if (status != CUBLAS_STATUS_SUCCESS) {                    \
+      logFatal(io::LOG_SEG_COMP, "Cublas failed, error : ");  \
+      std::cerr << "Error on line " << __LINE__ << ": "      \
+                << cublasGetStatusString(status) << std::endl; \
+      assert(false);                                         \
+    }                                                        \
+}
+  
 using namespace std;
 using namespace io;
 extern cudnnHandle_t cudnnHdlG;
+extern cublasHandle_t cublasHdlG;
 namespace dylann {
+    extern uint64_t globalTensorCount;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype);
     
@@ -81,10 +94,19 @@ namespace dylann {
     public:
         //desc
         cudnnTensorDescriptor_t cudnnDesc{};
+        
         cudnnDataType_t dType;
         shape4 sizes;
         uint64_t numel;
         uint64_t elementSize;
+        
+        uint64_t uuid;
+        
+        //this is used as a key
+        //when the recursive backward function is called with branching network
+        //only backwardRecur() call from the tensor with key would continue the recursion
+        //some models like resnet and densenet depends heavily on this feature
+        uint64_t gradSrcUuid;
         
         //state
         bool isAllocated = false;
@@ -97,7 +119,16 @@ namespace dylann {
                 cudnnCreate(&cudnnHdlG);
             }
             
+            //create the global cublas Handle
+            if(cublasHdlG == nullptr){
+                cublasCreate(&cublasHdlG);
+            }
+            
             this->dType = dType;
+            
+            //we assign a unique id to each tensor
+            this->uuid = globalTensorCount;
+            globalTensorCount++;
             
             //initialize the cudnn tensor cudnnDesc
             cudnnCreateTensorDescriptor(&cudnnDesc);
@@ -136,6 +167,7 @@ namespace dylann {
         TStorage(int deviceID, uint64_t memSize) : deviceID(deviceID), memSize(memSize){
             cudaSetDevice(deviceID);
             cudaMalloc(&this->data, memSize);
+            cudaMemset(this->data, 0, memSize);
             assertCuda(__FILE__, __LINE__);
         }
     };

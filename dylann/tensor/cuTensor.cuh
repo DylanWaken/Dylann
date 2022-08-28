@@ -9,6 +9,7 @@
 #include "cuTensorBase.cuh"
 #include "../ops/opRegistry.cuh"
 #include "../ops/cuTensorOps.cuh"
+#include "../ops/cuLinear.cuh"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ namespace dylann{
         cuTensorBase* impl;
         
         //the gradient stack for this tensor (for autograd)
+        //<cuTensor src, GradTracker operation_label>
         stack<Pair<cuTensor*, GradTracker*>> gradStack;
         int gradTargetCount;
         
@@ -53,7 +55,7 @@ namespace dylann{
         }
         
         cuTensor instantiateData(int deviceID){
-            impl->data = new TStorage(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
+            impl->data = new TStorage(deviceID, impl->desc.numel * impl->desc.elementSize);
             impl->desc.isAllocated = true;
             return *this;
         }
@@ -61,7 +63,7 @@ namespace dylann{
         cuTensor instantiateGrad(){
             assert(impl->desc.isAllocated);
             impl->grad = new TStorage(impl->data->deviceID,
-                                      impl->desc.sizes.size*impl->desc.elementSize);
+                                      impl->desc.numel * impl->desc.elementSize);
             impl->desc.withGrad = true;
             return *this;
         }
@@ -70,7 +72,7 @@ namespace dylann{
             assert(impl->desc.isAllocated);
             assert(impl->desc.withGrad);
             impl->gradBuf = new TStorage(impl->data->deviceID,
-                                         impl->desc.sizes.size*impl->desc.elementSize);
+                                         impl->desc.numel * impl->desc.elementSize);
             impl->desc.withGradBuf = true;
             return *this;
         }
@@ -127,9 +129,13 @@ namespace dylann{
         //debug
         void print() const;
         
+        //grad backward
+        void backward();
+        void backwardRecur(uint64_t uuid);
+        
         //operators
-        cuTensor operator+=(const cuTensor& other) const;
-        cuTensor operator-=(const cuTensor& other) const;
+        cuTensor operator+=(cuTensor& other);
+        cuTensor operator-=(cuTensor& other);
     };
 }
 

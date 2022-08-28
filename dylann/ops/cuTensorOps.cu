@@ -13,13 +13,14 @@ namespace dylann{
         assertOnSameDev({A, B});
         cudaSetDevice(A->data->deviceID);
         
+        //result is write back to A
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
-                       &alpha,
-                       A->desc.cudnnDesc,
-                       A->data->data,
                        &beta,
                        B->desc.cudnnDesc,
-                       B->data->data))
+                       B->data->data,
+                       &alpha,
+                       A->desc.cudnnDesc,
+                       A->data->data))
         return A;
     }
     
@@ -137,6 +138,47 @@ namespace dylann{
                     (int64_t *) A->data->data, A->desc.numel, seed, mean, stddev);
                     break;
                     
+            default :  throw std::runtime_error("unsupported dtype");
+        }
+        cudaDeviceSynchronize();
+        assertCuda(__FILE__, __LINE__);
+        return A;
+    }
+    
+    cuTensorBase* randNormalGradOp(cuTensorBase* A, double mean, double stddev){
+        long seed = (long)time(nullptr);
+        
+        assertAllocated({A});
+        cudaSetDevice(A->grad->deviceID);
+        
+        unsigned int blockSize = 256;
+        unsigned int gridSize = (A->desc.numel + blockSize - 1) / blockSize;
+        
+        switch(A->desc.dType) {
+            case CUDNN_DATA_FLOAT : randNormalD<float><<<gridSize, blockSize>>>(
+                        (float *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
+            case CUDNN_DATA_DOUBLE : randNormalD<double><<<gridSize, blockSize>>>(
+                        (double *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
+            case CUDNN_DATA_HALF : randNormalD<half><<<gridSize, blockSize>>>(
+                        (half *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
+            case CUDNN_DATA_INT8 : randNormalD<int8_t><<<gridSize, blockSize>>>(
+                        (int8_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
+            case CUDNN_DATA_INT32 : randNormalD<int32_t><<<gridSize, blockSize>>>(
+                        (int32_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
+            case CUDNN_DATA_INT64 : randNormalD<int64_t><<<gridSize, blockSize>>>(
+                        (int64_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
+                break;
+            
             default :  throw std::runtime_error("unsupported dtype");
         }
         cudaDeviceSynchronize();

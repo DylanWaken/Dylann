@@ -4,21 +4,13 @@
 
 using namespace dylann;
 
-template<typename T>
-__global__ void testKernel(T* data, int size){
-    int idx = threadIdx.x + blockDim.x * blockIdx.x;
-    if(idx >= size) return;
-    data[idx] = idx;
-}
-
 int main() {
-     cuTensor A = cuTensor::declare<CUDNN_DATA_FLOAT>(2, 2, 2, 2).instantiate(0);
-     A.randNormal(0, 1);
-     A.print();
+     cuTensor W = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,16, 8).instantiate(0).randNormal(1, 0);
+     cuTensor X = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,2, 16).instantiate(0).randNormal(1, 0);
+     cuTensor Y = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,2,8).instantiate(0).randNormal(0, 0);
      
-//    testKernel<float><<<1, 16>>>((float*)A.dataPtr(), 16);
-//    cudaDeviceSynchronize();
-//    assertCuda(__FILE__, __LINE__);
-//
-//    A.print();
+     linearOp(W.impl, X.impl, Y.impl);
+     
+     Y.print();
+     
 }

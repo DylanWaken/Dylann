@@ -15,14 +15,12 @@ namespace dylann{
     
     cuTensor scale(cuTensor& A, float alpha);
     
-    template<typename T>
-    cuTensor randUniform(cuTensor& A, T min, T max){
-        return A.template randUniform(min, max);
+    cuTensor randUniform(cuTensor& A, double min, double max){
+        return A.randUniform(min, max);
     }
     
-    template<typename T>
-    cuTensor randNormal(cuTensor& A, T mean, T stddev){
-        return A.template randNormal(mean, stddev);
+    cuTensor randNormal(cuTensor& A, double mean, double stddev){
+        return A.randNormal(mean, stddev);
     }
 }
 

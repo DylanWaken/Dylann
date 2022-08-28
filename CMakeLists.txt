@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
+set(CMAKE_CUDA_ARCHITECTURES 86)
+
 project(Dylann CUDA CXX)
 
 set(CMAKE_CUDA_STANDARD 17)
@@ -38,12 +40,12 @@ add_executable(Dylann main.cu
         dylann/tensor/cuTensor.cu
         dylann/tensor/cuTensor.cuh
         dylann/tensor/shell.cu
-        dylann/tensor/shell.cuh)
+        dylann/tensor/shell.cuh dylann/ops/cuLinear.cu dylann/ops/cuLinear.cuh)
 
 # target_link_libraries(Dylann ${TORCH_LIBRARIES} ${OpenCV_LIBS} ${TORCHVISION_DIR}/lib/torchvision.lib)
 include_directories(${CUDNN_PATH}/include)
 link_directories(${CUDNN_PATH} ${CUDNN_PATH}/bin ${CUDNN_PATH}/lib/x64 ${CUDNN_PATH}/dec/dll_x64)
-target_link_libraries(Dylann cudnn)
+target_link_libraries(Dylann cudnn cublas)
 
 # The following code block is suggested to be used on Windows.
 # According to https://github.com/pytorch/pytorch/issues/25457,

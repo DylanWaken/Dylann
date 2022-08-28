@@ -15,10 +15,10 @@ namespace dylann{
     //when running autograd, each operation will push a grad tracker to the tensor's grad stack
     class GradTracker{
     public:
-        cuTensorBase* prev{};
+        cuTensorBase* gradSrc{};
         
         //Grad flows from current (the tensor holding this tracker object)
-        //to prev (or current to current for some special operations)
+        //to gradSrc (or current to current for some special operations)
         virtual void backward(cuTensorBase* current) = 0;
     };
     
@@ -28,7 +28,7 @@ namespace dylann{
         float alpha;
         explicit GRAD_ADD_A(float alpha) : alpha(alpha){}
         
-        //this is a scaling operation, so prev is current
+        //this is a scaling operation, so gradSrc is current
         //y = alpha * A + beta * B
         //∂y/∂A = alpha
         //∂C/∂A = ∂C/∂y * ∂y/∂A = alpha * ∂C/∂y
@@ -40,7 +40,7 @@ namespace dylann{
     public:
         float beta;
         GRAD_ADD_B(float beta, cuTensorBase* prev) : beta(beta){
-            this->prev = prev;
+            this->gradSrc = prev;
         }
         
         //y = alpha * A + beta * B

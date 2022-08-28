@@ -5,8 +5,11 @@
 #include "cuTensorBase.cuh"
 
 cudnnHandle_t cudnnHdlG;
+cublasHandle_t cublasHdlG;
 
 namespace dylann {
+    uint64_t globalTensorCount = 0;
+    
     uint64_t sizeOfDtype(cudnnDataType_t dtype){
         switch(dtype){
             case CUDNN_DATA_FLOAT: return sizeof(float);

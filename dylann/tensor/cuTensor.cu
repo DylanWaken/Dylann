@@ -7,13 +7,25 @@
 
 
 namespace dylann{
-    cuTensor cuTensor::operator+=(const cuTensor& A) const {
+    cuTensor cuTensor::operator+=(cuTensor& A) {
         add(this->impl, A.impl, 1, 1);
+        GradTracker* t1 = new GRAD_ADD_A(1);
+        this->gradStack.emplace(this,t1);
+        
+        //Tensor “A” here means the tensor B in the original add operation
+        GradTracker* t2 = new GRAD_ADD_B(1, A.impl);
+        this->gradStack.emplace(&A, t2);
         return *this;
     }
     
-    cuTensor cuTensor::operator-=(const cuTensor &other) const {
+    cuTensor cuTensor::operator-=(cuTensor &other) {
         add(this->impl, other.impl, 1, -1);
+        GradTracker* t1 = new GRAD_ADD_A(1);
+        this->gradStack.emplace(this, t1);
+        
+        //Tensor “A” here means the tensor B in the original add operation
+        GradTracker* t2 = new GRAD_ADD_B(-1, other.impl);
+        this->gradStack.emplace(&other, t2);
         return *this;
     }
     
@@ -24,7 +36,7 @@ namespace dylann{
             for(auto c = 0 ; c < desc.sizes.c; c ++){
                 for(auto h = 0 ; h < desc.sizes.h; h ++){
                     for(auto w = 0 ; w < desc.sizes.w; w ++){
-                        cout << ptr[n*desc.sizes.c*desc.sizes.h*desc.sizes.w
+                        cout << (double) ptr[n*desc.sizes.c*desc.sizes.h*desc.sizes.w
                         + c*desc.sizes.h*desc.sizes.w
                         + h*desc.sizes.w
                         + w] << " ";
@@ -85,6 +97,25 @@ namespace dylann{
         }
     }
     
+    inline string getDtypeName(cudnnDataType_t dType){
+        switch (dType) {
+            case CUDNN_DATA_FLOAT:
+                return "CUDNN_DATA_FLOAT";
+            case CUDNN_DATA_DOUBLE:
+                return "CUDNN_DATA_DOUBLE";
+            case CUDNN_DATA_HALF:
+                return "CUDNN_DATA_HALF";
+            case CUDNN_DATA_INT8:
+                return "CUDNN_DATA_INT8";
+            case CUDNN_DATA_INT32:
+                return "CUDNN_DATA_INT32";
+            case CUDNN_DATA_INT64:
+                return "CUDNN_DATA_INT64";
+            default:
+                throw std::runtime_error("unsupported dtype");
+        }
+    }
+    
     void cuTensor::print() const {
 
         if (!impl->desc.isAllocated) return;
@@ -92,6 +123,8 @@ namespace dylann{
         cudaMallocHost(&view, impl->data->memSize);
         assertCuda(__FILE__, __LINE__);
         cudaSetDevice(impl->data->deviceID);
+        
+        cout << "cuTensor: " << getDtypeName(impl->desc.dType) << endl;
         
         cout<<"------ DATA -------"<<endl;
         cudaMemcpy(view, impl->data->data, impl->data->memSize, cudaMemcpyDeviceToHost);
@@ -113,5 +146,36 @@ namespace dylann{
         }
         
         cudaFreeHost(view);
+    }
+    
+    //a recursive funtion that loops through the entire network
+    void cuTensor::backwardRecur(uint64_t uuid){
+        if (!impl->desc.isAllocated) return;
+        if (gradStack.empty()) return;
+        
+        //check is the key matches
+        if (uuid != impl->desc.gradSrcUuid
+            && uuid != impl->desc.uuid) return;
+    
+        cudaSetDevice(impl->data->deviceID);
+        while (!gradStack.empty()) {
+            auto tracker = gradStack.top();
+            gradStack.pop();
+            tracker.b->backward(impl);
+            tracker.a->backwardRecur(impl->desc.uuid);
+        }
+    }
+    
+    void cuTensor::backward() {
+        if (!impl->desc.isAllocated) return;
+        if (gradStack.empty()) return;
+    
+        cudaSetDevice(impl->data->deviceID);
+        while (!gradStack.empty()) {
+            auto tracker = gradStack.top();
+            gradStack.pop();
+            tracker.b->backward(impl);
+            tracker.a->backwardRecur(impl->desc.uuid); //call the backward function recursively
+        }
     }
 }

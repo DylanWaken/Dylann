@@ -22,6 +22,10 @@ namespace dylann{
     cuTensorBase* randUniformOp(cuTensorBase* A, double min, double max);
     
     cuTensorBase* randNormalOp(cuTensorBase* A, double mean, double stddev);
+    
+    //debug function
+    //randomly / constantly fill gradient to test gradient computation
+    cuTensorBase* randNormalGradOp(cuTensorBase* A, double mean, double stddev);
 }
 
 

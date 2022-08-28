@@ -15,15 +15,15 @@ namespace dylann{
         assert(A->desc.withGradBuf);
         cudaSetDevice(A->data->deviceID);
         
-        int a = 1, b = 1;
+        float a = 1, b = 1;
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
-                                  &a,
-                                  A->desc.cudnnDesc,
-                                  A->grad->data,
                                   &b,
                                   A->desc.cudnnDesc,
-                                  A->gradBuf->data
-        ));
+                                  A->gradBuf->data,
+                                  &a,
+                                  A->desc.cudnnDesc,
+                                  A->grad->data
+        ))
         return A;
     }
     
@@ -38,27 +38,27 @@ namespace dylann{
     }
     
     void GRAD_ADD_B::backward(cuTensorBase *current) {
-        assert(prev->desc.withGrad);
+        assert(gradSrc->desc.withGrad);
         cudaSetDevice(current->data->deviceID);
     
-        if (prev->desc.withGradBuf){
-            cudaMemcpy(prev->gradBuf->data, current->grad->data, prev->grad->memSize, cudaMemcpyDeviceToDevice);
+        if (gradSrc->desc.withGradBuf){
+            cudaMemcpy(gradSrc->gradBuf->data, current->grad->data, gradSrc->grad->memSize, cudaMemcpyDeviceToDevice);
             assertCuda(__FILE__, __LINE__);
         
             checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                        prev->desc.cudnnDesc,
-                                        prev->gradBuf->data,
+                                        gradSrc->desc.cudnnDesc,
+                                        gradSrc->gradBuf->data,
                                         &beta))
-            mergeGradBuf(prev);
+            mergeGradBuf(gradSrc);
             return;
         }
     
-        cudaMemcpy(prev->grad->data, current->grad->data, current->grad->memSize, cudaMemcpyDeviceToDevice);
+        cudaMemcpy(gradSrc->grad->data, current->grad->data, current->grad->memSize, cudaMemcpyDeviceToDevice);
         assertCuda(__FILE__, __LINE__);
     
         checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    prev->desc.cudnnDesc,
-                                    prev->grad->data,
+                                    gradSrc->desc.cudnnDesc,
+                                    gradSrc->grad->data,
                                     &beta))
     }
     
