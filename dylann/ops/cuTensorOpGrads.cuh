@@ -2,8 +2,8 @@
 // Created by Dylan on 8/6/2022.
 //
 
-#ifndef DYLANN_OPREGISTRY_CUH
-#define DYLANN_OPREGISTRY_CUH
+#ifndef DYLANN_CUTENSOROPGRADS_CUH
+#define DYLANN_CUTENSOROPGRADS_CUH
 
 #include "../tensor/cuTensorBase.cuh"
 
@@ -61,4 +61,4 @@ namespace dylann{
     };
 }
 
-#endif //DYLANN_OPREGISTRY_CUH
+#endif //DYLANN_CUTENSOROPGRADS_CUH

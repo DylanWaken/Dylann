@@ -30,4 +30,21 @@ namespace dylann{
     
         return A;
     }
+    
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y){
+        linearOp(W.impl, B.impl, X.impl, Y.impl);
+        
+        GradTracker* t1 = new GRAD_LINEAR(W.impl, B.impl, X.impl);
+        Y.gradStack.emplace(&X,t1);
+        
+        return Y;
+    }
+    
+    cuTensor randUniform(cuTensor& A, double min, double max){
+        return A.randUniform(min, max);
+    }
+    
+    cuTensor randNormal(cuTensor& A, double mean, double stddev){
+        return A.randNormal(mean, stddev);
+    }
 }

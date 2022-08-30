@@ -15,13 +15,11 @@ namespace dylann{
     
     cuTensor scale(cuTensor& A, float alpha);
     
-    cuTensor randUniform(cuTensor& A, double min, double max){
-        return A.randUniform(min, max);
-    }
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y);
     
-    cuTensor randNormal(cuTensor& A, double mean, double stddev){
-        return A.randNormal(mean, stddev);
-    }
+    cuTensor randUniform(cuTensor& A, double min, double max);
+    
+    cuTensor randNormal(cuTensor& A, double mean, double stddev);
 }
 
 

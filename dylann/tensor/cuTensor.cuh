@@ -7,7 +7,7 @@
 
 #include <stack>
 #include "cuTensorBase.cuh"
-#include "../ops/opRegistry.cuh"
+#include "../ops/cuTensorOpGrads.cuh"
 #include "../ops/cuTensorOps.cuh"
 #include "../ops/cuLinear.cuh"
 

@@ -1,4 +1,4 @@
-#include "opRegistry.cuh"
+#include "cuTensorOpGrads.cuh"
 
 namespace dylann{
     cuTensorBase* copy(cuTensorBase* A, cuTensorBase*B){

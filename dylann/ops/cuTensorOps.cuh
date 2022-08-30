@@ -6,7 +6,7 @@
 #define DYLANN_CUTENSOROPS_CUH
 
 #include "../tensor/cuTensorBase.cuh"
-#include "../ops/opRegistry.cuh"
+#include "../ops/cuTensorOpGrads.cuh"
 #include <curand.h>
 #include <curand_kernel.h>
 
