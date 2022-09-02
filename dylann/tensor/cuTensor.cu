@@ -161,7 +161,7 @@ namespace dylann{
         while (!gradStack.empty()) {
             auto tracker = gradStack.top();
             gradStack.pop();
-            tracker.b->backward(impl);
+            tracker.b->backwardCalc(impl);
             tracker.a->backwardRecur(impl->desc.uuid);
         }
     }
@@ -174,8 +174,8 @@ namespace dylann{
         while (!gradStack.empty()) {
             auto tracker = gradStack.top();
             gradStack.pop();
-            tracker.b->backward(impl);
-            tracker.a->backwardRecur(impl->desc.uuid); //call the backward function recursively
+            tracker.b->backwardCalc(impl);
+            tracker.a->backwardRecur(impl->desc.uuid); //call the backwardCalc function recursively
         }
     }
 }

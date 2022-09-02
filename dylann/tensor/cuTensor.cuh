@@ -9,7 +9,7 @@
 #include "cuTensorBase.cuh"
 #include "../ops/cuTensorOpGrads.cuh"
 #include "../ops/cuTensorOps.cuh"
-#include "../ops/cuLinear.cuh"
+
 
 using namespace std;
 
@@ -32,7 +32,6 @@ namespace dylann{
         //the gradient stack for this tensor (for autograd)
         //<cuTensor src, GradTracker operation_label>
         stack<Pair<cuTensor*, GradTracker*>> gradStack;
-        int gradTargetCount;
         
         template<cudnnDataType_t dtype>
         static cuTensor declare(shape4 dims){
@@ -84,7 +83,7 @@ namespace dylann{
         }
         
         template<cudnnDataType_t dtype, typename... Args>
-        static cuTensor create(Args... args, int deviceID){
+        static cuTensor create(int deviceID, Args... args){
             auto out = declare<dtype>(args...);
             return out.instantiate(deviceID);
         }
@@ -129,7 +128,7 @@ namespace dylann{
         //debug
         void print() const;
         
-        //grad backward
+        //grad backwardCalc
         void backward();
         void backwardRecur(uint64_t uuid);
         

@@ -21,7 +21,7 @@ namespace dylann {
         //∂C/∂X = ∂C/∂y * ∂y/∂X = W^T * ∂C/∂y
         //∂C/∂W = ∂C/∂y * ∂y/∂W = ∂C/∂y * X^T
         //∂C/∂B = ∂C/∂y * ∂y/∂B = ∂C/∂y
-        void backward(cuTensorBase* current) override;
+        void backwardCalc(cuTensorBase* current) override;
     };
 }
 

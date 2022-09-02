@@ -33,6 +33,7 @@ add_executable(Dylann main.cu
         io/logging/Color.cuh
         io/logging/LogUtils.cu
         io/logging/LogUtils.cuh
+
         dylann/ops/cuTensorOps.cu
         dylann/ops/cuTensorOps.cuh
         dylann/ops/cuTensorOpGrads.cuh
@@ -40,7 +41,13 @@ add_executable(Dylann main.cu
         dylann/tensor/cuTensor.cu
         dylann/tensor/cuTensor.cuh
         dylann/tensor/shell.cu
-        dylann/tensor/shell.cuh dylann/ops/cuLinear.cu dylann/ops/cuLinear.cuh)
+        dylann/tensor/shell.cuh
+        dylann/ops/cuLinear.cu
+        dylann/ops/cuLinear.cuh
+        dylann/ops/cuConv.cu
+        dylann/ops/cuConv.cuh
+
+        )
 
 # target_link_libraries(Dylann ${TORCH_LIBRARIES} ${OpenCV_LIBS} ${TORCHVISION_DIR}/lib/torchvision.lib)
 include_directories(${CUDNN_PATH}/include)

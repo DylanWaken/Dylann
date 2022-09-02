@@ -6,6 +6,8 @@
 #define DYLANN_SHELL_CUH
 
 #include "cuTensor.cuh"
+#include "../ops/cuLinear.cuh"
+#include "../ops/cuConv.cuh"
 
 namespace dylann{
     //these are the "operations" defined for cuTensorBase
@@ -16,6 +18,9 @@ namespace dylann{
     cuTensor scale(cuTensor& A, float alpha);
     
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y);
+    
+    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
     
     cuTensor randUniform(cuTensor& A, double min, double max);
     

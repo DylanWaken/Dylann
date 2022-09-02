@@ -37,6 +37,22 @@ namespace dylann{
         GradTracker* t1 = new GRAD_LINEAR(W.impl, B.impl, X.impl);
         Y.gradStack.emplace(&X,t1);
         
+        //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW);
+        
+        GradTracker* t1 = new GRAD_CONV2D(X.impl, W.impl, B.impl, padH, padW, strideH, strideW, dilationH, dilationW);
+        Y.gradStack.emplace(&X,t1);
+        
+        //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
         return Y;
     }
     

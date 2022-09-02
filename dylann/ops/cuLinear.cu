@@ -198,6 +198,10 @@ namespace dylann{
     }
     
     cuTensorBase *linearOp(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y){
+    
+        assertAllocated({W, B, X, Y});
+        assertOnSameDev({W, B, X, Y});
+        
         //set cublas
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
         fillBias(B, Y);
@@ -224,7 +228,7 @@ namespace dylann{
         return Y;
     }
     
-    void GRAD_LINEAR::backward(cuTensorBase *current) {
+    void GRAD_LINEAR::backwardCalc(cuTensorBase *current) {
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
     
         //assert same dtype

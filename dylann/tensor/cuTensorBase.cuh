@@ -34,11 +34,14 @@
       assert(false);                                         \
     }                                                        \
 }
-  
+
+#define CUDNN_WORKSPACE_SIZE_G 1024 * 1024
+
 using namespace std;
 using namespace io;
 extern cudnnHandle_t cudnnHdlG;
 extern cublasHandle_t cublasHdlG;
+extern void* cudnnWorkspaceG;
 namespace dylann {
     extern uint64_t globalTensorCount;
     
@@ -103,7 +106,7 @@ namespace dylann {
         uint64_t uuid;
         
         //this is used as a key
-        //when the recursive backward function is called with branching network
+        //when the recursive backwardCalc function is called with branching network
         //only backwardRecur() call from the tensor with key would continue the recursion
         //some models like resnet and densenet depends heavily on this feature
         uint64_t gradSrcUuid;
@@ -122,6 +125,11 @@ namespace dylann {
             //create the global cublas Handle
             if(cublasHdlG == nullptr){
                 cublasCreate(&cublasHdlG);
+            }
+            
+            //create the global cudnn workspace
+            if(cudnnWorkspaceG == nullptr){
+                cudaMalloc(&cudnnWorkspaceG, 1024*1024);
             }
             
             this->dType = dType;

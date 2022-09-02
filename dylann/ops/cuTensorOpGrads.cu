@@ -27,7 +27,7 @@ namespace dylann{
         return A;
     }
     
-    void GRAD_ADD_A::backward(cuTensorBase *current) {
+    void GRAD_ADD_A::backwardCalc(cuTensorBase *current) {
         assert(current->desc.withGrad);
         cudaSetDevice(current->data->deviceID);
     
@@ -37,32 +37,32 @@ namespace dylann{
                                     &alpha));
     }
     
-    void GRAD_ADD_B::backward(cuTensorBase *current) {
-        assert(gradSrc->desc.withGrad);
+    void GRAD_ADD_B::backwardCalc(cuTensorBase *current) {
+        assert(target->desc.withGrad);
         cudaSetDevice(current->data->deviceID);
     
-        if (gradSrc->desc.withGradBuf){
-            cudaMemcpy(gradSrc->gradBuf->data, current->grad->data, gradSrc->grad->memSize, cudaMemcpyDeviceToDevice);
+        if (target->desc.withGradBuf){
+            cudaMemcpy(target->gradBuf->data, current->grad->data, target->grad->memSize, cudaMemcpyDeviceToDevice);
             assertCuda(__FILE__, __LINE__);
         
             checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                        gradSrc->desc.cudnnDesc,
-                                        gradSrc->gradBuf->data,
+                                        target->desc.cudnnDesc,
+                                        target->gradBuf->data,
                                         &beta))
-            mergeGradBuf(gradSrc);
+            mergeGradBuf(target);
             return;
         }
     
-        cudaMemcpy(gradSrc->grad->data, current->grad->data, current->grad->memSize, cudaMemcpyDeviceToDevice);
+        cudaMemcpy(target->grad->data, current->grad->data, current->grad->memSize, cudaMemcpyDeviceToDevice);
         assertCuda(__FILE__, __LINE__);
     
         checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    gradSrc->desc.cudnnDesc,
-                                    gradSrc->grad->data,
+                                    target->desc.cudnnDesc,
+                                    target->grad->data,
                                     &beta))
     }
     
-    void GRAD_SCALE::backward(cuTensorBase *current) {
+    void GRAD_SCALE::backwardCalc(cuTensorBase *current) {
         assert(current->desc.withGrad);
         cudaSetDevice(current->data->deviceID);
     

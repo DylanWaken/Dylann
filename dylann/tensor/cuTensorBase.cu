@@ -6,6 +6,7 @@
 
 cudnnHandle_t cudnnHdlG;
 cublasHandle_t cublasHdlG;
+void* cudnnWorkspaceG;
 
 namespace dylann {
     uint64_t globalTensorCount = 0;

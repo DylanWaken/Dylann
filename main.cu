@@ -6,15 +6,15 @@
 using namespace dylann;
 
 int main() {
-     cuTensor W = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,12, 6).instantiate(0).randNormal(1, 2);
-     cuTensor X = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,8, 12).instantiate(0).randNormal(1, 2);
-     cuTensor Y = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,8,6).instantiate(0).randNormal(0, 0);
-     cuTensor B = cuTensor::declare<CUDNN_DATA_FLOAT>(1,1,1,6).instantiate(0).randNormal(0, 0);
-     
-     linear(W, B, X, Y);
-     randNormalGradOp(Y.impl, 1, 0);
-     Y.backward();
+    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3,32,32).randNormal(1,0);
+    auto W = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3,3,3,3).randNormal(1,0);
+    auto B = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3,1,1).randNormal(1,0);
+    auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3,32,32);
     
-     Y.print();
-     W.print();
+    conv2D(X, W, B, Y, 1,1,1,1,1,1);
+    Y += X;
+    randNormalGradOp(Y.impl, 1, 0);
+    Y.backward();
+    
+    W.print();
 }
