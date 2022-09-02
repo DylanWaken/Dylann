@@ -67,15 +67,6 @@ namespace dylann{
             return *this;
         }
         
-        cuTensor instantiateGradBuf(){
-            assert(impl->desc.isAllocated);
-            assert(impl->desc.withGrad);
-            impl->gradBuf = new TStorage(impl->data->deviceID,
-                                         impl->desc.numel * impl->desc.elementSize);
-            impl->desc.withGradBuf = true;
-            return *this;
-        }
-        
         template<cudnnDataType_t dtype>
         static cuTensor create(shape4 dims, int deviceID){
             auto out = declare<dtype>(dims);
@@ -104,7 +95,6 @@ namespace dylann{
         //state
         [[nodiscard]] bool isAllocated() const{ return impl->desc.isAllocated; }
         [[nodiscard]] bool withGrad() const{ return impl->desc.withGrad; }
-        [[nodiscard]] bool withGradBuf() const{ return impl->desc.withGradBuf; }
         
         //cudnnDesc
         [[nodiscard]] cudnnTensorDescriptor_t cudnnDesc() const{ return impl->desc.cudnnDesc; }
@@ -118,12 +108,10 @@ namespace dylann{
         //data storage
         [[nodiscard]] TStorage* data() const{ return impl->data; }
         [[nodiscard]] TStorage* grad() const{ return impl->grad; }
-        [[nodiscard]] TStorage* gradBuf() const{ return impl->gradBuf; }
         
         //data access
         [[nodiscard]] void* dataPtr() const{ return impl->data->data; }
         [[nodiscard]] void* gradPtr() const{ return impl->grad->data; }
-        [[nodiscard]] void* gradBufPtr() const{ return impl->gradBuf->data; }
         
         //debug
         void print() const;

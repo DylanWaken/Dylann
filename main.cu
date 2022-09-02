@@ -12,9 +12,10 @@ int main() {
     auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3,32,32);
     
     conv2D(X, W, B, Y, 1,1,1,1,1,1);
+    relu(Y);
     Y += X;
     randNormalGradOp(Y.impl, 1, 0);
     Y.backward();
     
-    W.print();
+    X.print();
 }

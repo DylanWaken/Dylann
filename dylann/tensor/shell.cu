@@ -14,11 +14,6 @@ namespace dylann{
         GradTracker* t2 = new GRAD_ADD_B(beta, B.impl);
         A.gradStack.emplace(&B, t2);
         
-        //grad buf is needed in branching structure
-        if(!B.withGradBuf()){
-            B.instantiateGradBuf();
-        }
-        
         return A;
     }
     
@@ -51,6 +46,29 @@ namespace dylann{
         Y.gradStack.emplace(&X,t1);
         
         //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    //--------------------------------------------------------------------------------
+    //Activations
+    
+    cuTensor relu(cuTensor& X){
+        reluOp(X.impl);
+        
+        GradTracker* t = new GRAD_RELU(X.impl);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor relu(cuTensor& X, cuTensor& Y){
+        reluOp(X.impl, Y.impl);
+        
+        GradTracker* t = new GRAD_RELU(X.impl);
+        Y.gradStack.emplace(&X,t);
+        
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
         
         return Y;

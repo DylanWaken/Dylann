@@ -113,7 +113,6 @@ namespace dylann {
         
         //state
         bool isAllocated = false;
-        bool withGradBuf = false;
         bool withGrad = false;
         
         TDescriptor(shape4 dims, cudnnDataType_t dType) : sizes(dims) {
@@ -185,7 +184,6 @@ namespace dylann {
         TDescriptor desc;
         TStorage* data{};
         TStorage* grad{};
-        TStorage* gradBuf{};
         
         cuTensorBase(shape4 dims, cudnnDataType_t dType) : desc(dims, dType){}
         

@@ -138,13 +138,6 @@ namespace dylann{
             printElement(view, impl->desc);
         }
         
-        if (impl->desc.withGradBuf) {
-            cout << "------ GRADBUF -------" << endl;
-            cudaMemcpy(view, impl->gradBuf->data, impl->gradBuf->memSize, cudaMemcpyDeviceToHost);
-            assertCuda(__FILE__, __LINE__);
-            printElement(view, impl->desc);
-        }
-        
         cudaFreeHost(view);
     }
     

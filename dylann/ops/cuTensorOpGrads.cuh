@@ -10,7 +10,6 @@
 namespace dylann{
     
     cuTensorBase* copy(cuTensorBase* A, cuTensorBase* B);
-    cuTensorBase* mergeGradBuf(cuTensorBase* A);
     
     //when running autograd, each operation will push a grad tracker to the tensor's grad stack
     class GradTracker{

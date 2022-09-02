@@ -8,11 +8,12 @@
 #include "cuTensor.cuh"
 #include "../ops/cuLinear.cuh"
 #include "../ops/cuConv.cuh"
+#include "../ops/cuActivation.cuh"
+
 
 namespace dylann{
     //these are the "operations" defined for cuTensorBase
     //but implemented with "cuTensor" with gradient tracking functionalities
-    
     cuTensor add(cuTensor& A, cuTensor& B, float alpha, float beta);
     
     cuTensor scale(cuTensor& A, float alpha);
@@ -21,6 +22,10 @@ namespace dylann{
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                      int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
+    
+    //Activations
+    cuTensor relu(cuTensor& X);
+    cuTensor relu(cuTensor& X, cuTensor& Y);
     
     cuTensor randUniform(cuTensor& A, double min, double max);
     
