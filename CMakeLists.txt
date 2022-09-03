@@ -47,7 +47,7 @@ add_executable(Dylann main.cu
         dylann/ops/cuConv.cu
         dylann/ops/cuConv.cuh
 
-        dylann/ops/cuActivation.cu dylann/ops/cuActivation.cuh dylann/Config.cuh)
+        dylann/ops/cuActivation.cu dylann/ops/cuActivation.cuh dylann/Config.cuh dylann/ops/cuReduce.cu dylann/ops/cuReduce.cuh)
 
 # target_link_libraries(Dylann ${TORCH_LIBRARIES} ${OpenCV_LIBS} ${TORCHVISION_DIR}/lib/torchvision.lib)
 include_directories(${CUDNN_PATH}/include)

@@ -74,6 +74,106 @@ namespace dylann{
         return Y;
     }
     
+    cuTensor sigmoid(cuTensor& X){
+        sigmoidOp(X.impl);
+        
+        GradTracker* t = new GRAD_SIGMOID(X.impl);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor sigmoid(cuTensor& X, cuTensor& Y){
+        sigmoidOp(X.impl, Y.impl);
+        
+        GradTracker* t = new GRAD_SIGMOID(X.impl);
+        Y.gradStack.emplace(&X,t);
+        
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor tanh(cuTensor& X){
+        tanhOp(X.impl);
+        
+        GradTracker* t = new GRAD_TANH(X.impl);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor tanh(cuTensor& X, cuTensor& Y){
+        tanhOp(X.impl, Y.impl);
+        
+        GradTracker* t = new GRAD_TANH(X.impl);
+        Y.gradStack.emplace(&X,t);
+        
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor elu(cuTensor& X, float alpha){
+        eluOp(X.impl, alpha);
+        
+        GradTracker* t = new GRAD_ELU(X.impl, alpha);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor elu(cuTensor& X, cuTensor& Y, float alpha){
+        eluOp(X.impl, Y.impl, alpha);
+        
+        GradTracker* t = new GRAD_ELU(X.impl, alpha);
+        Y.gradStack.emplace(&X,t);
+        
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor swish(cuTensor& X, float beta){
+        swishOp(X.impl, beta);
+        
+        GradTracker* t = new GRAD_SWISH(X.impl, beta);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor swish(cuTensor& X, cuTensor& Y, float beta){
+        swishOp(X.impl, Y.impl, beta);
+        
+        GradTracker* t = new GRAD_SWISH(X.impl, beta);
+        Y.gradStack.emplace(&X,t);
+        
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor clippedRelu(cuTensor& X, float threshold){
+        clippedReluOp(X.impl, threshold);
+        
+        GradTracker* t = new GRAD_CLIPPED_RELU(X.impl, threshold);
+        X.gradStack.emplace(&X,t);
+        
+        return X;
+    }
+    
+    cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold){
+        clippedReluOp(X.impl, Y.impl, threshold);
+        
+        GradTracker* t = new GRAD_CLIPPED_RELU(X.impl, threshold);
+        Y.gradStack.emplace(&X,t);
+        
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
     cuTensor randUniform(cuTensor& A, double min, double max){
         return A.randUniform(min, max);
     }

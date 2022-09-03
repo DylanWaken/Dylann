@@ -42,6 +42,7 @@ using namespace io;
 extern cudnnHandle_t cudnnHdlG;
 extern cublasHandle_t cublasHdlG;
 extern void* cudnnWorkspaceG;
+
 namespace dylann {
     extern uint64_t globalTensorCount;
     
