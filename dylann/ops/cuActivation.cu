@@ -57,6 +57,25 @@ namespace dylann{
         return Y;
     }
     
+    cuTensorBase* reluOpGrads(cuTensorBase* X, cuTensorBase* Y){
+        float alpha = 1.0f, beta = 0.0f;
+    
+        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
+                                           reluDescG,
+                                           &alpha,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &beta,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+        return X;
+    }
+    
+    
     cuTensorBase* sigmoidOp(cuTensorBase* X){
         if(reluDescG == nullptr){
             cudnnCreateActivationDescriptor(&sigmoidDescG);
@@ -104,6 +123,25 @@ namespace dylann{
         return Y;
     }
     
+    cuTensorBase* sigmoidOpGrads(cuTensorBase* X, cuTensorBase* Y){
+        float alpha = 1.0f, beta = 0.0f;
+    
+        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
+                                           sigmoidDescG,
+                                           &alpha,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &beta,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+        return X;
+    }
+    
+    
     cuTensorBase* tanhOp(cuTensorBase* X){
         if(reluDescG == nullptr){
             cudnnCreateActivationDescriptor(&tanhDescG);
@@ -150,6 +188,25 @@ namespace dylann{
                 
         return Y;
     }
+    
+    cuTensorBase* tanhOpGrads(cuTensorBase* X, cuTensorBase* Y){
+        float alpha = 1.0f, beta = 0.0f;
+    
+        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
+                                           tanhDescG,
+                                           &alpha,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &beta,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+        return X;
+    }
+    
     
     cuTensorBase* eluOp(cuTensorBase* X, float alpha){
 
@@ -201,6 +258,30 @@ namespace dylann{
         return Y;
     }
     
+    cuTensorBase* eluOpGrads(cuTensorBase* X, cuTensorBase* Y, float alpha){
+        float a = 1.0f, beta = 0.0f;
+    
+        cudnnActivationDescriptor_t eluDesc;
+        cudnnCreateActivationDescriptor(&eluDesc);
+        cudnnSetActivationDescriptor(eluDesc, CUDNN_ACTIVATION_ELU, CUDNN_NOT_PROPAGATE_NAN, alpha);
+    
+        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
+                                           eluDesc,
+                                           &a,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &beta,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+    
+        cudnnDestroyActivationDescriptor(eluDesc);
+        return X;
+    }
+    
     cuTensorBase* swishOp(cuTensorBase* X, float beta){
         assertAllocated({X});
         assertOnSameDev({X});
@@ -249,6 +330,30 @@ namespace dylann{
                 
         cudnnDestroyActivationDescriptor(swishDesc);
         return Y;
+    }
+    
+    cuTensorBase* swishOpGrads(cuTensorBase* X, cuTensorBase* Y, float beta){
+        float a = 1.0f, b = 0.0f;
+    
+        cudnnActivationDescriptor_t swishDesc;
+        cudnnCreateActivationDescriptor(&swishDesc);
+        cudnnSetActivationDescriptor(swishDesc, CUDNN_ACTIVATION_SWISH, CUDNN_NOT_PROPAGATE_NAN, beta);
+    
+        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
+                                           swishDesc,
+                                           &a,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &b,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+    
+        cudnnDestroyActivationDescriptor(swishDesc);
+        return X;
     }
     
     cuTensorBase* clippedReluOp(cuTensorBase* X, float ceiling){
@@ -302,130 +407,51 @@ namespace dylann{
         return Y;
     }
     
-    void GRAD_RELU::backwardCalc(dylann::cuTensorBase *current) {
-        
-        cout<<"GRAD_RELU::backwardCalc"<<endl;
-        float alpha = 1.0f, beta = 0.0f;
-    
-        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                reluDescG,
-                                &alpha,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &beta,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-    }
-    
-    void GRAD_SIGMOID::backwardCalc(dylann::cuTensorBase *current) {
-        cout<<"GRAD_SIGMOID::backwardCalc"<<endl;
-        float alpha = 1.0f, beta = 0.0f;
-    
-        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                sigmoidDescG,
-                                &alpha,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &beta,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-    }
-    
-    void GRAD_TANH::backwardCalc(dylann::cuTensorBase *current) {
-        cout<<"GRAD_TANH::backwardCalc"<<endl;
-        float alpha = 1.0f, beta = 0.0f;
-    
-        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                tanhDescG,
-                                &alpha,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &beta,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-    }
-    
-    void GRAD_ELU::backwardCalc(dylann::cuTensorBase *current) {
-        cout<<"GRAD_ELU::backwardCalc"<<endl;
-        float a = 1.0f, beta = 0.0f;
-        
-        cudnnActivationDescriptor_t eluDesc;
-        cudnnCreateActivationDescriptor(&eluDesc);
-        cudnnSetActivationDescriptor(eluDesc, CUDNN_ACTIVATION_ELU, CUDNN_NOT_PROPAGATE_NAN, alpha);
-    
-        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                eluDesc,
-                                &a,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &beta,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-                                
-        cudnnDestroyActivationDescriptor(eluDesc);
-    }
-    
-    void GRAD_SWISH::backwardCalc(dylann::cuTensorBase *current) {
-        cout<<"GRAD_SWISH::backwardCalc"<<endl;
+    cuTensorBase* clippedReluOpGrads(cuTensorBase* X, cuTensorBase* Y, float threshold){
         float a = 1.0f, b = 0.0f;
-        
-        cudnnActivationDescriptor_t swishDesc;
-        cudnnCreateActivationDescriptor(&swishDesc);
-        cudnnSetActivationDescriptor(swishDesc, CUDNN_ACTIVATION_SWISH, CUDNN_NOT_PROPAGATE_NAN, beta);
     
-        checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                swishDesc,
-                                &a,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &b,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-                                
-        cudnnDestroyActivationDescriptor(swishDesc);
-    }
-    
-    void GRAD_CLIPPED_RELU::backwardCalc(dylann::cuTensorBase *current) {
-        cout<<"GRAD_CLIPPED_RELU::backwardCalc"<<endl;
-        float a = 1.0f, b = 0.0f;
-        
         cudnnActivationDescriptor_t clippedReluDesc;
         cudnnCreateActivationDescriptor(&clippedReluDesc);
         cudnnSetActivationDescriptor(clippedReluDesc, CUDNN_ACTIVATION_CLIPPED_RELU, CUDNN_NOT_PROPAGATE_NAN, threshold);
     
         checkCUDNN(cudnnActivationBackward(cudnnHdlG,
-                                clippedReluDesc,
-                                &a,
-                                current->desc.cudnnDesc,
-                                current->data->data,
-                                current->desc.cudnnDesc,
-                                current->grad->data,
-                                X->desc.cudnnDesc,
-                                X->data->data,
-                                &b,
-                                X->desc.cudnnDesc,
-                                X->grad->data))
-                                
+                                           clippedReluDesc,
+                                           &a,
+                                           Y->desc.cudnnDesc,
+                                           Y->data->data,
+                                           Y->desc.cudnnDesc,
+                                           Y->grad->data,
+                                           X->desc.cudnnDesc,
+                                           X->data->data,
+                                           &b,
+                                           X->desc.cudnnDesc,
+                                           X->grad->data))
+    
         cudnnDestroyActivationDescriptor(clippedReluDesc);
+        return X;
+    }
+    
+    void GRAD_RELU::backwardCalc(dylann::cuTensorBase *Y) {
+        reluOpGrads(X, Y);
+    }
+    
+    void GRAD_SIGMOID::backwardCalc(dylann::cuTensorBase *Y) {
+        sigmoidOpGrads(X, Y);
+    }
+    
+    void GRAD_TANH::backwardCalc(dylann::cuTensorBase *Y) {
+        tanhOpGrads(X, Y);
+    }
+    
+    void GRAD_ELU::backwardCalc(dylann::cuTensorBase *Y) {
+        eluOpGrads(X, Y, alpha);
+    }
+    
+    void GRAD_SWISH::backwardCalc(dylann::cuTensorBase *Y) {
+        swishOpGrads(X, Y, beta);
+    }
+    
+    void GRAD_CLIPPED_RELU::backwardCalc(dylann::cuTensorBase *Y) {
+        clippedReluOpGrads(X, Y, threshold);
     }
 }

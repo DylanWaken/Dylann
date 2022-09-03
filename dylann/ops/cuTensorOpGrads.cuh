@@ -6,6 +6,7 @@
 #define DYLANN_CUTENSOROPGRADS_CUH
 
 #include "../tensor/cuTensorBase.cuh"
+#include "cuTensorOps.cuh"
 
 namespace dylann{
     
@@ -27,11 +28,11 @@ namespace dylann{
         float alpha;
         explicit GRAD_ADD_A(float alpha) : alpha(alpha){}
         
-        //this is a scaling operation, so target is current
+        //this is a scaling operation, so target is Y
         //y = alpha * A + beta * B
         //∂y/∂A = alpha
         //∂C/∂A = ∂C/∂y * ∂y/∂A = alpha * ∂C/∂y
-        void backwardCalc(cuTensorBase* current) override;
+        void backwardCalc(cuTensorBase* Y) override;
     };
     
     //for tensor B in add operation (B in A + B)
@@ -45,7 +46,7 @@ namespace dylann{
         //y = alpha * A + beta * B
         //∂y/∂B = beta
         //∂C/∂B = ∂C/∂y * ∂y/∂B = beta * ∂C/∂y
-        void backwardCalc(cuTensorBase* current) override;
+        void backwardCalc(cuTensorBase* Y) override;
     };
     
     class GRAD_SCALE : public GradTracker{
@@ -56,7 +57,7 @@ namespace dylann{
         //y = alpha * A
         //∂y/∂A = alpha
         //∂C/∂A = ∂C/∂y * ∂y/∂A = alpha * ∂C/∂y
-        void backwardCalc(cuTensorBase* current) override;
+        void backwardCalc(cuTensorBase* Y) override;
     };
 }
 

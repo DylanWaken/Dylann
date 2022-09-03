@@ -8,7 +8,9 @@ namespace dylann{
                            int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
-        
+    
+        cudaSetDevice(W->data->deviceID);
+    
         cudnnConvolutionDescriptor_t convDesc;
         cudnnCreateConvolutionDescriptor(&convDesc);
         cudnnFilterDescriptor_t filterDesc;
@@ -68,6 +70,8 @@ namespace dylann{
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
     
+        cudaSetDevice(W->data->deviceID);
+    
         cudnnConvolutionDescriptor_t convDesc;
         cudnnCreateConvolutionDescriptor(&convDesc);
         cudnnFilterDescriptor_t filterDesc;
@@ -118,13 +122,16 @@ namespace dylann{
         return Y;
     }
     
-    void GRAD_CONV2D::backwardCalc(cuTensorBase *Y) {
+    cuTensorBase* conv2dOpGrads(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
+                                int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+        cudaSetDevice(W->data->deviceID);
+    
         cudnnConvolutionDescriptor_t convDesc;
         cudnnCreateConvolutionDescriptor(&convDesc);
-        
+    
         cudnnFilterDescriptor_t filterDesc;
         cudnnCreateFilterDescriptor(&filterDesc);
-        
+    
         float alpha = 1.0f, beta = 1.0f;
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
@@ -135,24 +142,24 @@ namespace dylann{
                                               (int)W->desc.sizes.c,
                                               (int)W->desc.sizes.h,
                                               (int)W->desc.sizes.w));
-        
+    
         checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
-        
+    
         checkCUDNN(cudnnConvolutionBackwardData(cudnnHdlG,
-                &alpha,
-                filterDesc,
-                W->data->data,
-                Y->desc.cudnnDesc,
-                Y->grad->data,
-                convDesc,
-                CUDNN_CONVOLUTION_BWD_DATA_ALGO_1,
-                nullptr,
-                0,
-                &beta,
-                X->desc.cudnnDesc,
-                X->grad->data
+                                                &alpha,
+                                                filterDesc,
+                                                W->data->data,
+                                                Y->desc.cudnnDesc,
+                                                Y->grad->data,
+                                                convDesc,
+                                                CUDNN_CONVOLUTION_BWD_DATA_ALGO_1,
+                                                nullptr,
+                                                0,
+                                                &beta,
+                                                X->desc.cudnnDesc,
+                                                X->grad->data
         ))
-        
+    
         checkCUDNN(cudnnConvolutionBackwardFilter(
                 cudnnHdlG,
                 &alpha,
@@ -178,8 +185,13 @@ namespace dylann{
                 B->desc.cudnnDesc,
                 B->grad->data
         ))
-        
+    
         cudnnDestroyFilterDescriptor(filterDesc);
         cudnnDestroyConvolutionDescriptor(convDesc);
+        return X;
+    }
+    
+    void GRAD_CONV2D::backwardCalc(cuTensorBase *Y) {
+        conv2dOpGrads(X, W, B, Y, padH, padW, strideH, strideW, dilationH, dilationW);
     }
 }

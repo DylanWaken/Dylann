@@ -11,6 +11,8 @@
 namespace dylann{
     cuTensorBase* conv2dOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
                            int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
+    cuTensorBase* conv2dOpGrads(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
+                                int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
     
     
     cuTensorBase* conv2dActiveOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,

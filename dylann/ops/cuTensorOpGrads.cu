@@ -10,37 +10,15 @@ namespace dylann{
         return B;
     }
     
-    void GRAD_ADD_A::backwardCalc(cuTensorBase *current) {
-        assert(current->desc.withGrad);
-        cudaSetDevice(current->data->deviceID);
-    
-        checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    current->desc.cudnnDesc,
-                                    current->grad->data,
-                                    &alpha));
+    void GRAD_ADD_A::backwardCalc(cuTensorBase *Y) {
+        addOpGradA(Y, this->alpha);
     }
     
-    void GRAD_ADD_B::backwardCalc(cuTensorBase *current) {
-        assert(target->desc.withGrad);
-        cudaSetDevice(current->data->deviceID);
-    
-        float a = 1.0f;
-        checkCUDNN(cudnnAddTensor(cudnnHdlG,
-                                  &beta,
-                                  current->desc.cudnnDesc,
-                                  current->grad->data,
-                                  &a,
-                                  target->desc.cudnnDesc,
-                                  target->grad->data))
+    void GRAD_ADD_B::backwardCalc(cuTensorBase *Y) {
+        addOpGradB(Y, this->target, this->beta);
     }
     
-    void GRAD_SCALE::backwardCalc(cuTensorBase *current) {
-        assert(current->desc.withGrad);
-        cudaSetDevice(current->data->deviceID);
-    
-        checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    current->desc.cudnnDesc,
-                                    current->grad->data,
-                                    &alpha));
+    void GRAD_SCALE::backwardCalc(cuTensorBase *Y) {
+        scaleOpGrad(Y, this->alpha);
     }
 }

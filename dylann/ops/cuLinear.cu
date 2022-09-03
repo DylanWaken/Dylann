@@ -7,7 +7,7 @@
 namespace dylann{
     
     void fillBias(cuTensorBase* B, cuTensorBase* Y){
-        for(auto i = 0; i < Y->desc.sizes.h; i++){
+        for(auto i = 0; i < Y->desc.sizes.n; i++){
             auto offset = i * Y->desc.sizes.w;
             char* destPtr = (char*)Y->data->data + offset * Y->desc.elementSize;
             cudaMemcpy(destPtr, B->data->data, B->data->memSize, cudaMemcpyDeviceToDevice);
@@ -23,7 +23,7 @@ namespace dylann{
                                    CUBLAS_OP_T,   //row major to column major for weights
                                    CUBLAS_OP_N,   //read the original row major as column major, auto trans
                                    Y->desc.sizes.w,
-                                   X->desc.sizes.h,
+                                   X->desc.sizes.n,
                                    X->desc.sizes.w,
                                    &a,
                                    (float*)W->data->data,
@@ -43,7 +43,7 @@ namespace dylann{
                                    CUBLAS_OP_N,  //auto transpose for weights
                                    CUBLAS_OP_N,
                                    W->desc.sizes.h,
-                                   Y->desc.sizes.h,
+                                   Y->desc.sizes.n,
                                    W->desc.sizes.w,
                                    &a,
                                    (float*)W->data->data,
@@ -64,10 +64,10 @@ namespace dylann{
                                    CUBLAS_OP_T,  //we need to recover the "row major"
                                    Y->desc.sizes.w,
                                    X->desc.sizes.w,
-                                   X->desc.sizes.h,
+                                   X->desc.sizes.n,
                                    &a,
                                    (float*)Y->grad->data,
-                                   Y->desc.sizes.h,
+                                   Y->desc.sizes.n,
                                    (float*)X->data->data,
                                    X->desc.sizes.w,
                                   &b,
@@ -84,7 +84,7 @@ namespace dylann{
                                    CUBLAS_OP_T,   //row major to column major for weights
                                    CUBLAS_OP_N,   //read the original row major as  column major, auto trans
                                       W->desc.sizes.w,
-                                        X->desc.sizes.h,
+                                        X->desc.sizes.n,
                                         X->desc.sizes.w,
                                         &a,
                                         (half*)W->data->data,
@@ -104,7 +104,7 @@ namespace dylann{
                                 CUBLAS_OP_N,
                                 CUBLAS_OP_N,
                                 W->desc.sizes.h,
-                                Y->desc.sizes.h,
+                                Y->desc.sizes.n,
                                 W->desc.sizes.w,
                                 &a,
                                 (half*)W->data->data,
@@ -125,10 +125,10 @@ namespace dylann{
                                 CUBLAS_OP_T,
                                 Y->desc.sizes.w,
                                 X->desc.sizes.w,
-                                X->desc.sizes.h,
+                                X->desc.sizes.n,
                                 &a,
                                 (half*)Y->grad->data,
-                                Y->desc.sizes.h,
+                                Y->desc.sizes.n,
                                 (half*)X->data->data,
                                 X->desc.sizes.w,
                                 &b,
@@ -145,7 +145,7 @@ namespace dylann{
                                    CUBLAS_OP_T,   //row major to column major for weights
                                    CUBLAS_OP_N,   //read the original row major as column major, auto trans
                                    W->desc.sizes.w,
-                                   X->desc.sizes.h,
+                                   X->desc.sizes.n,
                                    X->desc.sizes.w,
                                    &a,
                                    (double*)W->data->data,
@@ -164,7 +164,7 @@ namespace dylann{
                                    CUBLAS_OP_N,
                                    CUBLAS_OP_N,
                                    W->desc.sizes.h,
-                                   Y->desc.sizes.h,
+                                   Y->desc.sizes.n,
                                    W->desc.sizes.w,
                                    &a,
                                    (double*)W->data->data,
@@ -185,10 +185,10 @@ namespace dylann{
                                    CUBLAS_OP_T,
                                    Y->desc.sizes.w,
                                    X->desc.sizes.w,
-                                   X->desc.sizes.h,
+                                   X->desc.sizes.n,
                                    &a,
                                    (double*)Y->grad->data,
-                                   Y->desc.sizes.h,
+                                   Y->desc.sizes.n,
                                    (double*)X->data->data,
                                    X->desc.sizes.w,
                                    &b,
@@ -201,6 +201,8 @@ namespace dylann{
     
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
+    
+        cudaSetDevice(W->data->deviceID);
         
         //set cublas
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
@@ -227,47 +229,52 @@ namespace dylann{
         
         return Y;
     }
-    
-    void GRAD_LINEAR::backwardCalc(cuTensorBase *current) {
+    cuTensorBase *linearOpGrads(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y){
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
     
         //assert same dtype
-        assert(current->desc.dType == X->desc.dType
-               && current->desc.dType == current->desc.dType);
-        
+        assert(Y->desc.dType == X->desc.dType
+               && Y->desc.dType == Y->desc.dType);
+    
+        cudaSetDevice(W->data->deviceID);
+    
         cout<<"GRAD LINEAR CALLED"<<endl;
-        
+    
         //run gradient for features
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR_GRAD_X(W, X, current);
+                FLOAT_LINEAR_GRAD_X(W, X, Y);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR_GRAD_X(W, X, current);
+                HALF_LINEAR_GRAD_X(W, X, Y);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR_GRAD_X(W, X, current);
+                DOUBLE_LINEAR_GRAD_X(W, X, Y);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");
         }
-        
+    
         //run gradients for weights
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR_GRAD_W(W, X, current);
+                FLOAT_LINEAR_GRAD_W(W, X, Y);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR_GRAD_W(W, X, current);
+                HALF_LINEAR_GRAD_W(W, X, Y);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR_GRAD_W(W, X, current);
+                DOUBLE_LINEAR_GRAD_W(W, X, Y);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");
         }
-        
+    
         //run gradients for biases
-        cudaMemcpy(B->grad->data, current->grad->data, B->grad->memSize, cudaMemcpyDeviceToHost);
+        cudaMemcpy(B->grad->data, Y->grad->data, B->grad->memSize, cudaMemcpyDeviceToHost);
+    }
+    
+    void GRAD_LINEAR::backwardCalc(cuTensorBase *Y) {
+        linearOpGrads(W, B, X, Y);
     }
 }
