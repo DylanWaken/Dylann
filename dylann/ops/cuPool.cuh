@@ -23,6 +23,11 @@ namespace dylann {
                                  int padH, int padW, int strideH, int strideW);
     
     
+    cuTensorBase *globalAvgPoolOp(cuTensorBase* X, cuTensorBase* Y);
+    
+    cuTensorBase *globalAvgPoolOpGrads(cuTensorBase* X, cuTensorBase* Y);
+    
+    
     struct GRAD_MAXPOOL : public GradTracker{
         cuTensorBase* X;
         int rangeH, rangeW, padH, padW, strideH, strideW;
@@ -43,6 +48,13 @@ namespace dylann {
                             rangeH(rangeH), rangeW(rangeW),
                             padH(padH), padW(padW),
                             strideH(strideH), strideW(strideW){}
+        
+        void backwardCalc(cuTensorBase* Y) override;
+    };
+    
+    struct GRAD_GLOBALAVGPOOL : public GradTracker{
+        cuTensorBase* X;
+        explicit GRAD_GLOBALAVGPOOL(cuTensorBase* X) : X(X){}
         
         void backwardCalc(cuTensorBase* Y) override;
     };

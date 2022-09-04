@@ -151,11 +151,86 @@ namespace dylann {
         cudnnDestroyPoolingDescriptor(poolDesc);
     }
     
+    cuTensorBase *globalAvgPoolOp(cuTensorBase* X, cuTensorBase* Y){
+        assertAllocated({X, Y});
+        assertOnSameDev({X, Y});
+    
+        cudaSetDevice(X->data->deviceID);
+    
+        cudnnPoolingDescriptor_t poolDesc;
+        cudnnCreatePoolingDescriptor(&poolDesc);
+        cudnnSetPooling2dDescriptor(poolDesc,
+                                    CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+                                    CUDNN_NOT_PROPAGATE_NAN,
+                                    (int)X->desc.sizes.h,
+                                    (int)X->desc.sizes.w,
+                                    0,
+                                    0,
+                                    1,
+                                    1);
+    
+        float alpha = 1.0f, beta = 0.0f;
+    
+        checkCUDNN(cudnnPoolingForward(
+                cudnnHdlG,
+                poolDesc,
+                &alpha,
+                X->desc.cudnnDesc,
+                X->data->data,
+                &beta,
+                Y->desc.cudnnDesc,
+                Y->data->data
+        ))
+    
+        cudnnDestroyPoolingDescriptor(poolDesc);
+    
+        return Y;
+    }
+    
+    cuTensorBase *globalAvgPoolOpGrads(cuTensorBase* X, cuTensorBase* Y){
+        cudaSetDevice(X->data->deviceID);
+    
+        cudnnPoolingDescriptor_t poolDesc;
+        cudnnCreatePoolingDescriptor(&poolDesc);
+        cudnnSetPooling2dDescriptor(poolDesc,
+                                    CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+                                    CUDNN_NOT_PROPAGATE_NAN,
+                                    (int)X->desc.sizes.h,
+                                    (int)X->desc.sizes.w,
+                                    0,
+                                    0,
+                                    1,
+                                    1);
+    
+        float alpha = 1.0f, beta = 1.0f;
+    
+        checkCUDNN(cudnnPoolingBackward(
+                cudnnHdlG,
+                poolDesc,
+                &alpha,
+                Y->desc.cudnnDesc,
+                Y->data->data,
+                Y->desc.cudnnDesc,
+                Y->grad->data,
+                X->desc.cudnnDesc,
+                X->data->data,
+                &beta,
+                X->desc.cudnnDesc,
+                X->grad->data
+        ))
+    
+        cudnnDestroyPoolingDescriptor(poolDesc);
+    }
+    
     void GRAD_MAXPOOL::backwardCalc(cuTensorBase *Y) {
         maxPoolOpGrads(X, Y, rangeH, rangeW, padH, padW, strideH, strideW);
     }
     
     void GRAD_AVGPOOL::backwardCalc(cuTensorBase *Y) {
         avgPoolOpGrads(X, Y, rangeH, rangeW, padH, padW, strideH, strideW);
+    }
+    
+    void GRAD_GLOBALAVGPOOL::backwardCalc(cuTensorBase *Y) {
+        globalAvgPoolOpGrads(X, Y);
     }
 } // dylann
