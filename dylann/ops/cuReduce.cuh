@@ -49,7 +49,7 @@ namespace dylann{
         cuTensorBase* X;
         int step;
         
-        // a - Y
+        // a - B
         GRAD_SOFTMAX_CE(cuTensorBase* X, int step) : X(X), step(step){}
         void backwardCalc(cuTensorBase* Y) override;
     };

@@ -30,8 +30,8 @@ namespace dylann{
                 strideH(strideH), strideW(strideW),
                 dilationH(dilationH), dilationW(dilationW){}
         
-        //∂C/∂X = ∂C/∂y * ∂y/∂X = W^T * ∂C/∂y
-        //∂C/∂W = ∂C/∂y * ∂y/∂W = ∂C/∂y * X^T
+        //∂C/∂A = ∂C/∂y * ∂y/∂A = W^T * ∂C/∂y
+        //∂C/∂W = ∂C/∂y * ∂y/∂W = ∂C/∂y * A^T
         //∂C/∂B = ∂C/∂y * ∂y/∂B = ∂C/∂y
         void backwardCalc(cuTensorBase* Y) override;
     };

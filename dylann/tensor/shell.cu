@@ -32,7 +32,7 @@ namespace dylann{
         GradTracker* t1 = new GRAD_LINEAR(W.impl, B.impl, X.impl);
         Y.gradStack.emplace(&X,t1);
         
-        //give Y the access to push grad backward into X
+        //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
         
         return Y;
@@ -45,7 +45,7 @@ namespace dylann{
         GradTracker* t1 = new GRAD_CONV2D(X.impl, W.impl, B.impl, padH, padW, strideH, strideW, dilationH, dilationW);
         Y.gradStack.emplace(&X,t1);
         
-        //give Y the access to push grad backward into X
+        //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
         
         return Y;
@@ -62,7 +62,7 @@ namespace dylann{
         GradTracker* t1 = new GRAD_SOFTMAX(X.impl, step);
         Y.gradStack.emplace(&X,t1);
         
-        //give Y the access to push grad backward into X
+        //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
     }
     
@@ -72,7 +72,7 @@ namespace dylann{
         GradTracker* t1 = new GRAD_SOFTMAX_LOG(X.impl, step);
         Y.gradStack.emplace(&X,t1);
         
-        //give Y the access to push grad backward into X
+        //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
     }
     
@@ -82,7 +82,7 @@ namespace dylann{
         GradTracker* t1 = new GRAD_SOFTMAX_CE(X.impl, step);
         Y.gradStack.emplace(&X,t1);
         
-        //give Y the access to push grad backward into X
+        //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
     }
     

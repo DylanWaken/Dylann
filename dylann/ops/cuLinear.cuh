@@ -9,7 +9,7 @@
 
 namespace dylann {
     
-    // Y = W * X + b
+    // B = W * A + b
     cuTensorBase *linearOp(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y);
     cuTensorBase *linearOpGrads(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y);
     
@@ -19,8 +19,8 @@ namespace dylann {
         cuTensorBase* X;
         explicit GRAD_LINEAR(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X) : W(W), B(B), X(X){}
         
-        //∂C/∂X = ∂C/∂y * ∂y/∂X = W^T * ∂C/∂y
-        //∂C/∂W = ∂C/∂y * ∂y/∂W = ∂C/∂y * X^T
+        //∂C/∂A = ∂C/∂y * ∂y/∂A = W^T * ∂C/∂y
+        //∂C/∂W = ∂C/∂y * ∂y/∂W = ∂C/∂y * A^T
         //∂C/∂B = ∂C/∂y * ∂y/∂B = ∂C/∂y
         void backwardCalc(cuTensorBase* Y) override;
     };

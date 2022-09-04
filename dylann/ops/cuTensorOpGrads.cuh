@@ -28,7 +28,7 @@ namespace dylann{
         float alpha;
         explicit GRAD_ADD_A(float alpha) : alpha(alpha){}
         
-        //this is a scaling operation, so target is Y
+        //this is a scaling operation, so target is B
         //y = alpha * A + beta * B
         //∂y/∂A = alpha
         //∂C/∂A = ∂C/∂y * ∂y/∂A = alpha * ∂C/∂y
