@@ -8,7 +8,7 @@
 
 namespace dylann{
     
-    cuTensorBase* add(cuTensorBase* A, cuTensorBase* B, float alpha, float beta){
+    cuTensorBase* addOp(cuTensorBase* A, cuTensorBase* B, float alpha, float beta){
         assertAllocated({A, B});
         assertOnSameDev({A, B});
         cudaSetDevice(A->data->deviceID);

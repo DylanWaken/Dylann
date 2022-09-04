@@ -24,6 +24,12 @@ namespace dylann{
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                      int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
     
+    cuTensor reduce(cuTensor& X, cuTensor& Y, int step);
+    
+    cuTensor softmax(cuTensor& X, cuTensor& Y, int step);
+    cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step);
+    cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step);
+    
     //Activations
     cuTensor relu(cuTensor& X);
     cuTensor relu(cuTensor& X, cuTensor& Y);
@@ -43,6 +49,7 @@ namespace dylann{
     cuTensor clippedRelu(cuTensor& X, float threshold);
     cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold);
     
+    //rand init
     cuTensor randUniform(cuTensor& A, double min, double max);
     
     cuTensor randNormal(cuTensor& A, double mean, double stddev);

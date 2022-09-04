@@ -8,22 +8,22 @@
 
 namespace dylann{
     cuTensor cuTensor::operator+=(cuTensor& A) {
-        add(this->impl, A.impl, 1, 1);
+        addOp(this->impl, A.impl, 1, 1);
         GradTracker* t1 = new GRAD_ADD_A(1);
         this->gradStack.emplace(this,t1);
         
-        //Tensor “A” here means the tensor B in the original add operation
+        //Tensor “A” here means the tensor B in the original addOp operation
         GradTracker* t2 = new GRAD_ADD_B(1, A.impl);
         this->gradStack.emplace(&A, t2);
         return *this;
     }
     
     cuTensor cuTensor::operator-=(cuTensor &other) {
-        add(this->impl, other.impl, 1, -1);
+        addOp(this->impl, other.impl, 1, -1);
         GradTracker* t1 = new GRAD_ADD_A(1);
         this->gradStack.emplace(this, t1);
         
-        //Tensor “A” here means the tensor B in the original add operation
+        //Tensor “A” here means the tensor B in the original addOp operation
         GradTracker* t2 = new GRAD_ADD_B(-1, other.impl);
         this->gradStack.emplace(&other, t2);
         return *this;

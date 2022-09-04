@@ -6,7 +6,7 @@
 
 namespace dylann{
     cuTensor add(cuTensor& A, cuTensor& B, float alpha, float beta){
-        add(A.impl, B.impl, alpha, beta);
+        addOp(A.impl, B.impl, alpha, beta);
         
         GradTracker* t1 = new GRAD_ADD_A(alpha);
         A.gradStack.emplace(&A, t1);
@@ -49,6 +49,41 @@ namespace dylann{
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
         
         return Y;
+    }
+    
+    cuTensor reduce(cuTensor& X, cuTensor& Y, int step){
+        reduceOp(X.impl, Y.impl, step);
+        return Y;
+    }
+    
+    cuTensor softmax(cuTensor& X, cuTensor& Y, int step){
+        softmaxOp(X.impl, Y.impl, step);
+        
+        GradTracker* t1 = new GRAD_SOFTMAX(X.impl, step);
+        Y.gradStack.emplace(&X,t1);
+        
+        //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+    }
+    
+    cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step){
+        softmaxLogOp(X.impl, Y.impl, step);
+        
+        GradTracker* t1 = new GRAD_SOFTMAX_LOG(X.impl, step);
+        Y.gradStack.emplace(&X,t1);
+        
+        //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
+    }
+    
+    cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step){
+        softmaxCEOp(X.impl, Y.impl, step);
+        
+        GradTracker* t1 = new GRAD_SOFTMAX_CE(X.impl, step);
+        Y.gradStack.emplace(&X,t1);
+        
+        //give Y the access to push grad backward into X
+        X.impl->desc.gradSrcUuid = Y.desc().uuid;
     }
     
     //--------------------------------------------------------------------------------

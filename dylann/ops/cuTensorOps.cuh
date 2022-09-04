@@ -12,8 +12,8 @@
 
 namespace dylann{
     
-    //add operation (for data)
-    cuTensorBase* add(cuTensorBase* A, cuTensorBase* B, float alpha, float beta);
+    //addOp operation (for data)
+    cuTensorBase* addOp(cuTensorBase* A, cuTensorBase* B, float alpha, float beta);
     cuTensorBase* addOpGradA(cuTensorBase* A, float alpha);
     cuTensorBase* addOpGradB(cuTensorBase* A, cuTensorBase* B, float beta);
     

@@ -22,7 +22,7 @@ namespace dylann{
         virtual void backwardCalc(cuTensorBase* current) = 0;
     };
     
-    //for primary tensor in add operation (A in A + B)
+    //for primary tensor in addOp operation (A in A + B)
     class GRAD_ADD_A : public GradTracker{
     public:
         float alpha;
@@ -35,7 +35,7 @@ namespace dylann{
         void backwardCalc(cuTensorBase* Y) override;
     };
     
-    //for tensor B in add operation (B in A + B)
+    //for tensor B in addOp operation (B in A + B)
     class GRAD_ADD_B : public GradTracker{
     public:
         float beta;

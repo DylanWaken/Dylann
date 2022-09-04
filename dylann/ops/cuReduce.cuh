@@ -22,6 +22,10 @@ namespace dylann{
     cuTensorBase* softmaxLogOp(cuTensorBase* X, cuTensorBase* Y, int step);
     cuTensorBase* softmaxLogOpGrads(cuTensorBase* X, cuTensorBase* Y, int step);
     
+    //cross entropy loss operation
+    cuTensorBase* softmaxCEOp(cuTensorBase* X, cuTensorBase* Y, int step);
+    cuTensorBase* softmaxCEOpGrads(cuTensorBase* X, cuTensorBase* Y, int step);
+    
     struct GRAD_SOFTMAX : public GradTracker{
     public:
         cuTensorBase* X;
@@ -37,6 +41,16 @@ namespace dylann{
         int step;
         
         GRAD_SOFTMAX_LOG(cuTensorBase* X, int step) : X(X), step(step){}
+        void backwardCalc(cuTensorBase* Y) override;
+    };
+    
+    struct GRAD_SOFTMAX_CE : public GradTracker{
+    public:
+        cuTensorBase* X;
+        int step;
+        
+        // a - Y
+        GRAD_SOFTMAX_CE(cuTensorBase* X, int step) : X(X), step(step){}
         void backwardCalc(cuTensorBase* Y) override;
     };
 }

@@ -236,7 +236,25 @@ namespace dylann{
         return X;
     }
     
+    cuTensorBase* softmaxCEOp(cuTensorBase* X, cuTensorBase* Y, int step){
+        return softmaxOp(X, Y, step);
+    }
     
+    cuTensorBase* softmaxCEOpGrads(cuTensorBase* X, cuTensorBase* Y, int step){
+        float af = 1.0f, bf = -1.0f;
+    
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &bf,
+                Y->desc.cudnnDesc,
+                Y->grad->data,
+                &af,
+                X->desc.cudnnDesc,
+                X->grad->data
+                ))
+                
+        return X;
+    }
     
     void GRAD_SOFTMAX::backwardCalc(cuTensorBase *Y) {
         softmaxOpGrads(X, Y, step);
@@ -244,5 +262,9 @@ namespace dylann{
     
     void GRAD_SOFTMAX_LOG::backwardCalc(cuTensorBase *Y) {
         softmaxLogOpGrads(X, Y, step);
+    }
+    
+    void GRAD_SOFTMAX_CE::backwardCalc(cuTensorBase *Y) {
+        softmaxCEOpGrads(X, Y, step);
     }
 }

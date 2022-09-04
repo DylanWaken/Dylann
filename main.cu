@@ -14,7 +14,7 @@ int main() {
     cudaMemcpy(Y.gradPtr(), grads, sizeof(float) * 6, cudaMemcpyHostToDevice);
     
     softmaxOp(X.impl, Y.impl, 2);
-    softmaxOpGrads(X.impl, Y.impl, 2);
+    softmaxCEOpGrads(X.impl, Y.impl, 2);
     
     Y.print();
     X.print();
