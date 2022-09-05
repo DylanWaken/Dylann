@@ -76,6 +76,8 @@ namespace dylann {
                 ))
         
         cudnnDestroyPoolingDescriptor(poolDesc);
+        
+        return X;
     }
     
     cuTensorBase *avgPoolOp(cuTensorBase* X, cuTensorBase* Y, int rangeH, int rangeW,
@@ -149,6 +151,8 @@ namespace dylann {
         ))
     
         cudnnDestroyPoolingDescriptor(poolDesc);
+        
+        return X;
     }
     
     cuTensorBase *globalAvgPoolOp(cuTensorBase* X, cuTensorBase* Y){
@@ -220,6 +224,8 @@ namespace dylann {
         ))
     
         cudnnDestroyPoolingDescriptor(poolDesc);
+        
+        return X;
     }
     
     void GRAD_MAXPOOL::backwardCalc(cuTensorBase *Y) {

@@ -272,6 +272,8 @@ namespace dylann{
     
         //run gradients for biases
         cudaMemcpy(B->grad->data, Y->grad->data, B->grad->memSize, cudaMemcpyDeviceToHost);
+        
+        return Y;
     }
     
     void GRAD_LINEAR::backwardCalc(cuTensorBase *Y) {

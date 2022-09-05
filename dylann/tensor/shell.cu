@@ -64,6 +64,8 @@ namespace dylann{
         
         //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
     }
     
     cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step){
@@ -74,6 +76,8 @@ namespace dylann{
         
         //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
     }
     
     cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step){
@@ -84,6 +88,8 @@ namespace dylann{
         
         //give B the access to push grad backward into A
         X.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
     }
     
     //--------------------------------------------------------------------------------
