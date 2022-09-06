@@ -133,8 +133,4 @@ namespace dylann {
         cudaDeviceSynchronize();
         assertCuda(__FILE__, __LINE__);
     }
-    
-    void GRAD_CONCAT_CHANNEL::backwardCalc(cuTensorBase *current) {
-        concatChannelOpGrads(current, Xs, inputCount);
-    }
 } // dylann

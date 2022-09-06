@@ -430,28 +430,4 @@ namespace dylann{
         cudnnDestroyActivationDescriptor(clippedReluDesc);
         return X;
     }
-    
-    void GRAD_RELU::backwardCalc(dylann::cuTensorBase *Y) {
-        reluOpGrads(X, Y);
-    }
-    
-    void GRAD_SIGMOID::backwardCalc(dylann::cuTensorBase *Y) {
-        sigmoidOpGrads(X, Y);
-    }
-    
-    void GRAD_TANH::backwardCalc(dylann::cuTensorBase *Y) {
-        tanhOpGrads(X, Y);
-    }
-    
-    void GRAD_ELU::backwardCalc(dylann::cuTensorBase *Y) {
-        eluOpGrads(X, Y, alpha);
-    }
-    
-    void GRAD_SWISH::backwardCalc(dylann::cuTensorBase *Y) {
-        swishOpGrads(X, Y, beta);
-    }
-    
-    void GRAD_CLIPPED_RELU::backwardCalc(dylann::cuTensorBase *Y) {
-        clippedReluOpGrads(X, Y, threshold);
-    }
 }

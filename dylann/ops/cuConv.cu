@@ -190,8 +190,4 @@ namespace dylann{
         cudnnDestroyConvolutionDescriptor(convDesc);
         return X;
     }
-    
-    void GRAD_CONV2D::backwardCalc(cuTensorBase *Y) {
-        conv2dOpGrads(X, W, B, Y, padH, padW, strideH, strideW, dilationH, dilationW);
-    }
 }

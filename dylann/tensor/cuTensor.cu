@@ -9,23 +9,11 @@
 namespace dylann{
     cuTensor cuTensor::operator+=(cuTensor& A) {
         addOp(this->impl, A.impl, 1, 1);
-        GradTracker* t1 = new GRAD_ADD_A(1);
-        this->gradStack.emplace(this,t1);
-        
-        //Tensor “A” here means the tensor B in the original addOp operation
-        GradTracker* t2 = new GRAD_ADD_B(1, A.impl);
-        this->gradStack.emplace(&A, t2);
         return *this;
     }
     
     cuTensor cuTensor::operator-=(cuTensor &other) {
         addOp(this->impl, other.impl, 1, -1);
-        GradTracker* t1 = new GRAD_ADD_A(1);
-        this->gradStack.emplace(this, t1);
-        
-        //Tensor “A” here means the tensor B in the original addOp operation
-        GradTracker* t2 = new GRAD_ADD_B(-1, other.impl);
-        this->gradStack.emplace(&other, t2);
         return *this;
     }
     
@@ -139,36 +127,5 @@ namespace dylann{
         }
         
         cudaFreeHost(view);
-    }
-    
-    //a recursive funtion that loops through the entire network
-    void cuTensor::backwardRecur(uint64_t uuid){
-        if (!impl->desc.isAllocated) return;
-        if (gradStack.empty()) return;
-        
-        //check is the key matches
-        if (uuid != impl->desc.gradSrcUuid
-            && uuid != impl->desc.uuid) return;
-    
-        cudaSetDevice(impl->data->deviceID);
-        while (!gradStack.empty()) {
-            auto tracker = gradStack.top();
-            gradStack.pop();
-            tracker.b->backwardCalc(impl);
-            tracker.a->backwardRecur(impl->desc.uuid);
-        }
-    }
-    
-    void cuTensor::backward() {
-        if (!impl->desc.isAllocated) return;
-        if (gradStack.empty()) return;
-    
-        cudaSetDevice(impl->data->deviceID);
-        while (!gradStack.empty()) {
-            auto tracker = gradStack.top();
-            gradStack.pop();
-            tracker.b->backwardCalc(impl);
-            tracker.a->backwardRecur(impl->desc.uuid); //call the backwardCalc function recursively
-        }
     }
 }

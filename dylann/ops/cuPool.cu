@@ -227,16 +227,4 @@ namespace dylann {
         
         return X;
     }
-    
-    void GRAD_MAXPOOL::backwardCalc(cuTensorBase *Y) {
-        maxPoolOpGrads(X, Y, rangeH, rangeW, padH, padW, strideH, strideW);
-    }
-    
-    void GRAD_AVGPOOL::backwardCalc(cuTensorBase *Y) {
-        avgPoolOpGrads(X, Y, rangeH, rangeW, padH, padW, strideH, strideW);
-    }
-    
-    void GRAD_GLOBALAVGPOOL::backwardCalc(cuTensorBase *Y) {
-        globalAvgPoolOpGrads(X, Y);
-    }
 } // dylann

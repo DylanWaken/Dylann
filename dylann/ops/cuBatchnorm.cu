@@ -97,8 +97,4 @@ namespace dylann {
                 
         return X;
     }
-    
-    void GRAD_BATCHNORM::backwardCalc(cuTensorBase *Y) {
-        batchnormOpGrads(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
-    }
 } // dylann

@@ -23,33 +23,21 @@ namespace dylann{
                        A->data->data))
         return A;
     }
-    
-    cuTensorBase* addOpGradA(cuTensorBase* A, float alpha){
-        assert(A->desc.withGrad);
-        cudaSetDevice(A->data->deviceID);
-    
-        checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    A->desc.cudnnDesc,
-                                    A->grad->data,
-                                    &alpha))
-                                    
-        return A;
-    }
-    
-    cuTensorBase* addOpGradB(cuTensorBase* A, cuTensorBase* B, float beta){
-        assert(B->desc.withGrad);
-        cudaSetDevice(B->data->deviceID);
+
+    cuTensorBase* addOpGrad(cuTensorBase* Y, cuTensorBase* X, float beta){
+        assert(X->desc.withGrad);
+        cudaSetDevice(X->data->deviceID);
     
         float a = 1.0f;
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                                   &beta,
-                                  A->desc.cudnnDesc,
-                                  A->grad->data,
+                                  Y->desc.cudnnDesc,
+                                  Y->grad->data,
                                   &a,
-                                  B->desc.cudnnDesc,
-                                  B->grad->data))
+                                  X->desc.cudnnDesc,
+                                  X->grad->data))
                                   
-        return B;
+        return X;
     }
     
     cuTensorBase* scale(cuTensorBase* A, float alpha){

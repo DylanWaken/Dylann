@@ -5,7 +5,6 @@
 #ifndef DYLANN_CUACTIVATION_CUH
 #define DYLANN_CUACTIVATION_CUH
 
-#include "cuTensorOpGrads.cuh"
 #include "cuTensorOps.cuh"
 
 namespace dylann{
@@ -38,58 +37,6 @@ namespace dylann{
     cuTensorBase* clippedReluOp(cuTensorBase* X, float threshold);
     cuTensorBase* clippedReluOp(cuTensorBase* X, cuTensorBase* Y, float threshold);
     cuTensorBase* clippedReluOpGrads(cuTensorBase* X, cuTensorBase* Y, float threshold);
-    
-    
-    struct GRAD_RELU : public GradTracker{
-    public:
-        cuTensorBase* X;
-        explicit GRAD_RELU(cuTensorBase* X) : X(X){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
-    
-    struct GRAD_SIGMOID : public GradTracker{
-    public:
-        cuTensorBase* X;
-        explicit GRAD_SIGMOID(cuTensorBase* X) : X(X){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
-    
-    struct GRAD_TANH : public GradTracker{
-    public:
-        cuTensorBase* X;
-        explicit GRAD_TANH(cuTensorBase* X) : X(X){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
-    
-    struct GRAD_ELU : public GradTracker{
-    public:
-        cuTensorBase* X;
-        float alpha;
-        GRAD_ELU(cuTensorBase* X, float alpha) : X(X), alpha(alpha){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
-    
-    struct GRAD_SWISH : public GradTracker{
-    public:
-        cuTensorBase* X;
-        float beta;
-        GRAD_SWISH(cuTensorBase* X, float beta) : X(X), beta(beta){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
-    
-    struct GRAD_CLIPPED_RELU : public GradTracker{
-    public:
-        cuTensorBase* X;
-        float threshold;
-        GRAD_CLIPPED_RELU(cuTensorBase* X, float threshold) : X(X), threshold(threshold){}
-        
-        void backwardCalc(dylann::cuTensorBase *Y) override;
-    };
 }
 
 #endif //DYLANN_CUACTIVATION_CUH

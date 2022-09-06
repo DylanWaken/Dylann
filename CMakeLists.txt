@@ -36,8 +36,6 @@ add_executable(Dylann main.cu
 
         dylann/ops/cuTensorOps.cu
         dylann/ops/cuTensorOps.cuh
-        dylann/ops/cuTensorOpGrads.cuh
-        dylann/ops/cuTensorOpGrads.cu
         dylann/tensor/cuTensor.cu
         dylann/tensor/cuTensor.cuh
         dylann/tensor/shell.cu

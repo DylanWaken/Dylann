@@ -7,31 +7,16 @@
 
 #include <stack>
 #include "cuTensorBase.cuh"
-#include "../ops/cuTensorOpGrads.cuh"
 #include "../ops/cuTensorOps.cuh"
-
 
 using namespace std;
 
 namespace dylann{
     
-    template<typename A, typename B>
-    struct Pair{
-    public:
-        A a;
-        B b;
-        
-        Pair(A a, B b):a(a), b(b){}
-    };
-    
     //all functions for tensor is here
     struct cuTensor{
     public:
         cuTensorBase* impl;
-        
-        //the gradient stack for this tensor (for autograd)
-        //<cuTensor src, GradTracker operation_label>
-        stack<Pair<cuTensor*, GradTracker*>> gradStack;
         
         template<cudnnDataType_t dtype>
         static cuTensor declare(shape4 dims){;
@@ -113,10 +98,6 @@ namespace dylann{
         
         //debug
         void print() const;
-        
-        //grad backwardCalc
-        void backward();
-        void backwardRecur(uint64_t uuid);
         
         //operators
         cuTensor operator+=(cuTensor& other);

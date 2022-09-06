@@ -255,16 +255,4 @@ namespace dylann{
                 
         return X;
     }
-    
-    void GRAD_SOFTMAX::backwardCalc(cuTensorBase *Y) {
-        softmaxOpGrads(X, Y, step);
-    }
-    
-    void GRAD_SOFTMAX_LOG::backwardCalc(cuTensorBase *Y) {
-        softmaxLogOpGrads(X, Y, step);
-    }
-    
-    void GRAD_SOFTMAX_CE::backwardCalc(cuTensorBase *Y) {
-        softmaxCEOpGrads(X, Y, step);
-    }
 }

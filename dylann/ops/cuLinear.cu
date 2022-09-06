@@ -275,8 +275,4 @@ namespace dylann{
         
         return Y;
     }
-    
-    void GRAD_LINEAR::backwardCalc(cuTensorBase *Y) {
-        linearOpGrads(W, B, X, Y);
-    }
 }

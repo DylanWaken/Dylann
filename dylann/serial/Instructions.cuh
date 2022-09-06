@@ -6,7 +6,6 @@
 #define DYLANN_INSTRUCTIONS_CUH
 
 #include "../ops/cuTensorOps.cuh"
-#include "../ops/cuTensorOpGrads.cuh"
 #include "../ops/cuReduce.cuh"
 #include "../ops/cuActivation.cuh"
 #include "../ops/cuConv.cuh"
