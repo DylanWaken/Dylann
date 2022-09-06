@@ -34,34 +34,32 @@ namespace dylann{
         stack<Pair<cuTensor*, GradTracker*>> gradStack;
         
         template<cudnnDataType_t dtype>
-        static cuTensor declare(shape4 dims){
-            auto* data = new cuTensorBase(dims, dtype);
-            return cuTensor{data};
+        static cuTensor declare(shape4 dims){;
+            return cuTensor{cuTensorBase::create(dims, dtype)};
         }
         
         template<cudnnDataType_t dtype, typename... Args>
         static cuTensor declare(Args... args){
-            auto* data = new cuTensorBase(shape4(args...), dtype);
-            return cuTensor{data};
+            return cuTensor{cuTensorBase::create(shape4(args...), dtype)};
         }
         
         cuTensor instantiate(int deviceID){
-            impl->data = new TStorage(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
-            impl->grad = new TStorage(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
+            impl->data = TStorage::create(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
+            impl->grad = TStorage::create(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
             impl->desc.isAllocated = true;
             impl->desc.withGrad = true;
             return *this;
         }
         
         cuTensor instantiateData(int deviceID){
-            impl->data = new TStorage(deviceID, impl->desc.numel * impl->desc.elementSize);
+            impl->data = TStorage::create(deviceID, impl->desc.numel * impl->desc.elementSize);
             impl->desc.isAllocated = true;
             return *this;
         }
         
         cuTensor instantiateGrad(){
             assert(impl->desc.isAllocated);
-            impl->grad = new TStorage(impl->data->deviceID,
+            impl->grad = TStorage::create(impl->data->deviceID,
                                       impl->desc.numel * impl->desc.elementSize);
             impl->desc.withGrad = true;
             return *this;

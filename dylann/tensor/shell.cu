@@ -92,6 +92,40 @@ namespace dylann{
         return Y;
     }
     
+    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor& Y, cuTensor& XGradTarget){
+        cuTensorBase** XsImpl;
+        cudaMallocHost(&XsImpl, sizeof(cuTensorBase*) * inputCount);
+        for(int i = 0; i < inputCount; i++){
+            XsImpl[i] = Xs[i].impl;
+        }
+        concatChannelOp(XsImpl, inputCount, Y.impl);
+        
+        GradTracker* t1 = new GRAD_CONCAT_CHANNEL(XsImpl, inputCount, Y.impl);
+        Y.gradStack.emplace(&XGradTarget,t1);
+        
+        //give B the access to push grad backward into A
+        XGradTarget.impl->desc.gradSrcUuid = Y.desc().uuid;
+        
+        return Y;
+    }
+    
+    cuTensor channelConcat(std::initializer_list<cuTensor> inputs, cuTensor& Y, cuTensor& XGradTarget){
+        cuTensorBase** XsImpl;
+        cudaMallocHost(&XsImpl, sizeof(cuTensorBase*) * inputs.size());
+        for(int i = 0; i < inputs.size(); i++){
+            XsImpl[i] = inputs.begin()[i].impl;
+        }
+        concatChannelOp(XsImpl, (int) inputs.size(), Y.impl);
+    
+        GradTracker* t1 = new GRAD_CONCAT_CHANNEL(XsImpl, (int) inputs.size(), Y.impl);
+        Y.gradStack.emplace(&XGradTarget,t1);
+    
+        //give B the access to push grad backward into A
+        XGradTarget.impl->desc.gradSrcUuid = Y.desc().uuid;
+    
+        return Y;
+    }
+    
     //--------------------------------------------------------------------------------
     //Activations
     

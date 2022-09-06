@@ -10,6 +10,9 @@
 #include "../ops/cuConv.cuh"
 #include "../ops/cuActivation.cuh"
 #include "../ops/cuReduce.cuh"
+#include "../ops/cuConcat.cuh"
+#include "../ops/cuBatchnorm.cuh"
+#include "../ops/cuPool.cuh"
 
 
 namespace dylann{
@@ -29,6 +32,16 @@ namespace dylann{
     cuTensor softmax(cuTensor& X, cuTensor& Y, int step);
     cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step);
     cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step);
+    
+    /**
+     * @param Xs: input tensors
+     * @param Xs
+     * @param Y
+     * @param XGradTarget The main tensor that the chained backward computation will continue on
+     * @return
+     */
+    cuTensor channelConcat(std::initializer_list<cuTensor> Xs, cuTensor& Y, cuTensor& XGradTarget);
+    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor& Y, cuTensor& XGradTarget);
     
     //Activations
     cuTensor relu(cuTensor& X);

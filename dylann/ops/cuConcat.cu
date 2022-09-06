@@ -14,10 +14,9 @@ namespace dylann {
         unsigned int optSize = Y->desc.sizes.size / n;
         unsigned int cIndex = id % optSize;
         unsigned int nIndex = id / optSize;
-    
+
         cuTensorBase* src;
         unsigned int pId = 0;
-    
         unsigned int shift = 0;
         #pragma unroll
         while(shift + (Xs[pId]->desc.sizes.size / n) <= cIndex){
@@ -25,11 +24,11 @@ namespace dylann {
             pId++;
             if(pId >= paramCount) return;
         }
-    
+
         src = Xs[pId];
         unsigned int srcIndex = nIndex * (src->desc.sizes.size / n) + (cIndex - shift);
     
-        ((T*)Y->data->data)[id] =  ((T*)src->data->data)[srcIndex];
+        ((T*)Y->data->data)[id] = ((T*)src->data->data)[srcIndex];
     }
     
     
@@ -46,8 +45,8 @@ namespace dylann {
             c+= Xs[id]->desc.sizes.c;
         }
         assert(c == Y->desc.sizes.c);
-    
-        unsigned int block = 512;
+
+        unsigned int block = 256;
         unsigned int grid = (Y->desc.sizes.size + block - 1) / block;
         switch (Y->desc.dType) {
             case CUDNN_DATA_FLOAT:
@@ -71,7 +70,7 @@ namespace dylann {
             default:
                 break;
         }
-        
+
         cudaDeviceSynchronize();
         assertCuda(__FILE__, __LINE__);
         return Y;

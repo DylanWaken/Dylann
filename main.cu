@@ -6,16 +6,16 @@
 using namespace dylann;
 
 int main() {
-    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0,3,2).randNormal(1,0);
-    auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0,3,2);
-    randNormalGradOp(Y.impl, 0.5,0);
+    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 4, 4, 4);
+    auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 5, 4, 4).randNormal(1,0);
+    auto Z = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 9, 4, 4);
     
-    float grads[] = { 1, 0 , 0, 1, 1, 0};
-    cudaMemcpy(Y.gradPtr(), grads, sizeof(float) * 6, cudaMemcpyHostToDevice);
+    cuTensorBase** Xs;
+    cudaMallocHost(&Xs, sizeof(cuTensorBase*) * 2);
+    Xs[0] = X.impl;
+    Xs[1] = Y.impl;
     
-    softmaxOp(X.impl, Y.impl, 2);
-    softmaxCEOpGrads(X.impl, Y.impl, 2);
+    concatChannelOp(Xs, 2, Z.impl);
     
-    Y.print();
-    X.print();
+    Z.print();
 }

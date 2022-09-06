@@ -116,7 +116,7 @@ namespace dylann {
         bool isAllocated = false;
         bool withGrad = false;
         
-        TDescriptor(shape4 dims, cudnnDataType_t dType) : sizes(dims) {
+        static TDescriptor* create(shape4 dims, cudnnDataType_t dType) {
             //create the global cudnn Handle
             if(cudnnHdlG == nullptr){
                 cudnnCreate(&cudnnHdlG);
@@ -132,24 +132,30 @@ namespace dylann {
                 cudaMalloc(&cudnnWorkspaceG, 1024*1024);
             }
             
-            this->dType = dType;
+            TDescriptor* desc;
+            cudaMallocHost(&desc, sizeof(TDescriptor));
+    
+            desc->dType = dType;
             
             //we assign a unique id to each tensor
-            this->uuid = globalTensorCount;
+            desc->uuid = globalTensorCount;
             globalTensorCount++;
             
             //initialize the cudnn tensor cudnnDesc
-            cudnnCreateTensorDescriptor(&cudnnDesc);
-            cudnnSetTensor4dDescriptor(cudnnDesc,
+            cudnnCreateTensorDescriptor(&desc->cudnnDesc);
+            cudnnSetTensor4dDescriptor(desc->cudnnDesc,
                                        CUDNN_TENSOR_NCHW,
                                        dType,
                                        (int) dims.n,
                                        (int) dims.c,
                                        (int) dims.h,
                                        (int) dims.w);
+    
+            desc->numel = dims.size;
+            desc->elementSize = sizeOfDtype(dType);
+            desc->sizes = dims;
             
-            this->numel = dims.size;
-            this->elementSize = sizeOfDtype(dType);
+            return desc;
         }
         
         void reshape(shape4 dims){
@@ -172,11 +178,20 @@ namespace dylann {
         
         TStorage() = default;
         
-        TStorage(int deviceID, uint64_t memSize) : deviceID(deviceID), memSize(memSize){
+        static TStorage* create(int deviceID, uint64_t memSize){
+            
+            TStorage* storage;
+            cudaMallocHost(&storage, sizeof(TStorage));
+            
+            storage->deviceID = deviceID;
+            storage->memSize = memSize;
+            
             cudaSetDevice(deviceID);
-            cudaMalloc(&this->data, memSize);
-            cudaMemset(this->data, 0, memSize);
+            cudaMalloc(&storage->data, memSize);
+            cudaMemset(storage->data, 0, memSize);
             assertCuda(__FILE__, __LINE__);
+            
+            return storage;
         }
     };
     
@@ -186,9 +201,14 @@ namespace dylann {
         TStorage* data{};
         TStorage* grad{};
         
-        cuTensorBase(shape4 dims, cudnnDataType_t dType) : desc(dims, dType){}
-        
-        explicit cuTensorBase(cuTensorBase* other) : desc(other->desc){}
+        static cuTensorBase* create(shape4 dims, cudnnDataType_t dType){
+            cuTensorBase* tensor;
+            cudaMallocHost(&tensor, sizeof(cuTensorBase));
+            
+            tensor->desc = *TDescriptor::create(dims, dType);
+            
+            return tensor;
+        }
     };
     
     
