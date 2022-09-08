@@ -13,6 +13,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <vector>
 
 
 #define checkCUDNN(expression){                              \
@@ -44,7 +45,8 @@ extern cublasHandle_t cublasHdlG;
 extern void* cudnnWorkspaceG;
 
 namespace dylann {
-    extern uint64_t globalTensorCount;
+    extern uint64_t* tensorIDSeqG;
+    extern bool onModelRegisterG;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype);
     
@@ -137,9 +139,11 @@ namespace dylann {
     
             desc->dType = dType;
             
-            //we assign a unique id to each tensor
-            desc->uuid = globalTensorCount;
-            globalTensorCount++;
+            //we assign a unique id to each tensor in the model
+            if(onModelRegisterG) {
+                desc->uuid = *tensorIDSeqG;
+                (*tensorIDSeqG)++;
+            }
             
             //initialize the cudnn tensor cudnnDesc
             cudnnCreateTensorDescriptor(&desc->cudnnDesc);
@@ -200,12 +204,14 @@ namespace dylann {
         TDescriptor desc;
         TStorage* data{};
         TStorage* grad{};
+        static vector<cuTensorBase*>* tensorPoolG;
         
         static cuTensorBase* create(shape4 dims, cudnnDataType_t dType){
             cuTensorBase* tensor;
             cudaMallocHost(&tensor, sizeof(cuTensorBase));
             
             tensor->desc = *TDescriptor::create(dims, dType);
+            if(onModelRegisterG) tensorPoolG->push_back(tensor);
             
             return tensor;
         }

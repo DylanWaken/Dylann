@@ -9,7 +9,8 @@ cublasHandle_t cublasHdlG;
 void* cudnnWorkspaceG;
 
 namespace dylann {
-    uint64_t globalTensorCount = 0;
+    uint64_t* tensorIDSeqG;
+    bool onModelRegisterG = false;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype){
         switch(dtype){

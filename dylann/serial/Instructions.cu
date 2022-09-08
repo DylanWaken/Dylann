@@ -6,7 +6,7 @@
 
 namespace dylann {
     void ADD::run() {
-        addOp(params[A], params[B], alpha, beta);
+        addOp((*params)[A], (*params)[B], alpha, beta);
     }
     
     void ADD::encodeParams(unsigned char *file,size_t &offset) {
@@ -26,7 +26,7 @@ namespace dylann {
     }
     
     void SCALE::run() {
-        scale(params[A], alpha);
+        scale((*params)[A], alpha);
     }
     
     void SCALE::encodeParams(unsigned char *file,size_t &offset) {
@@ -42,7 +42,7 @@ namespace dylann {
     }
     
     void LINEAR::run() {
-        linearOp(params[W], params[B], params[X], params[Y]);
+        linearOp((*params)[W], (*params)[B], (*params)[X], (*params)[Y]);
     }
     
     void LINEAR::encodeParams(unsigned char *file,size_t &offset) {
@@ -62,7 +62,7 @@ namespace dylann {
     }
     
     void CONV2D::run() {
-        conv2dOp(params[W], params[B], params[X], params[Y], padH, padW, strideH, strideW, dilationH, dilationW);
+        conv2dOp((*params)[X], (*params)[W], (*params)[B], (*params)[Y], padH, padW, strideH, strideW, dilationH, dilationW);
     }
     
     void CONV2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -95,7 +95,7 @@ namespace dylann {
     
     
     void MAXPOOL2D::run() {
-        maxPoolOp(params[X], params[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        maxPoolOp((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
     void MAXPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -123,7 +123,7 @@ namespace dylann {
     }
     
     void AVGPOOL2D::run() {
-        avgPoolOp(params[X], params[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        avgPoolOp((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
     void AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -151,7 +151,7 @@ namespace dylann {
     }
     
     void SOFTMAX::run() {
-        softmaxOp(params[X], params[Y], step);
+        softmaxOp((*params)[X], (*params)[Y], step);
     }
     
     void SOFTMAX::encodeParams(unsigned char *file,size_t &offset) {
@@ -170,11 +170,11 @@ namespace dylann {
     
     void BATCHNROM::run() {
         if (train) {
-            batchnormOp(params[X], params[Y], params[mean],
-                        params[var], params[gamma], params[beta], eps, expAvgFactor);
+            batchnormOp((*params)[X], (*params)[Y], (*params)[mean],
+                        (*params)[var], (*params)[gamma], (*params)[beta], eps, expAvgFactor);
         }else{
-            batchnormInferOp(params[X], params[Y], params[mean],
-                             params[var], params[gamma], params[beta], eps);
+            batchnormInferOp((*params)[X], (*params)[Y], (*params)[mean],
+                             (*params)[var], (*params)[gamma], (*params)[beta], eps);
         }
     }
     
@@ -203,7 +203,7 @@ namespace dylann {
     }
     
     void SOFTMAX_LOG::run() {
-        softmaxLogOp(params[X], params[Y], step);
+        softmaxLogOp((*params)[X], (*params)[Y], step);
     }
     
     void SOFTMAX_LOG::encodeParams(unsigned char *file,size_t &offset) {
@@ -223,9 +223,9 @@ namespace dylann {
     void CONCAT_CHANNEL::run() {
         auto** inputs = (cuTensorBase**)calloc(paramCount, sizeof(cuTensorBase*));
         for (int i = 0; i < paramCount; i++) {
-            inputs[i] = params[X[i]];
+            inputs[i] = (*params)[X[i]];
         }
-        concatChannelOp(inputs, paramCount, params[Y]);
+        concatChannelOp(inputs, paramCount, (*params)[Y]);
     }
     
     void CONCAT_CHANNEL::encodeParams(unsigned char *file,size_t &offset) {

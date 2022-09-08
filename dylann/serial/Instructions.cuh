@@ -41,11 +41,11 @@ namespace dylann {
         
         //control train or inference
         bool train = true;
-        cuTensorBase** params{};
+        vector<cuTensorBase*>* params{};
         
         Operation(unsigned int opCode, unsigned int paramCount) : opCode(opCode), paramCount(paramCount) {}
         
-        void bind(cuTensorBase** pBase) {
+        void bind(vector<cuTensorBase*>* pBase) {
             this->params = pBase;
         }
         
