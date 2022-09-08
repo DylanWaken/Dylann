@@ -221,7 +221,7 @@ namespace dylann {
     }
     
     void CONCAT_CHANNEL::run() {
-        auto** inputs = (cuTensorBase**)calloc(paramCount, sizeof(cuTensorBase*));
+        auto** inputs = (cuTensorBase**)calloc(paramC, sizeof(cuTensorBase*));
         for (int i = 0; i < paramCount; i++) {
             inputs[i] = (*params)[X[i]];
         }
@@ -243,6 +243,144 @@ namespace dylann {
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
     }
+    
+    void DROPOUT::run() {
+        dropoutOp((*params)[X], (*params)[Y], rate);
+    }
+    
+    void DROPOUT::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = rate;
+        offset += sizeof(float);
+    }
+    
+    void FLATTEN::run() {
+        flattenOp((*params)[X], (*params)[Y]);
+    }
+    
+    void FLATTEN::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+    }
+    
+    void RELU::run() {
+        reluOp((*params)[X], (*params)[Y]);
+    }
+    
+    void RELU::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+    }
+    
+    void SIGMOID::run() {
+        sigmoidOp((*params)[X], (*params)[Y]);
+    }
+    
+    void SIGMOID::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+    }
+    
+    void TANH::run() {
+        tanhOp((*params)[X], (*params)[Y]);
+    }
+    
+    void TANH::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+    }
+    
+    void ELU::run() {
+        eluOp((*params)[X], (*params)[Y], alpha);
+    }
+    
+    void ELU::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = alpha;
+        offset += sizeof(float);
+    }
+    
+    void SWISH::run() {
+        swishOp((*params)[X], (*params)[Y], beta);
+    }
+    
+    void SWISH::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = beta;
+        offset += sizeof(float);
+    }
+    
+    void CLIPPED_RELU::run() {
+        clippedReluOp((*params)[X], (*params)[Y], threshold);
+    }
+    
+    void CLIPPED_RELU::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = threshold;
+        offset += sizeof(float);
+    }
+    
+    
     
     //EXTRACT
     //------------------------------------------------------
@@ -387,5 +525,121 @@ namespace dylann {
         
         auto* batchNorm = new BATCHNROM(X, Y, weight, bias, mean, var, eps, expAvgFactor);
         return batchNorm;
+    }
+    
+    SOFTMAX_LOG* extractSoftmaxLog(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        int axis = *(int*)(file + offset);
+        offset += sizeof(int);
+        
+        auto* softmaxLog = new SOFTMAX_LOG(X, Y, axis);
+        return softmaxLog;
+    }
+    
+    CONCAT_CHANNEL* extractConcatChannel(const unsigned char * file, size_t &offset){
+        int num = *(int*)(file + offset);
+        offset += sizeof(int);
+        TENSOR_PTR * X;
+        cudaMallocHost((void**)&X, num * sizeof(TENSOR_PTR));
+        for(int i = 0; i < num; i++){
+            X[i] = *(TENSOR_PTR*)(file + offset);
+            offset += sizeof(TENSOR_PTR);
+        }
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* concatChannel = new CONCAT_CHANNEL(X, Y, num);
+        return concatChannel;
+    }
+    
+    DROPOUT* extractDropout(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float ratio = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* dropout = new DROPOUT(X, Y, ratio);
+        return dropout;
+    }
+    
+    FLATTEN* extractFlatten(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* flatten = new FLATTEN(X, Y);
+        return flatten;
+    }
+    
+    RELU* extractRelu(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* relu = new RELU(X, Y);
+        return relu;
+    }
+    
+    SIGMOID* extractSigmoid(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* sigmoid = new SIGMOID(X, Y);
+        return sigmoid;
+    }
+    
+    TANH* extractTanh(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* tanh = new TANH(X, Y);
+        return tanh;
+    }
+    
+    ELU* extractElu(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float alpha = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* elu = new ELU(X, Y, alpha);
+        return elu;
+    }
+    
+    SWISH* extractSwish(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float beta = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* swish = new SWISH(X, Y, beta);
+        return swish;
+    }
+    
+    CLIPPED_RELU* extractClippedRelu(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float threshold = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* clippedRelu = new CLIPPED_RELU(X, Y, threshold);
+        return clippedRelu;
     }
 } // dylann

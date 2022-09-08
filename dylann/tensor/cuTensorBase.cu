@@ -10,6 +10,7 @@ void* cudnnWorkspaceG;
 
 namespace dylann {
     uint64_t* tensorIDSeqG;
+    uint64_t tensorIDGlobal;
     bool onModelRegisterG = false;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype){

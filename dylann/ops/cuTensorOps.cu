@@ -24,7 +24,7 @@ namespace dylann{
         return A;
     }
 
-    cuTensorBase* addOpGrad(cuTensorBase* Y, cuTensorBase* X,  float alpha, float beta){
+    cuTensorBase* addOpGrad(cuTensorBase* X, cuTensorBase* Y,  float alpha, float beta){
         assert(X->desc.withGrad);
         cudaSetDevice(X->data->deviceID);
         
@@ -68,6 +68,27 @@ namespace dylann{
         
         return A;
     }
+    
+    cuTensorBase* flattenOp(cuTensorBase* X, cuTensorBase* Y){
+        assertAllocated({X, Y});
+        assertOnSameDev({X, Y});
+        cudaSetDevice(X->data->deviceID);
+    
+        assert(X->desc.sizes.n == Y->desc.sizes.n);
+        assert(X->desc.sizes.size == Y->desc.sizes.size);
+    
+        cudaMemcpy(Y->data->data, X->data->data, X->data->memSize, cudaMemcpyDeviceToDevice);
+        assertCuda(__FILE__, __LINE__);
+        return Y;
+    };
+    
+    cuTensorBase* flattenOpGrad(cuTensorBase* X, cuTensorBase* Y){
+        cudaSetDevice(X->data->deviceID);
+        
+        cudaMemcpy(X->grad->data, Y->grad->data, X->grad->memSize, cudaMemcpyDeviceToDevice);
+        assertCuda(__FILE__, __LINE__);
+        return Y;
+    };
     
     //random fill with uniform distrib
     template<typename T>

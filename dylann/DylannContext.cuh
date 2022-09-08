@@ -7,9 +7,13 @@
 
 #include <vector>
 #include "serial/Instructions.cuh"
+#include "serial/GradInstructions.cuh"
 
 using namespace std;
 namespace dylann {
+    
+    //some definitions
+    map <TENSOR_PTR, cuTensorBase*>* cuTensorBase::tensorPoolG;
     
     /**
      * VERY IMPORTANT
@@ -22,8 +26,8 @@ namespace dylann {
      */
     class DylannBase {
     public:
-        vector<cuTensorBase*> tensors;
-        vector<cuTensorBase*> params;   //optimizers will be applied on these
+        map<TENSOR_PTR ,cuTensorBase*> tensors;
+        map<TENSOR_PTR ,cuTensorBase*> params;   //optimizers will be applied on these
         
         vector<Operation> forwardOps;
         vector<Operation> backwardOps;

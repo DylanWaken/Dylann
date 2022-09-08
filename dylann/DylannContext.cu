@@ -5,10 +5,15 @@
 #include "DylannContext.cuh"
 
 namespace dylann {
+    
+    DylannBase* engineContextG;
+    
     void initEngineContext(){
         cudaMallocHost(&engineContextG, sizeof(DylannBase));
         *tensorIDSeqG = engineContextG->tensorIDSeq;
         onModelRegisterG = engineContextG->regisMode;
+    
+        cuTensorBase::tensorPoolG = &engineContextG->tensors;
     }
     
     void beganModelRegister(){

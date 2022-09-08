@@ -37,6 +37,7 @@
 }
 
 #define CUDNN_WORKSPACE_SIZE_G 1024 * 1024
+typedef unsigned int TENSOR_PTR;
 
 using namespace std;
 using namespace io;
@@ -46,6 +47,7 @@ extern void* cudnnWorkspaceG;
 
 namespace dylann {
     extern uint64_t* tensorIDSeqG;
+    extern uint64_t tensorIDGlobal;
     extern bool onModelRegisterG;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype);
@@ -143,6 +145,9 @@ namespace dylann {
             if(onModelRegisterG) {
                 desc->uuid = *tensorIDSeqG;
                 (*tensorIDSeqG)++;
+            }else{
+                desc->uuid = tensorIDGlobal;
+                tensorIDGlobal++;
             }
             
             //initialize the cudnn tensor cudnnDesc
@@ -204,14 +209,14 @@ namespace dylann {
         TDescriptor desc;
         TStorage* data{};
         TStorage* grad{};
-        static vector<cuTensorBase*>* tensorPoolG;
+        static map<TENSOR_PTR ,cuTensorBase*>* tensorPoolG;
         
         static cuTensorBase* create(shape4 dims, cudnnDataType_t dType){
             cuTensorBase* tensor;
             cudaMallocHost(&tensor, sizeof(cuTensorBase));
             
             tensor->desc = *TDescriptor::create(dims, dType);
-            if(onModelRegisterG) tensorPoolG->push_back(tensor);
+            if(onModelRegisterG) tensorPoolG->insert({tensor->desc.uuid, tensor});
             
             return tensor;
         }
