@@ -45,7 +45,7 @@ add_executable(Dylann main.cu
         dylann/ops/cuConv.cu
         dylann/ops/cuConv.cuh
 
-        dylann/ops/cuActivation.cu dylann/ops/cuActivation.cuh dylann/Config.cuh dylann/ops/cuReduce.cu dylann/ops/cuReduce.cuh dylann/serial/Instructions.cu dylann/serial/Instructions.cuh dylann/ops/cuPool.cu dylann/ops/cuPool.cuh dylann/ops/cuBatchnorm.cu dylann/ops/cuBatchnorm.cuh dylann/ops/cuConcat.cu dylann/ops/cuConcat.cuh dylann/DylannContext.cu dylann/DylannContext.cuh dylann/ops/cuDropout.cu dylann/ops/cuDropout.cuh dylann/serial/GradInstructions.cu dylann/serial/GradInstructions.cuh)
+        dylann/ops/cuActivation.cu dylann/ops/cuActivation.cuh dylann/Config.cuh dylann/ops/cuReduce.cu dylann/ops/cuReduce.cuh dylann/serial/Instructions.cu dylann/serial/Instructions.cuh dylann/ops/cuPool.cu dylann/ops/cuPool.cuh dylann/ops/cuBatchnorm.cu dylann/ops/cuBatchnorm.cuh dylann/ops/cuConcat.cu dylann/ops/cuConcat.cuh dylann/DylannContext.cu dylann/DylannContext.cuh dylann/ops/cuDropout.cu dylann/ops/cuDropout.cuh dylann/serial/GradInstructions.cu dylann/serial/GradInstructions.cuh dylann/module/Module.cu dylann/module/Module.cuh)
 
 # target_link_libraries(Dylann ${TORCH_LIBRARIES} ${OpenCV_LIBS} ${TORCHVISION_DIR}/lib/torchvision.lib)
 include_directories(${CUDNN_PATH}/include)

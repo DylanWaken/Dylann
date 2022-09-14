@@ -28,6 +28,7 @@
 #define INS_DROPOUT 10
 #define INS_FLATTEN 11
 #define INS_GLOBAL_AVGPOOL 12
+#define INS_SOFTMAX_CE 13
 
 #define INS_RELU 100
 #define INS_SIGMOID 101
@@ -87,7 +88,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "ADD " << std::hex << A << " " << std::hex
+            cout << "ADD 0x" << std::hex << A << " 0x" << std::hex
             << B << " " << std::dec << alpha << " " << beta << endl;
         }
     };
@@ -109,7 +110,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "SCALE " << std::hex << A << " " << std::dec << alpha << endl;
+            cout << "SCALE 0x" << std::hex << A << " " << std::dec << alpha << endl;
         }
     };
     
@@ -132,7 +133,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "LINEAR " << std::hex << W << " " << B << " " << X << " " << Y << endl;
+            cout << "LINEAR 0x" << std::hex << W << " 0x" << B << " 0x" << X << " 0x" << Y << endl;
         }
     };
     
@@ -162,7 +163,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "CONV2D " << std::hex << W << " " << B << " " << X << " " << Y << " " << std::dec
+            cout << "CONV2D 0x" << std::hex << W << " 0x" << B << " 0x" << X << " 0x" << Y << " " << std::dec
             << strideH << " " << strideW << " " << padH << " " << padW << " " << dilationH << " " << dilationW << endl;
         }
     };
@@ -191,7 +192,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "MAXPOOL2D " << std::hex << X << " " << Y << " " << std::dec
+            cout << "MAXPOOL2D 0x" << std::hex << X << " 0x" << Y << " " << std::dec
             << kernelH << " " << kernelW << " " << strideH << " " << strideW << " " << padH << " " << padW << endl;
         }
     };
@@ -220,8 +221,29 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "AVGPOOL2D " << std::hex << X << " " << Y << " " << std::dec
+            cout << "AVGPOOL2D 0x" << std::hex << X << " 0x" << Y << " " << std::dec
             << kernelH << " " << kernelW << " " << strideH << " " << strideW << " " << padH << " " << padW << endl;
+        }
+    };
+    
+    struct GLOBAL_AVGPOOL2D : public Operation {
+    public:
+        TENSOR_PTR X;
+        TENSOR_PTR Y;
+        
+        GLOBAL_AVGPOOL2D(TENSOR_PTR X, TENSOR_PTR Y) :
+                Operation(INS_GLOBAL_AVGPOOL, 2), X(X), Y(Y) {}
+        
+        void run() override;
+        
+        void encodeParams(unsigned char * file, size_t &offset) override;
+        
+        size_t getEncodedSize() override {
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+        }
+        
+        void print() override {
+            cout << "GLOBAL_AVGPOOL2D 0x" << std::hex << X << " 0x" << Y << endl;
         }
     };
     
@@ -243,11 +265,33 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "SOFTMAX " << std::hex << X << " " << Y << " " << std::dec << step << endl;
+            cout << "SOFTMAX 0x" << std::hex << X << " 0x" << Y << " " << std::dec << step << endl;
         }
     };
     
-    struct BATCHNROM : public Operation {
+    struct SOFTMAX_CE : public Operation {
+    public:
+        TENSOR_PTR X;
+        TENSOR_PTR Y;
+        int step;
+    
+        SOFTMAX_CE(TENSOR_PTR X, TENSOR_PTR Y, int step) :
+        Operation(INS_SOFTMAX_CE, 3), X(X), Y(Y), step(step) {}
+    
+        void run() override;
+    
+        void encodeParams(unsigned char * file, size_t &offset) override;
+    
+        size_t getEncodedSize() override {
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+        }
+    
+        void print() override {
+            cout << "SOFTMAX " << std::hex << X << " 0x" << Y << " 0x" << std::dec << step << endl;
+        }
+    };
+    
+    struct BATCHNORM : public Operation {
     public:
         TENSOR_PTR X;
         TENSOR_PTR Y;
@@ -258,7 +302,7 @@ namespace dylann {
         float eps;
         float expAvgFactor;
         
-        BATCHNROM(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
+        BATCHNORM(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
                   TENSOR_PTR var, float eps, float expAvgFactor) :
                 Operation(INS_BATCHNROM, 8), X(X), Y(Y), gamma(gamma), beta(beta),
                 mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor) {}
@@ -272,7 +316,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "BATCHNROM " << std::hex << X << " " << Y << " " << gamma << " " << beta << " " << mean << " " << var << " " << std::dec
+            cout << "BATCHNORM 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " << std::dec
             << eps << " " << expAvgFactor << endl;
         }
     };
@@ -295,7 +339,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "SOFTMAX_LOG " << std::hex << X << " " << Y << " " << std::dec << step << endl;
+            cout << "SOFTMAX_LOG 0x" << std::hex << X << " 0x" << Y << " 0x" << std::dec << step << endl;
         }
     };
     
@@ -327,7 +371,7 @@ namespace dylann {
         void print() override {
             cout << "CONCAT_CHANNEL ";
             for (auto i = 0 ; i < paramC; i++) {
-                cout << std::hex << X[i] << " ";
+                cout << "0x" << std::hex << X[i] << " ";
             }
             cout << std::hex << Y << " " << std::dec << paramC << endl;
         }
@@ -355,7 +399,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "DROPOUT " << std::hex << X << " " << Y << " " << std::dec << rate << endl;
+            cout << "DROPOUT 0x" << std::hex << X << " 0x" << Y << " " << std::dec << rate << endl;
         }
     };
     
@@ -376,7 +420,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "FLATTEN " << std::hex << X << " " << Y << endl;
+            cout << "FLATTEN 0x" << std::hex << X << " 0x" << Y << endl;
         }
     };
     
@@ -400,7 +444,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "RELU " << std::hex << X << " " << Y << endl;
+            cout << "RELU 0x" << std::hex << X << " 0x" << Y << endl;
         }
     };
     
@@ -421,7 +465,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "SIGMOID " << std::hex << X << " " << Y << endl;
+            cout << "SIGMOID 0x" << std::hex << X << " 0x" << Y << endl;
         }
     };
     
@@ -442,7 +486,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "TANH " << std::hex << X << " " << Y << endl;
+            cout << "TANH 0x" << std::hex << X << " 0x" << Y << endl;
         }
     };
     
@@ -464,7 +508,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "ELU " << std::hex << X << " " << Y << " " << std::dec << alpha << endl;
+            cout << "ELU 0x" << std::hex << X << " 0x" << Y << " " << std::dec << alpha << endl;
         }
     };
     
@@ -486,7 +530,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "SWISH " << std::hex << X << " " << Y << " " << std::dec << beta << endl;
+            cout << "SWISH 0x" << std::hex << X << " 0x" << Y << " " << std::dec << beta << endl;
         }
     };
     
@@ -508,7 +552,7 @@ namespace dylann {
         }
         
         void print() override {
-            cout << "CLIPPED_RELU " << std::hex << X << " " << Y << " " << std::dec << threshold << endl;
+            cout << "CLIPPED_RELU 0x" << std::hex << X << " 0x" << Y << " " << std::dec << threshold << endl;
         }
     };
     
@@ -525,9 +569,11 @@ namespace dylann {
     
     AVGPOOL2D* extractAvgPool2D(const unsigned char * file, size_t &offset);
     
+    GLOBAL_AVGPOOL2D* extractGlobalAvgPool2D(const unsigned char * file, size_t &offset);
+    
     SOFTMAX* extractSoftmax(const unsigned char * file, size_t &offset);
     
-    BATCHNROM* extractBatchNorm(const unsigned char * file, size_t &offset);
+    BATCHNORM* extractBatchNorm(const unsigned char * file, size_t &offset);
     
     SOFTMAX_LOG* extractSoftmaxLog(const unsigned char * file, size_t &offset);
     

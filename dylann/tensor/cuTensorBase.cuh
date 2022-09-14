@@ -46,8 +46,8 @@ extern cublasHandle_t cublasHdlG;
 extern void* cudnnWorkspaceG;
 
 namespace dylann {
-    extern uint64_t* tensorIDSeqG;
-    extern uint64_t tensorIDGlobal;
+    extern unsigned int* tensorIDSeqG;
+    extern unsigned int tensorIDGlobal;
     extern bool onModelRegisterG;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype);

@@ -150,6 +150,22 @@ namespace dylann {
         offset += sizeof(int);
     }
     
+    void GLOBAL_AVGPOOL2D::run() {
+        globalAvgPoolOp((*params)[X], (*params)[Y]);
+    }
+    
+    void GLOBAL_AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+    }
+    
     void SOFTMAX::run() {
         softmaxOp((*params)[X], (*params)[Y], step);
     }
@@ -168,7 +184,25 @@ namespace dylann {
         offset += sizeof(int);
     }
     
-    void BATCHNROM::run() {
+    void SOFTMAX_CE::run() {
+        softmaxCEOp((*params)[X], (*params)[Y],  step);
+    }
+    
+    void SOFTMAX_CE::encodeParams(unsigned char *file,size_t &offset) {
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(int*)(file + offset) = step;
+        offset += sizeof(int);
+    }
+    
+    void BATCHNORM::run() {
         if (train) {
             batchnormOp((*params)[X], (*params)[Y], (*params)[mean],
                         (*params)[var], (*params)[gamma], (*params)[beta], eps, expAvgFactor);
@@ -178,7 +212,7 @@ namespace dylann {
         }
     }
     
-    void BATCHNROM::encodeParams(unsigned char * file, size_t &offset){
+    void BATCHNORM::encodeParams(unsigned char * file, size_t &offset){
         *(unsigned int*)(file + offset) = opCode;
         offset += sizeof(unsigned int);
         *(unsigned int*)(file + offset) = paramCount;
@@ -493,6 +527,16 @@ namespace dylann {
         return avgPool2d;
     }
     
+    GLOBAL_AVGPOOL2D* extractGlobalAvgPool2D(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        auto* globalAvgPool2d = new GLOBAL_AVGPOOL2D(X, Y);
+        return globalAvgPool2d;
+    }
+    
     SOFTMAX* extractSoftmax(const unsigned char * file, size_t &offset){
         TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
@@ -505,7 +549,19 @@ namespace dylann {
         return softmax;
     }
     
-    BATCHNROM* extractBatchNorm(const unsigned char * file, size_t &offset){
+    SOFTMAX_CE* extractSoftmaxCE(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        int axis = *(int*)(file + offset);
+        offset += sizeof(int);
+        
+        auto* softmaxCE = new SOFTMAX_CE(X, Y, axis);
+        return softmaxCE;
+    }
+    
+    BATCHNORM* extractBatchNorm(const unsigned char * file, size_t &offset){
         TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
@@ -523,7 +579,7 @@ namespace dylann {
         float expAvgFactor = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* batchNorm = new BATCHNROM(X, Y, weight, bias, mean, var, eps, expAvgFactor);
+        auto* batchNorm = new BATCHNORM(X, Y, weight, bias, mean, var, eps, expAvgFactor);
         return batchNorm;
     }
     

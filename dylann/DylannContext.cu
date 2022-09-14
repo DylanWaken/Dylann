@@ -6,23 +6,29 @@
 
 namespace dylann {
     
-    DylannBase* engineContextG;
+    map<TENSOR_PTR ,cuTensorBase*> tensorsCTX;
+    map<TENSOR_PTR ,cuTensorBase*> paramsCTX;   //optimizers will be applied on these
+    
+    vector<Operation*> forwardOpsCTX;
+    vector<Operation*> backwardOpsCTX;
+    
+    bool regisModeCTX;
+    unsigned int tensorIDSeqCTX;
     
     void initEngineContext(){
-        cudaMallocHost(&engineContextG, sizeof(DylannBase));
-        *tensorIDSeqG = engineContextG->tensorIDSeq;
-        onModelRegisterG = engineContextG->regisMode;
-    
-        cuTensorBase::tensorPoolG = &engineContextG->tensors;
+        cudaMallocHost(&tensorIDSeqG, sizeof(unsigned int));
+        *tensorIDSeqG = tensorIDSeqCTX;
+        
+        cuTensorBase::tensorPoolG = &tensorsCTX;
     }
     
     void beganModelRegister(){
-        engineContextG->regisMode = true;
+        regisModeCTX = true;
         onModelRegisterG = true;
     }
     
     void endModelRegister(){
-        engineContextG->regisMode = false;
+        regisModeCTX = false;
         onModelRegisterG = false;
     }
 } // dylann

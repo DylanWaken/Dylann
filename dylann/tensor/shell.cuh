@@ -6,13 +6,9 @@
 #define DYLANN_SHELL_CUH
 
 #include "cuTensor.cuh"
-#include "../ops/cuLinear.cuh"
-#include "../ops/cuConv.cuh"
-#include "../ops/cuActivation.cuh"
-#include "../ops/cuReduce.cuh"
-#include "../ops/cuConcat.cuh"
-#include "../ops/cuBatchnorm.cuh"
-#include "../ops/cuPool.cuh"
+#include "../serial/Instructions.cuh"
+#include "../serial/GradInstructions.cuh"
+#include "../DylannContext.cuh"
 
 
 namespace dylann{
@@ -23,15 +19,26 @@ namespace dylann{
     cuTensor scale(cuTensor& A, float alpha);
     
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y);
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X);
+    cuTensor linear(cuTensor& X, int outDim);
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                      int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
+    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B,
+                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
+    cuTensor conv2D(cuTensor& X, int kernelH, int kernelW, int outChannels,
+                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
     
     cuTensor reduce(cuTensor& X, cuTensor& Y, int step);
     
     cuTensor softmax(cuTensor& X, cuTensor& Y, int step);
+    cuTensor softmax(cuTensor& X, int step);
+    
     cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step);
+    cuTensor softmaxLog(cuTensor& X, int step);
+    
     cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step);
+    cuTensor softmaxCE(cuTensor& X, int step);
     
     /**
      * @param Xs: input tensors
@@ -40,8 +47,32 @@ namespace dylann{
      * @param XGradTarget The main tensor that the chained backward computation will continue on
      * @return
      */
-    cuTensor channelConcat(std::initializer_list<cuTensor> Xs, cuTensor& Y, cuTensor& XGradTarget);
-    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor& Y, cuTensor& XGradTarget);
+    cuTensor channelConcat(std::initializer_list<cuTensor> Xs, cuTensor& Y);
+    cuTensor channelConcat(std::initializer_list<cuTensor> Xs);
+    
+    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor& Y);
+    cuTensor channelConcat(cuTensor* Xs, int inputCount);
+    
+    cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
+    cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
+                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
+    
+    cuTensor dropout(cuTensor& X, cuTensor& Y, float p);
+    cuTensor dropout(cuTensor& X, float p);
+    
+    cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    cuTensor maxPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    
+    cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    cuTensor avgPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    
+    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y);
+    cuTensor globalAvgPool2D(cuTensor& X);
+
+    cuTensor flatten(cuTensor& X, cuTensor& Y);
+    cuTensor flatten(cuTensor& X);
+    
     
     //Activations
     cuTensor relu(cuTensor& X);

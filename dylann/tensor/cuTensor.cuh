@@ -27,6 +27,15 @@ namespace dylann{
         static cuTensor declare(Args... args){
             return cuTensor{cuTensorBase::create(shape4(args...), dtype)};
         }
+    
+        static cuTensor declare(cudnnDataType_t dtype, shape4 dims){
+            return cuTensor{cuTensorBase::create(dims, dtype)};
+        }
+    
+        template<typename... Args>
+        static cuTensor declare(cudnnDataType_t dtype, Args... args){
+            return cuTensor{cuTensorBase::create(shape4(args...), dtype)};
+        }
         
         cuTensor instantiate(int deviceID){
             impl->data = TStorage::create(deviceID, impl->desc.sizes.size*impl->desc.elementSize);
@@ -62,6 +71,18 @@ namespace dylann{
             return out.instantiate(deviceID);
         }
         
+        static cuTensor create(int deviceID, cudnnDataType_t dtype, shape4 dims){
+            auto out = declare(dtype, dims);
+            return out.instantiate(deviceID);
+        }
+    
+        template< typename... Args>
+        static cuTensor create(int deviceID, cudnnDataType_t dtype, Args... args){
+            auto out = declare(dtype, args...);
+            return out.instantiate(deviceID);
+        }
+    
+    
         [[nodiscard]] int getDev() const{ return impl->data->deviceID; }
         
         //initializer

@@ -5,6 +5,9 @@
 #include "cuLinear.cuh"
 
 namespace dylann{
+    /**
+     * @see: https://www.adityaagrawal.net/blog/deep_learning/row_column_major
+     */
     
     void fillBias(cuTensorBase* B, cuTensorBase* Y){
         for(auto i = 0; i < Y->desc.sizes.n; i++){
@@ -27,7 +30,7 @@ namespace dylann{
                                    X->desc.sizes.w,
                                    &a,
                                    (float*)W->data->data,
-                                   W->desc.sizes.h,
+                                   W->desc.sizes.w,
                                    (float*)X->data->data,
                                    X->desc.sizes.w,
                                    &b,
@@ -42,12 +45,12 @@ namespace dylann{
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
                                    CUBLAS_OP_N,  //auto transpose for weights
                                    CUBLAS_OP_N,
-                                   W->desc.sizes.h,
-                                   Y->desc.sizes.n,
                                    W->desc.sizes.w,
+                                   Y->desc.sizes.n,
+                                   W->desc.sizes.h,
                                    &a,
                                    (float*)W->data->data,
-                                   W->desc.sizes.h,
+                                   W->desc.sizes.w,
                                    (float*)Y->grad->data,
                                    Y->desc.sizes.w,
                                    &b,
@@ -60,16 +63,16 @@ namespace dylann{
         float a = 1.0f, b = 0.0f;
     
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
-                                   CUBLAS_OP_T,
+                                   CUBLAS_OP_N,
                                    CUBLAS_OP_T,  //we need to recover the "row major"
-                                   Y->desc.sizes.w,
                                    X->desc.sizes.w,
+                                   Y->desc.sizes.w,
                                    X->desc.sizes.n,
                                    &a,
-                                   (float*)Y->grad->data,
-                                   Y->desc.sizes.n,
                                    (float*)X->data->data,
                                    X->desc.sizes.w,
+                                   (float*)Y->grad->data,
+                                   Y->desc.sizes.w,
                                   &b,
                                   (float*)W->grad->data,
                                   W->desc.sizes.w
@@ -80,35 +83,36 @@ namespace dylann{
         //run gemm (linear operation)
         half a = 1.0, b = 1.0;
     
-        checkCUBLAS(cublasHgemm(cublasHdlG,
-                                   CUBLAS_OP_T,   //row major to column major for weights
-                                   CUBLAS_OP_N,   //read the original row major as  column major, auto trans
-                                      W->desc.sizes.w,
-                                        X->desc.sizes.n,
-                                        X->desc.sizes.w,
-                                        &a,
-                                        (half*)W->data->data,
-                                        W->desc.sizes.h,
-                                        (half*)X->data->data,
-                                        X->desc.sizes.w,
-                                        &b,
-                                        (half*)Y->data->data,
-                                        Y->desc.sizes.w
-        ))
+        checkCUBLAS(cublasHgemm(
+                cublasHdlG,
+                CUBLAS_OP_T,   //row major to column major for weights
+                CUBLAS_OP_N,   //read the original row major as column major, auto
+                Y->desc.sizes.w,
+                X->desc.sizes.n,
+                X->desc.sizes.w,
+                &a,
+                (half*)W->data->data,
+                W->desc.sizes.w,
+                (half*)X->data->data,
+                X->desc.sizes.w,
+                &b,
+                (half*)Y->data->data,
+                Y->desc.sizes.w
+                ))
     }
     
     void HALF_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
         half a = 1.0, b = 1.0;
     
         checkCUBLAS(cublasHgemm(cublasHdlG,
+                                CUBLAS_OP_N,  //auto transpose for weights
                                 CUBLAS_OP_N,
-                                CUBLAS_OP_N,
-                                W->desc.sizes.h,
-                                Y->desc.sizes.n,
                                 W->desc.sizes.w,
+                                Y->desc.sizes.n,
+                                W->desc.sizes.h,
                                 &a,
                                 (half*)W->data->data,
-                                W->desc.sizes.h,
+                                W->desc.sizes.w,
                                 (half*)Y->grad->data,
                                 Y->desc.sizes.w,
                                 &b,
@@ -121,16 +125,16 @@ namespace dylann{
         half a = 1.0, b = 0.0;
     
         checkCUBLAS(cublasHgemm(cublasHdlG,
-                                CUBLAS_OP_T,
-                                CUBLAS_OP_T,
-                                Y->desc.sizes.w,
+                                CUBLAS_OP_N,
+                                CUBLAS_OP_T,  //we need to recover the "row major"
                                 X->desc.sizes.w,
+                                Y->desc.sizes.w,
                                 X->desc.sizes.n,
                                 &a,
-                                (half*)Y->grad->data,
-                                Y->desc.sizes.n,
                                 (half*)X->data->data,
                                 X->desc.sizes.w,
+                                (half*)Y->grad->data,
+                                Y->desc.sizes.w,
                                 &b,
                                 (half*)W->grad->data,
                                 W->desc.sizes.w
@@ -144,31 +148,32 @@ namespace dylann{
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
                                    CUBLAS_OP_T,   //row major to column major for weights
                                    CUBLAS_OP_N,   //read the original row major as column major, auto trans
-                                   W->desc.sizes.w,
+                                   Y->desc.sizes.w,
                                    X->desc.sizes.n,
                                    X->desc.sizes.w,
                                    &a,
                                    (double*)W->data->data,
-                                   W->desc.sizes.h,
+                                   W->desc.sizes.w,
                                    (double*)X->data->data,
                                    X->desc.sizes.w,
                                    &b,
                                    (double*)Y->data->data,
-                                   Y->desc.sizes.w))
+                                   Y->desc.sizes.w
+                                   ))
     }
     
     void DOUBLE_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
         double a = 1.0, b = 1.0;
     
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
+                                   CUBLAS_OP_N,  //auto transpose for weights
                                    CUBLAS_OP_N,
-                                   CUBLAS_OP_N,
-                                   W->desc.sizes.h,
-                                   Y->desc.sizes.n,
                                    W->desc.sizes.w,
+                                   Y->desc.sizes.n,
+                                   W->desc.sizes.h,
                                    &a,
                                    (double*)W->data->data,
-                                   W->desc.sizes.h,
+                                   W->desc.sizes.w,
                                    (double*)Y->grad->data,
                                    Y->desc.sizes.w,
                                    &b,
@@ -181,16 +186,16 @@ namespace dylann{
         double a = 1.0, b = 0.0;
     
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
-                                   CUBLAS_OP_T,
-                                   CUBLAS_OP_T,
-                                   Y->desc.sizes.w,
+                                   CUBLAS_OP_N,
+                                   CUBLAS_OP_T,  //we need to recover the "row major"
                                    X->desc.sizes.w,
+                                   Y->desc.sizes.w,
                                    X->desc.sizes.n,
                                    &a,
-                                   (double*)Y->grad->data,
-                                   Y->desc.sizes.n,
                                    (double*)X->data->data,
                                    X->desc.sizes.w,
+                                   (double*)Y->grad->data,
+                                   Y->desc.sizes.w,
                                    &b,
                                    (double*)W->grad->data,
                                    W->desc.sizes.w
@@ -237,8 +242,6 @@ namespace dylann{
                && Y->desc.dType == Y->desc.dType);
     
         cudaSetDevice(W->data->deviceID);
-    
-        cout<<"GRAD LINEAR CALLED"<<endl;
     
         //run gradient for features
         switch (X->desc.dType) {

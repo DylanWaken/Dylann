@@ -9,9 +9,12 @@ cublasHandle_t cublasHdlG;
 void* cudnnWorkspaceG;
 
 namespace dylann {
-    uint64_t* tensorIDSeqG;
-    uint64_t tensorIDGlobal;
+    unsigned int* tensorIDSeqG;
+    unsigned int tensorIDGlobal;
     bool onModelRegisterG = false;
+    
+    //some definitions
+    map <TENSOR_PTR, cuTensorBase*>* cuTensorBase::tensorPoolG;
     
     uint64_t sizeOfDtype(cudnnDataType_t dtype){
         switch(dtype){

@@ -12,9 +12,6 @@
 using namespace std;
 namespace dylann {
     
-    //some definitions
-    map <TENSOR_PTR, cuTensorBase*>* cuTensorBase::tensorPoolG;
-    
     /**
      * VERY IMPORTANT
      *
@@ -24,19 +21,14 @@ namespace dylann {
      * The forward and backward instructions
      *
      */
-    class DylannBase {
-    public:
-        map<TENSOR_PTR ,cuTensorBase*> tensors;
-        map<TENSOR_PTR ,cuTensorBase*> params;   //optimizers will be applied on these
-        
-        vector<Operation> forwardOps;
-        vector<Operation> backwardOps;
-        
-        bool regisMode;
-        unsigned int tensorIDSeq = 0;
-    };
+    extern map<TENSOR_PTR ,cuTensorBase*> tensorsCTX;
+    extern map<TENSOR_PTR ,cuTensorBase*> paramsCTX;   //optimizers will be applied on these
     
-    extern DylannBase* engineContextG;
+    extern vector<Operation*> forwardOpsCTX;
+    extern vector<Operation*> backwardOpsCTX;
+    
+    extern bool regisModeCTX;
+    extern unsigned int tensorIDSeqCTX;
     
     void initEngineContext();
     

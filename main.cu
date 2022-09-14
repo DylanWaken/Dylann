@@ -1,21 +1,32 @@
 #include <iostream>
 
-#include "dylann/tensor/cuTensor.cuh"
 #include "dylann/tensor/shell.cuh"
 
 using namespace dylann;
 
 int main() {
-    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 4, 4, 4);
-    auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 5, 4, 4).randNormal(1,0);
-    auto Z = cuTensor::create<CUDNN_DATA_FLOAT>(0, 3, 9, 4, 4);
+    initEngineContext();
+    beganModelRegister();
     
-    cuTensorBase** Xs;
-    cudaMallocHost(&Xs, sizeof(cuTensorBase*) * 2);
-    Xs[0] = X.impl;
-    Xs[1] = Y.impl;
+//    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0, 2,3,32,32);
+//    X = conv2D(X,3,3,6, 1,1, 1, 1,1,1);
+//    X = conv2D(X,3,3,6, 1,1, 1, 1,1,1);
+//    X = conv2D(X,3,3,6, 1,1, 1, 1,1,1);
+//    X = conv2D(X,3,3,6, 1,1, 1, 1,1,1);
+//    auto Y = flatten(X);
+//    auto Z = linear(Y, 10);
+
+    auto W = cuTensor::create<CUDNN_DATA_FLOAT>(0,4,6).randNormal(1,0);
+    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(0,2,1,1,6).randNormal(1,0);
+    auto Y = cuTensor::create<CUDNN_DATA_FLOAT>(0,2,1,1,4);
+    auto B = cuTensor::create<CUDNN_DATA_FLOAT>(0,1,4).randNormal(1,0);
     
-    concatChannelOp(Xs, 2, Z.impl);
+    randNormalGradOp(Y.impl, 1, 0);
+    linearOpGrads(W.impl, B.impl, X.impl, Y.impl);
     
-    Z.print();
+    for(auto p : forwardOpsCTX){
+        p->print();
+    }
+    //Y.print();
+    W.print();
 }
