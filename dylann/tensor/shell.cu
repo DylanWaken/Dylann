@@ -55,7 +55,7 @@ namespace dylann{
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new CONV2D(X.desc().uuid, W.desc().uuid, B.desc().uuid, Y.desc().uuid,
+            auto* inst = new CONV2D(W.desc().uuid, B.desc().uuid, X.desc().uuid,  Y.desc().uuid,
                                     strideH, strideW, padH, padW, dilationH, dilationW);
             forwardOpsCTX.push_back(inst);
         }

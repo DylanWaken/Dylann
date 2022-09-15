@@ -6,7 +6,7 @@
 
 namespace dylann {
     void ADD::run() {
-        addOp((*params)[A], (*params)[B], alpha, beta);
+        addOp(params->at(A), params->at(B), alpha, beta);
     }
     
     void ADD::encodeParams(unsigned char *file,size_t &offset) {
@@ -26,7 +26,7 @@ namespace dylann {
     }
     
     void SCALE::run() {
-        scale((*params)[A], alpha);
+        scale(params->at(A), alpha);
     }
     
     void SCALE::encodeParams(unsigned char *file,size_t &offset) {
@@ -42,7 +42,7 @@ namespace dylann {
     }
     
     void LINEAR::run() {
-        linearOp((*params)[W], (*params)[B], (*params)[X], (*params)[Y]);
+        linearOp(params->at(W), params->at(B), params->at(X), params->at(Y));
     }
     
     void LINEAR::encodeParams(unsigned char *file,size_t &offset) {
@@ -62,7 +62,7 @@ namespace dylann {
     }
     
     void CONV2D::run() {
-        conv2dOp((*params)[X], (*params)[W], (*params)[B], (*params)[Y], padH, padW, strideH, strideW, dilationH, dilationW);
+        conv2dOp(params->at(X), params->at(W), params->at(B), params->at(Y), padH, padW, strideH, strideW, dilationH, dilationW);
     }
     
     void CONV2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -95,7 +95,7 @@ namespace dylann {
     
     
     void MAXPOOL2D::run() {
-        maxPoolOp((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        maxPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
     void MAXPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -123,7 +123,7 @@ namespace dylann {
     }
     
     void AVGPOOL2D::run() {
-        avgPoolOp((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        avgPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
     void AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -151,7 +151,7 @@ namespace dylann {
     }
     
     void GLOBAL_AVGPOOL2D::run() {
-        globalAvgPoolOp((*params)[X], (*params)[Y]);
+        globalAvgPoolOp(params->at(X), params->at(Y));
     }
     
     void GLOBAL_AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -167,7 +167,7 @@ namespace dylann {
     }
     
     void SOFTMAX::run() {
-        softmaxOp((*params)[X], (*params)[Y], step);
+        softmaxOp(params->at(X), params->at(Y), step);
     }
     
     void SOFTMAX::encodeParams(unsigned char *file,size_t &offset) {
@@ -185,7 +185,7 @@ namespace dylann {
     }
     
     void SOFTMAX_CE::run() {
-        softmaxCEOp((*params)[X], (*params)[Y],  step);
+        softmaxCEOp(params->at(X), params->at(Y),  step);
     }
     
     void SOFTMAX_CE::encodeParams(unsigned char *file,size_t &offset) {
@@ -204,11 +204,11 @@ namespace dylann {
     
     void BATCHNORM::run() {
         if (train) {
-            batchnormOp((*params)[X], (*params)[Y], (*params)[mean],
-                        (*params)[var], (*params)[gamma], (*params)[beta], eps, expAvgFactor);
+            batchnormOp(params->at(X), params->at(Y), params->at(mean),
+                        params->at(var), params->at(gamma), params->at(beta), eps, expAvgFactor);
         }else{
-            batchnormInferOp((*params)[X], (*params)[Y], (*params)[mean],
-                             (*params)[var], (*params)[gamma], (*params)[beta], eps);
+            batchnormInferOp(params->at(X), params->at(Y), params->at(mean),
+                             params->at(var), params->at(gamma), params->at(beta), eps);
         }
     }
     
@@ -237,7 +237,7 @@ namespace dylann {
     }
     
     void SOFTMAX_LOG::run() {
-        softmaxLogOp((*params)[X], (*params)[Y], step);
+        softmaxLogOp(params->at(X), params->at(Y), step);
     }
     
     void SOFTMAX_LOG::encodeParams(unsigned char *file,size_t &offset) {
@@ -257,9 +257,9 @@ namespace dylann {
     void CONCAT_CHANNEL::run() {
         auto** inputs = (cuTensorBase**)calloc(paramC, sizeof(cuTensorBase*));
         for (int i = 0; i < paramCount; i++) {
-            inputs[i] = (*params)[X[i]];
+            inputs[i] = params->at(X[i]);
         }
-        concatChannelOp(inputs, paramCount, (*params)[Y]);
+        concatChannelOp(inputs, paramCount, params->at(Y));
     }
     
     void CONCAT_CHANNEL::encodeParams(unsigned char *file,size_t &offset) {
@@ -279,7 +279,7 @@ namespace dylann {
     }
     
     void DROPOUT::run() {
-        dropoutOp((*params)[X], (*params)[Y], rate);
+        dropoutOp(params->at(X), params->at(Y), rate);
     }
     
     void DROPOUT::encodeParams(unsigned char *file,size_t &offset) {
@@ -297,7 +297,7 @@ namespace dylann {
     }
     
     void FLATTEN::run() {
-        flattenOp((*params)[X], (*params)[Y]);
+        flattenOp(params->at(X), params->at(Y));
     }
     
     void FLATTEN::encodeParams(unsigned char *file,size_t &offset) {
@@ -313,7 +313,7 @@ namespace dylann {
     }
     
     void RELU::run() {
-        reluOp((*params)[X], (*params)[Y]);
+        reluOp(params->at(X), params->at(Y));
     }
     
     void RELU::encodeParams(unsigned char *file,size_t &offset) {
@@ -329,7 +329,7 @@ namespace dylann {
     }
     
     void SIGMOID::run() {
-        sigmoidOp((*params)[X], (*params)[Y]);
+        sigmoidOp(params->at(X), params->at(Y));
     }
     
     void SIGMOID::encodeParams(unsigned char *file,size_t &offset) {
@@ -345,7 +345,7 @@ namespace dylann {
     }
     
     void TANH::run() {
-        tanhOp((*params)[X], (*params)[Y]);
+        tanhOp(params->at(X), params->at(Y));
     }
     
     void TANH::encodeParams(unsigned char *file,size_t &offset) {
@@ -361,7 +361,7 @@ namespace dylann {
     }
     
     void ELU::run() {
-        eluOp((*params)[X], (*params)[Y], alpha);
+        eluOp(params->at(X), params->at(Y), alpha);
     }
     
     void ELU::encodeParams(unsigned char *file,size_t &offset) {
@@ -379,7 +379,7 @@ namespace dylann {
     }
     
     void SWISH::run() {
-        swishOp((*params)[X], (*params)[Y], beta);
+        swishOp(params->at(X), params->at(Y), beta);
     }
     
     void SWISH::encodeParams(unsigned char *file,size_t &offset) {
@@ -397,7 +397,7 @@ namespace dylann {
     }
     
     void CLIPPED_RELU::run() {
-        clippedReluOp((*params)[X], (*params)[Y], threshold);
+        clippedReluOp(params->at(X), params->at(Y), threshold);
     }
     
     void CLIPPED_RELU::encodeParams(unsigned char *file,size_t &offset) {

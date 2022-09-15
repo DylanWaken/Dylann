@@ -119,10 +119,13 @@ namespace dylann{
         
         //debug
         void print() const;
+        void toFile(const char *basePath) const;
         
         //operators
         cuTensor operator+=(cuTensor& other);
         cuTensor operator-=(cuTensor& other);
+    
+        void toFile(const char *basePath);
     };
 }
 
