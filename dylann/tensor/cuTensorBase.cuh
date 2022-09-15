@@ -36,7 +36,7 @@
     }                                                        \
 }
 
-#define CUDNN_WORKSPACE_SIZE_G 1024 * 1024
+#define CUDNN_WORKSPACE_SIZE_G (1024 * 1024 * 64)
 typedef unsigned int TENSOR_PTR;
 
 using namespace std;
@@ -133,7 +133,7 @@ namespace dylann {
             
             //create the global cudnn workspace
             if(cudnnWorkspaceG == nullptr){
-                cudaMalloc(&cudnnWorkspaceG, 1024*1024);
+                cudaMalloc(&cudnnWorkspaceG, CUDNN_WORKSPACE_SIZE_G);
             }
             
             TDescriptor* desc;

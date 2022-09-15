@@ -8,6 +8,7 @@
 #include "cuTensor.cuh"
 #include "../serial/Instructions.cuh"
 #include "../serial/GradInstructions.cuh"
+#include "../serial/AutoGrad.cuh"
 #include "../DylannContext.cuh"
 
 

@@ -22,7 +22,7 @@
 #define INS_MAXPOOL2D 4
 #define INS_AVGPOOL2D 5
 #define INS_SOFTMAX 6
-#define INS_BATCHNROM 7
+#define INS_BATCHNORM 7
 #define INS_SOFTMAX_LOG 8
 #define INS_CONCAT_CHANNEL 9
 #define INS_DROPOUT 10
@@ -304,7 +304,7 @@ namespace dylann {
         
         BATCHNORM(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
                   TENSOR_PTR var, float eps, float expAvgFactor) :
-                Operation(INS_BATCHNROM, 8), X(X), Y(Y), gamma(gamma), beta(beta),
+                Operation(INS_BATCHNORM, 8), X(X), Y(Y), gamma(gamma), beta(beta),
                 mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor) {}
         
         void run() override;

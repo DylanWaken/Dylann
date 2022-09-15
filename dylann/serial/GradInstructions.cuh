@@ -51,7 +51,7 @@ namespace dylann {
             }
             
             void print() override {
-                 cout << "GRADS_ADD " << std::hex << A << " " << std::hex
+                 cout << "GRADS_ADD 0x" << std::hex << A << " 0x" << std::hex
                       << B << " " << std::dec << alpha << " " << beta << endl;
             }
         };
@@ -73,7 +73,7 @@ namespace dylann {
             }
             
             void print() override {
-                 cout << "GRADS_SCALE " << std::hex << A << " " << std::dec << alpha << endl;
+                 cout << "GRADS_SCALE 0x" << std::hex << A << " " << std::dec << alpha << endl;
             }
         };
      
@@ -96,7 +96,7 @@ namespace dylann {
             }
             
             void print() override {
-                  cout << "GRADS_LINEAR " << std::hex << W << " " << B << " " << X << " " << Y << endl;
+                  cout << "GRADS_LINEAR 0x" << std::hex << W << " 0x" << B << " 0x" << X << " 0x" << Y << endl;
             }
         };
         
@@ -126,7 +126,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_CONV2D " << std::hex << W << " " << B << " " << X << " " << Y << " " <<
+                cout << "GRADS_CONV2D 0x" << std::hex << W << " 0x" << B << " 0x" << X << " 0x" << Y << " " <<
                 std::dec << strideH << " " << strideW << " " << padH << " " << padW << " " << dilationH << " " << dilationW << endl;
             }
         };
@@ -156,7 +156,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_MAXPOOL2D " << std::hex << X << " " << Y << " " <<
+                cout << "GRADS_MAXPOOL2D 0x" << std::hex << X << " 0x" << Y << " " <<
                 std::dec << kernelH << " " << kernelW << " " << strideH << " " << strideW << " " << padH << " " << padW << endl;
             }
         };
@@ -186,7 +186,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_AVGPOOL2D " << std::hex << X << " " << Y << " " <<
+                cout << "GRADS_AVGPOOL2D 0x" << std::hex << X << " 0x" << Y << " " <<
                 std::dec << kernelH << " " << kernelW << " " << strideH << " " << strideW << " " << padH << " " << padW << endl;
             }
         };
@@ -209,7 +209,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_SOFTMAX " << std::hex << X << " " << Y << " " << std::dec << step << endl;
+                cout << "GRADS_SOFTMAX 0x" << std::hex << X << " 0x" << Y << " " << std::dec << step << endl;
             }
         };
         
@@ -238,7 +238,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_BATCHNORM " << std::hex << X << " " << Y << " " << gamma << " " << beta << " " << mean << " " << var << " " <<
+                cout << "GRADS_BATCHNORM 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " <<
                 std::dec << eps << " " << expAvgFactor << endl;
             }
         };
@@ -261,7 +261,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_SOFTMAX_LOG " << std::hex << X << " " << Y << " " << std::dec << step << endl;
+                cout << "GRADS_SOFTMAX_LOG 0x" << std::hex << X << " 0x" << Y << " " << std::dec << step << endl;
             }
         };
         
@@ -282,9 +282,9 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_CONCAT_CHANNEL " << std::hex ;
+                cout << "GRADS_CONCAT_CHANNEL 0x" << std::hex ;
                 for(int i = 0; i < paramC; i++){
-                    cout << X[i] << " ";
+                    cout << X[i] << " 0x";
                 }
                 cout <<  Y << std::dec << " " << paramC << " " << endl;
                 cout << std::dec << endl;
@@ -308,7 +308,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_DROPOUT " << std::hex << X << " " << Y <<  " " << std::dec << p << endl;
+                cout << "GRADS_DROPOUT 0x" << std::hex << X << " 0x" << Y <<  " " << std::dec << p << endl;
             }
         };
         
@@ -329,7 +329,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_FLATTEN " << std::hex << X << " " << Y << std::dec << endl;
+                cout << "GRADS_FLATTEN 0x" << std::hex << X << " 0x" << Y << std::dec << endl;
             }
         };
         
@@ -350,7 +350,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_GLOBAL_AVGPOOL " << std::hex << X << " " << Y << std::dec << endl;
+                cout << "GRADS_GLOBAL_AVGPOOL 0x" << std::hex << X << " 0x" << Y << std::dec << endl;
             }
         };
         
@@ -372,7 +372,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_SOFTMAX_CE " << std::hex << X << " " << Y << " " << std::dec << step << endl;
+                cout << "GRADS_SOFTMAX_CE 0x" << std::hex << X << " 0x" << Y << " " << std::dec << step << endl;
             }
         };
         
@@ -395,7 +395,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_RELU " << std::hex << X << " " << Y << std::dec << endl;
+                cout << "GRADS_RELU 0x" << std::hex << X << " 0x" << Y << std::dec << endl;
             }
         };
         
@@ -416,7 +416,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_SIGMOID " << std::hex << X << " " << Y << std::dec << endl;
+                cout << "GRADS_SIGMOID 0x" << std::hex << X << " 0x" << Y << std::dec << endl;
             }
         };
         
@@ -437,7 +437,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_TANH " << std::hex << X << " " << Y << std::dec << endl;
+                cout << "GRADS_TANH 0x" << std::hex << X << " 0x" << Y << std::dec << endl;
             }
         };
         
@@ -459,7 +459,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_ELU " << std::hex << X << " " << Y << " " << std::dec << alpha << endl;
+                cout << "GRADS_ELU 0x" << std::hex << X << " 0x" << Y << " " << std::dec << alpha << endl;
             }
         };
         
@@ -481,7 +481,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_SWISH " << std::hex << X << " " << Y << " " << std::dec << beta << endl;
+                cout << "GRADS_SWISH 0x" << std::hex << X << " 0x" << Y << " " << std::dec << beta << endl;
             }
         };
         
@@ -503,7 +503,7 @@ namespace dylann {
             }
             
             void print() override {
-                cout << "GRADS_CLIPPED_RELU " << std::hex << X << " " << Y << " " << std::dec << threshold << endl;
+                cout << "GRADS_CLIPPED_RELU 0x" << std::hex << X << " 0x" << Y << " " << std::dec << threshold << endl;
             }
         };
 

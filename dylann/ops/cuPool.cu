@@ -37,7 +37,7 @@ namespace dylann {
                 Y->data->data
                 ))
     
-        cudnnDestroyPoolingDescriptor(poolDesc);
+        checkCUDNN(cudnnDestroyPoolingDescriptor(poolDesc));
         
         return Y;
     }

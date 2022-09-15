@@ -19,7 +19,7 @@ namespace dylann{
         cudnnCreateActivationDescriptor(&activationDesc);
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                        CUDNN_CROSS_CORRELATION, X->desc.dType))
+                                        CUDNN_CONVOLUTION, X->desc.dType))
         checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, X->desc.dType,
                                    CUDNN_TENSOR_NCHW,
                                    (int)W->desc.sizes.n,
@@ -80,7 +80,7 @@ namespace dylann{
         cudnnCreateActivationDescriptor(&activationDesc);
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                                   CUDNN_CROSS_CORRELATION, X->desc.dType))
+                                                   CUDNN_CONVOLUTION, X->desc.dType))
         checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, X->desc.dType,
                                               CUDNN_TENSOR_NCHW,
                                               (int)W->desc.sizes.n,
@@ -135,8 +135,8 @@ namespace dylann{
         float alpha = 1.0f, beta = 1.0f;
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                                   CUDNN_CROSS_CORRELATION, Y->desc.dType))
-        checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, Y->desc.dType,
+                                                   CUDNN_CONVOLUTION, Y->desc.dType))
+        checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, W->desc.dType,
                                               CUDNN_TENSOR_NCHW,
                                               (int)W->desc.sizes.n,
                                               (int)W->desc.sizes.c,
@@ -152,9 +152,9 @@ namespace dylann{
                                                 Y->desc.cudnnDesc,
                                                 Y->grad->data,
                                                 convDesc,
-                                                CUDNN_CONVOLUTION_BWD_DATA_ALGO_1,
-                                                nullptr,
-                                                0,
+                                                CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
+                                                cudnnWorkspaceG,
+                                                CUDNN_WORKSPACE_SIZE_G,
                                                 &beta,
                                                 X->desc.cudnnDesc,
                                                 X->grad->data
@@ -169,8 +169,8 @@ namespace dylann{
                 Y->grad->data,
                 convDesc,
                 CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
-                nullptr,
-                0,
+                cudnnWorkspaceG,
+                CUDNN_WORKSPACE_SIZE_G,
                 &beta,
                 filterDesc,
                 W->grad->data
