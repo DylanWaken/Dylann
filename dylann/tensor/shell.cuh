@@ -71,12 +71,15 @@ namespace dylann{
     cuTensor dropout(cuTensor& X, float p);
     
     cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW, float alpha1, float alpha2);
     cuTensor maxPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
     
     cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
+    cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW, float alpha1, float alpha2);
     cuTensor avgPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW);
     
     cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y);
+    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     cuTensor globalAvgPool2D(cuTensor& X);
 
     cuTensor flatten(cuTensor& X, cuTensor& Y);

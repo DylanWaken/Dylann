@@ -33,10 +33,10 @@ int main() {
     
     generateGrads(forwardOpsCTX, backwardOpsCTX);
     
-    for (int p = 0; p < 100000; p++) {
+    for (int p = 0; p < 1; p++) {
         for (auto &i: backwardOpsCTX) {
             i->run();
-     //       i->print();
+            i->print();
         }
     }
 }

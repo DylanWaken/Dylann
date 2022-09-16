@@ -188,16 +188,21 @@ namespace dylann {
         int padH;
         int padW;
         
-        MAXPOOL2D(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW, int padH, int padW) :
+        float alpha1;
+        float alpha2;
+        
+        MAXPOOL2D(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW, int padH, int padW,
+                  float alpha1, float alpha2) :
                 Operation(INS_MAXPOOL2D, 8), X(X), Y(Y),
-                kernelH(kernelH), kernelW(kernelW), strideH(strideH), strideW(strideW), padH(padH), padW(padW) {}
+                kernelH(kernelH), kernelW(kernelW), strideH(strideH), strideW(strideW), padH(padH), padW(padW),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6 + sizeof(float) * 2;
         }
         
         void print() override {
@@ -217,16 +222,21 @@ namespace dylann {
         int padH;
         int padW;
         
-        AVGPOOL2D(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW, int padH, int padW) :
+        float alpha1;
+        float alpha2;
+        
+        AVGPOOL2D(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW, int padH, int padW,
+                  float alpha1, float alpha2) :
                 Operation(INS_AVGPOOL2D, 8), X(X), Y(Y),
-                kernelH(kernelH), kernelW(kernelW), strideH(strideH), strideW(strideW), padH(padH), padW(padW) {}
+                kernelH(kernelH), kernelW(kernelW), strideH(strideH), strideW(strideW), padH(padH), padW(padW),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6 + sizeof(float) * 2;
         }
         
         void print() override {
@@ -240,15 +250,19 @@ namespace dylann {
         TENSOR_PTR X;
         TENSOR_PTR Y;
         
-        GLOBAL_AVGPOOL2D(TENSOR_PTR X, TENSOR_PTR Y) :
-                Operation(INS_GLOBAL_AVGPOOL, 2), X(X), Y(Y) {}
+        float alpha1;
+        float alpha2;
+        
+        GLOBAL_AVGPOOL2D(TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+                Operation(INS_GLOBAL_AVGPOOL, 2), X(X), Y(Y),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) * 2;
         }
         
         void print() override {

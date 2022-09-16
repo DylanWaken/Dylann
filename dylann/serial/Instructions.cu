@@ -106,7 +106,8 @@ namespace dylann {
     
     
     void MAXPOOL2D::run() {
-        maxPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW);
+        maxPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW,
+                  alpha1, alpha2);
     }
     
     void MAXPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -131,10 +132,16 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = padW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void AVGPOOL2D::run() {
-        avgPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW);
+        avgPoolOp(params->at(X), params->at(Y), kernelH, kernelW, padH, padW, strideH, strideW,
+                  alpha1, alpha2);
     }
     
     void AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -159,10 +166,15 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = padW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void GLOBAL_AVGPOOL2D::run() {
-        globalAvgPoolOp(params->at(X), params->at(Y));
+        globalAvgPoolOp(params->at(X), params->at(Y), alpha1, alpha2);
     }
     
     void GLOBAL_AVGPOOL2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -175,6 +187,11 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SOFTMAX::run() {
@@ -554,7 +571,13 @@ namespace dylann {
         int padW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        auto* maxPool2d = new MAXPOOL2D(X, Y, kernelH, kernelW, strideH, strideW, padH, padW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* maxPool2d = new MAXPOOL2D(X, Y, kernelH, kernelW, strideH, strideW, padH, padW,
+                                       alpha1, alpha2);
         return maxPool2d;
     }
     
@@ -576,7 +599,13 @@ namespace dylann {
         int padW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        auto* avgPool2d = new AVGPOOL2D(X, Y, kernelH, kernelW, strideH, strideW, padH, padW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* avgPool2d = new AVGPOOL2D(X, Y, kernelH, kernelW, strideH, strideW, padH, padW,
+                                        alpha1, alpha2);
         return avgPool2d;
     }
     
@@ -586,7 +615,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        auto* globalAvgPool2d = new GLOBAL_AVGPOOL2D(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* globalAvgPool2d = new GLOBAL_AVGPOOL2D(X, Y, alpha1, alpha2);
         return globalAvgPool2d;
     }
     

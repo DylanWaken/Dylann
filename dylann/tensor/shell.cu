@@ -309,11 +309,23 @@ namespace dylann{
     }
     
     cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
-        maxPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW);
+        maxPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new MAXPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW);
+            auto* inst = new MAXPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW,1 ,1);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
+                       float alpha1, float alpha2){
+        maxPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new MAXPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -329,22 +341,23 @@ namespace dylann{
     }
     
     cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
-        avgPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW);
+        avgPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new AVGPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW);
+            auto* inst = new AVGPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
     }
     
-    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y){
-        globalAvgPoolOp(X.impl, Y.impl);
+    cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
+                       float alpha1, float alpha2){
+        avgPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, alpha1, alpha2);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new GLOBAL_AVGPOOL2D(X.desc().uuid, Y.desc().uuid);
+            auto* inst = new AVGPOOL2D(X.desc().uuid, Y.desc().uuid, kernelH, kernelW, strideH, strideW, padH, padW, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -357,6 +370,28 @@ namespace dylann{
         unsigned int w = (X.desc().sizes.w + 2 * padW - kernelW) / strideW + 1;
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, n, c, h, w);
         return avgPool2D(X, Y, kernelH, kernelW, padH, padW, strideH, strideW);
+    }
+    
+    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y){
+        globalAvgPoolOp(X.impl, Y.impl, 1, 1);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new GLOBAL_AVGPOOL2D(X.desc().uuid, Y.desc().uuid, 1, 1);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+        globalAvgPoolOp(X.impl, Y.impl, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new GLOBAL_AVGPOOL2D(X.desc().uuid, Y.desc().uuid, alpha1, alpha2);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
     }
     
     cuTensor flatten(cuTensor& X, cuTensor& Y){

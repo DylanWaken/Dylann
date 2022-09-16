@@ -105,7 +105,8 @@ namespace dylann {
     }
     
     void MAXPOOL2D_GRADS::run() {
-        maxPoolOpGrads((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        maxPoolOpGrads((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW,
+                       alpha1, alpha2);
     }
     
     void MAXPOOL2D_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -130,10 +131,16 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = padW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void AVGPOOL2D_GRADS::run() {
-        avgPoolOpGrads((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW);
+        avgPoolOpGrads((*params)[X], (*params)[Y], kernelH, kernelW, padH, padW, strideH, strideW,
+                       alpha1, alpha2);
     }
     
     void AVGPOOL2D_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -158,6 +165,11 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = padW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SOFTMAX_GRADS::run() {
@@ -289,7 +301,7 @@ namespace dylann {
     }
     
     void GLOBAL_AVGPOOL_GRADS::run() {
-        globalAvgPoolOpGrads((*params)[X], (*params)[Y]);
+        globalAvgPoolOpGrads((*params)[X], (*params)[Y], alpha1, alpha2);
     }
     
     void GLOBAL_AVGPOOL_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -302,6 +314,11 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SOFTMAX_CE_GRADS::run() {
@@ -544,7 +561,12 @@ namespace dylann {
         int padW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        return new MAXPOOL2D_GRADS(X, Y, kernelH, kernelW, strideH, strideW, padH, padW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new MAXPOOL2D_GRADS(X, Y, kernelH, kernelW, strideH, strideW, padH, padW, alpha1, alpha2);
     }
     
     AVGPOOL2D_GRADS* extractAvgPool2DGrads(const unsigned char * file, size_t &offset){
@@ -565,7 +587,26 @@ namespace dylann {
         int padW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        return new AVGPOOL2D_GRADS(X, Y, kernelH, kernelW, strideH, strideW, padH, padW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new AVGPOOL2D_GRADS(X, Y, kernelH, kernelW, strideH, strideW, padH, padW, alpha1, alpha2);
+    }
+    
+    GLOBAL_AVGPOOL_GRADS* extractGlobalAvgPoolGrads(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new GLOBAL_AVGPOOL_GRADS(X, Y, alpha1, alpha2);
     }
     
     SOFTMAX_GRADS* extractSoftmaxGrads(const unsigned char * file, size_t &offset){

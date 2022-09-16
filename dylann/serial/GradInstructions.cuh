@@ -150,17 +150,20 @@ namespace dylann {
             int padH;
             int padW;
             
+            float alpha1;
+            float alpha2;
+            
             MAXPOOL2D_GRADS(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW,
-                            int padH, int padW) :
+                            int padH, int padW, float alpha1, float alpha2) :
             Operation(INS_GRADS_MAXPOOL2D, 8), X(X), Y(Y), kernelH(kernelH), kernelW(kernelW),
-                    strideH(strideH), strideW(strideW), padH(padH), padW(padW) {}
+                    strideH(strideH), strideW(strideW), padH(padH), padW(padW), alpha1(alpha1), alpha2(alpha2) {}
                     
             void run() override;
             
             void encodeParams(unsigned char * file, size_t &offset) override;
             
             size_t getEncodedSize() override {
-                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6;
+                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6 + sizeof(float) * 2;
             }
             
             void print() override {
@@ -180,17 +183,20 @@ namespace dylann {
             int padH;
             int padW;
             
+            float alpha1;
+            float alpha2;
+            
             AVGPOOL2D_GRADS(TENSOR_PTR X, TENSOR_PTR Y, int kernelH, int kernelW, int strideH, int strideW,
-                            int padH, int padW) :
+                            int padH, int padW, float alpha1, float alpha2) :
             Operation(INS_GRADS_AVGPOOL2D, 8), X(X), Y(Y), kernelH(kernelH), kernelW(kernelW),
-                    strideH(strideH), strideW(strideW), padH(padH), padW(padW) {}
+                    strideH(strideH), strideW(strideW), padH(padH), padW(padW), alpha1(alpha1), alpha2(alpha2) {}
                     
             void run() override;
             
             void encodeParams(unsigned char * file, size_t &offset) override;
             
             size_t getEncodedSize() override {
-                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6;
+                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(int) * 6 + sizeof(float) * 2;
             }
             
             void print() override {
@@ -349,15 +355,18 @@ namespace dylann {
             TENSOR_PTR X;
             TENSOR_PTR Y;
             
-            GLOBAL_AVGPOOL_GRADS(TENSOR_PTR X, TENSOR_PTR Y) :
-            Operation(INS_GRADS_GLOBAL_AVGPOOL, 2), X(X), Y(Y) {}
+            float alpha1;
+            float alpha2;
+            
+            GLOBAL_AVGPOOL_GRADS(TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+            Operation(INS_GRADS_GLOBAL_AVGPOOL, 2), X(X), Y(Y), alpha1(alpha1), alpha2(alpha2) {}
             
             void run() override;
             
             void encodeParams(unsigned char * file, size_t &offset) override;
             
             size_t getEncodedSize() override {
-                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) * 2;
             }
             
             void print() override {
@@ -550,6 +559,8 @@ namespace dylann {
         MAXPOOL2D_GRADS* extractMaxPool2DGrads(const unsigned char * file, size_t &offset);
         
         AVGPOOL2D_GRADS* extractAvgPool2DGrads(const unsigned char * file, size_t &offset);
+        
+        GLOBAL_AVGPOOL_GRADS* extractGlobalAvgPoolGrads(const unsigned char * file, size_t &offset);
         
         SOFTMAX_GRADS* extractSoftmaxGrads(const unsigned char * file, size_t &offset);
         

@@ -28,14 +28,16 @@ namespace dylann {
                 
             case INS_MAXPOOL2D:
                 return new MAXPOOL2D_GRADS(((MAXPOOL2D*)input)->X, ((MAXPOOL2D*)input)->Y, ((MAXPOOL2D*)input)->kernelH, ((MAXPOOL2D*)input)->kernelW,
-                                           ((MAXPOOL2D*)input)->strideH, ((MAXPOOL2D*)input)->strideW, ((MAXPOOL2D*)input)->padH, ((MAXPOOL2D*)input)->padW);
+                                           ((MAXPOOL2D*)input)->strideH, ((MAXPOOL2D*)input)->strideW, ((MAXPOOL2D*)input)->padH, ((MAXPOOL2D*)input)->padW,
+                                           ((MAXPOOL2D*)input)->alpha1, ((MAXPOOL2D*)input)->alpha2);
                 
             case INS_AVGPOOL2D:
                 return new AVGPOOL2D_GRADS(((AVGPOOL2D*)input)->X, ((AVGPOOL2D*)input)->Y, ((AVGPOOL2D*)input)->kernelH, ((AVGPOOL2D*)input)->kernelW,
-                                           ((AVGPOOL2D*)input)->strideH, ((AVGPOOL2D*)input)->strideW, ((AVGPOOL2D*)input)->padH, ((AVGPOOL2D*)input)->padW);
+                                           ((AVGPOOL2D*)input)->strideH, ((AVGPOOL2D*)input)->strideW, ((AVGPOOL2D*)input)->padH, ((AVGPOOL2D*)input)->padW,
+                                           ((AVGPOOL2D*)input)->alpha1, ((AVGPOOL2D*)input)->alpha2);
                 
             case INS_GLOBAL_AVGPOOL:
-                return new GLOBAL_AVGPOOL_GRADS(((GLOBAL_AVGPOOL2D*)input)->X, ((GLOBAL_AVGPOOL2D*)input)->Y);
+                return new GLOBAL_AVGPOOL_GRADS(((GLOBAL_AVGPOOL2D*)input)->X, ((GLOBAL_AVGPOOL2D*)input)->Y, ((GLOBAL_AVGPOOL2D*)input)->alpha1, ((GLOBAL_AVGPOOL2D*)input)->alpha2);
                 
             case INS_BATCHNORM:
                 return new BATCHNORM_GRADS(((BATCHNORM*)input)->X, ((BATCHNORM*)input)->Y, ((BATCHNORM*)input)->gamma, ((BATCHNORM*)input)->beta,
