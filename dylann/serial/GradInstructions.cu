@@ -42,7 +42,7 @@ namespace dylann {
     }
     
     void LINEAR_GRADS::run() {
-        linearOpGrads((*params)[W], (*params)[B], (*params)[X], (*params)[Y]);
+        linearOpGrads((*params)[W], (*params)[B], (*params)[X], (*params)[Y], alpha1, alpha2);
     }
     
     void LINEAR_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -59,6 +59,11 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void CONV2D_GRADS::run() {
@@ -483,8 +488,12 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
+        float alpha = *(float*)(file + offset);
+        offset += sizeof(float);
+        float beta = *(float*)(file + offset);
+        offset += sizeof(float);
         
-        return new LINEAR_GRADS(W, B, X, Y);
+        return new LINEAR_GRADS(W, B, X, Y, alpha, beta);
     }
     
     CONV2D_GRADS* extractConv2DGrads(const unsigned char * file, size_t &offset){

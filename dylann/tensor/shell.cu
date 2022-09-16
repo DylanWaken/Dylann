@@ -27,12 +27,23 @@ namespace dylann{
         return A;
     }
     
-    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y){
-        linearOp(W.impl, B.impl, X.impl, Y.impl);
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+        linearOp(W.impl, B.impl, X.impl, Y.impl, alpha1, alpha2);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new LINEAR(W.desc().uuid, B.desc().uuid, X.desc().uuid, Y.desc().uuid);
+            auto* inst = new LINEAR(W.desc().uuid, B.desc().uuid, X.desc().uuid, Y.desc().uuid, alpha1, alpha2);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y){
+        linearOp(W.impl, B.impl, X.impl, Y.impl, 1, 1);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new LINEAR(W.desc().uuid, B.desc().uuid, X.desc().uuid, Y.desc().uuid,1 ,1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;

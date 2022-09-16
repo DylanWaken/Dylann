@@ -19,6 +19,7 @@ namespace dylann{
     
     cuTensor scale(cuTensor& A, float alpha);
     
+    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y);
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X);
     cuTensor linear(cuTensor& X, int outDim);

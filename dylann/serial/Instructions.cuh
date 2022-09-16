@@ -121,15 +121,19 @@ namespace dylann {
         TENSOR_PTR X;
         TENSOR_PTR Y;
         
-        LINEAR(TENSOR_PTR W, TENSOR_PTR B, TENSOR_PTR X, TENSOR_PTR Y) :
-                Operation(INS_LINEAR, 4), W(W), B(B), X(X), Y(Y) {}
+        float alpha1;
+        float alpha2;
+        
+        LINEAR(TENSOR_PTR W, TENSOR_PTR B, TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+                Operation(INS_LINEAR, 4), W(W), B(B), X(X), Y(Y),
+                alpha1(alpha1), alpha2(alpha2) {}
                 
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 4;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 4 + sizeof(float) * 2;
         }
         
         void print() override {

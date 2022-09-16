@@ -13,34 +13,34 @@ namespace dylann{
         for(auto i = 0; i < Y->desc.sizes.n; i++){
             auto offset = i * Y->desc.sizes.w;
             char* destPtr = (char*)Y->data->data + offset * Y->desc.elementSize;
-            cudaMemcpy(destPtr, B->data->data, B->data->memSize, cudaMemcpyDeviceToDevice);
+            float a = 1, b = 1;
+            checkCUDNN(cudnnAddTensor(cudnnHdlG, &a, B->desc.cudnnDesc, B->data->data,
+                           &b, B->desc.cudnnDesc, destPtr))
         }
-        assertCuda(__FILE__, __LINE__);
     };
     
-    void FLOAT_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
+    void FLOAT_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
         //run gemm (linear operation)
-        float a = 1.0f, b = 1.0f;
-    
+        //float a = 1.0f, b = 1.0f;
+        
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
                                    CUBLAS_OP_T,   //row major to column major for weights
                                    CUBLAS_OP_N,   //read the original row major as column major, auto trans
                                    Y->desc.sizes.w,
                                    X->desc.sizes.n,
                                    X->desc.sizes.w,
-                                   &a,
+                                   &alpha1,
                                    (float*)W->data->data,
                                    W->desc.sizes.w,
                                    (float*)X->data->data,
                                    X->desc.sizes.w,
-                                   &b,
+                                   &alpha2,
                                    (float*)Y->data->data,
                                    Y->desc.sizes.w
         ))
     }
     
-    void FLOAT_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        float a = 1.0f, b = 1.0f;
+    void FLOAT_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
     
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
                                    CUBLAS_OP_N,  //auto transpose for weights
@@ -48,19 +48,18 @@ namespace dylann{
                                    W->desc.sizes.w,
                                    Y->desc.sizes.n,
                                    W->desc.sizes.h,
-                                   &a,
+                                   &alpha1,
                                    (float*)W->data->data,
                                    W->desc.sizes.w,
                                    (float*)Y->grad->data,
                                    Y->desc.sizes.w,
-                                   &b,
+                                   &alpha2,
                                    (float*)X->grad->data,
                                    X->desc.sizes.w
         ))
     }
     
-    void FLOAT_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        float a = 1.0f, b = 0.0f;
+    void FLOAT_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
     
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
                                    CUBLAS_OP_N,
@@ -68,20 +67,21 @@ namespace dylann{
                                    X->desc.sizes.w,
                                    Y->desc.sizes.w,
                                    X->desc.sizes.n,
-                                   &a,
+                                   &alpha1,
                                    (float*)X->data->data,
                                    X->desc.sizes.w,
                                    (float*)Y->grad->data,
                                    Y->desc.sizes.w,
-                                  &b,
+                                  &alpha2,
                                   (float*)W->grad->data,
                                   W->desc.sizes.w
                                    ))
     }
     
-    void HALF_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
+    void HALF_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
         //run gemm (linear operation)
-        half a = 1.0, b = 1.0;
+        half a = __float2half(alpha1);
+        half b = __float2half(alpha2);
     
         checkCUBLAS(cublasHgemm(
                 cublasHdlG,
@@ -101,8 +101,8 @@ namespace dylann{
                 ))
     }
     
-    void HALF_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        half a = 1.0, b = 1.0;
+    void HALF_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
+        half a = __float2half(alpha1), b = __float2half(alpha2);
     
         checkCUBLAS(cublasHgemm(cublasHdlG,
                                 CUBLAS_OP_N,  //auto transpose for weights
@@ -121,9 +121,9 @@ namespace dylann{
         ))
     }
     
-    void HALF_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        half a = 1.0, b = 0.0;
-    
+    void HALF_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
+        half a = __float2half(alpha1), b = __float2half(alpha2);
+        
         checkCUBLAS(cublasHgemm(cublasHdlG,
                                 CUBLAS_OP_N,
                                 CUBLAS_OP_T,  //we need to recover the "row major"
@@ -141,9 +141,9 @@ namespace dylann{
         ))
     }
     
-    void DOUBLE_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
+    void DOUBLE_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
         //run gemm (linear operation)
-        double a = 1.0, b = 1.0;
+        auto a = (double)alpha1, b = (double )alpha2;
     
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
                                    CUBLAS_OP_T,   //row major to column major for weights
@@ -162,9 +162,9 @@ namespace dylann{
                                    ))
     }
     
-    void DOUBLE_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        double a = 1.0, b = 1.0;
-    
+    void DOUBLE_LINEAR_GRAD_X(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
+        auto a = (double)alpha1, b = (double)alpha2;
+        
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
                                    CUBLAS_OP_N,  //auto transpose for weights
                                    CUBLAS_OP_N,
@@ -182,8 +182,8 @@ namespace dylann{
         ))
     }
     
-    void DOUBLE_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y){
-        double a = 1.0, b = 0.0;
+    void DOUBLE_LINEAR_GRAD_W(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
+        auto a = (double)alpha1, b = (double)alpha2;
     
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
                                    CUBLAS_OP_N,
@@ -202,7 +202,7 @@ namespace dylann{
         ))
     }
     
-    cuTensorBase *linearOp(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y){
+    cuTensorBase *linearOp(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
     
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
@@ -220,13 +220,13 @@ namespace dylann{
         //run gemm (linear operation)
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR(W, X, Y);
+                FLOAT_LINEAR(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR(W, X, Y);
+                HALF_LINEAR(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR(W, X, Y);
+                DOUBLE_LINEAR(W, X, Y, alpha1, alpha2);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");
@@ -234,7 +234,8 @@ namespace dylann{
         
         return Y;
     }
-    cuTensorBase *linearOpGrads(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y){
+    cuTensorBase *linearOpGrads(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y,
+                                float alpha1, float alpha2){
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
     
         //assert same dtype
@@ -246,13 +247,13 @@ namespace dylann{
         //run gradient for features
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR_GRAD_X(W, X, Y);
+                FLOAT_LINEAR_GRAD_X(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR_GRAD_X(W, X, Y);
+                HALF_LINEAR_GRAD_X(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR_GRAD_X(W, X, Y);
+                DOUBLE_LINEAR_GRAD_X(W, X, Y, alpha1, alpha2);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");
@@ -261,13 +262,13 @@ namespace dylann{
         //run gradients for weights
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR_GRAD_W(W, X, Y);
+                FLOAT_LINEAR_GRAD_W(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR_GRAD_W(W, X, Y);
+                HALF_LINEAR_GRAD_W(W, X, Y, alpha1, alpha2);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR_GRAD_W(W, X, Y);
+                DOUBLE_LINEAR_GRAD_W(W, X, Y, alpha1, alpha2);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");

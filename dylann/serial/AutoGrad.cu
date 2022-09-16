@@ -18,7 +18,8 @@ namespace dylann {
                 return new SCALE_GRADS(((SCALE*)input)->A, ((SCALE*)input)->alpha);
                 
             case INS_LINEAR:
-                return new LINEAR_GRADS(((LINEAR*)input)->W, ((LINEAR*)input)->B, ((LINEAR*)input)->X, ((LINEAR*)input)->Y);
+                return new LINEAR_GRADS(((LINEAR*)input)->W, ((LINEAR*)input)->B, ((LINEAR*)input)->X, ((LINEAR*)input)->Y,
+                                        ((LINEAR*)input)->alpha1, ((LINEAR*)input)->alpha2);
                 
             case INS_CONV2D:
                 return new CONV2D_GRADS(((CONV2D*)input)->W, ((CONV2D*)input)->B, ((CONV2D*)input)->X, ((CONV2D*)input)->Y,

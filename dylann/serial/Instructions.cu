@@ -42,7 +42,7 @@ namespace dylann {
     }
     
     void LINEAR::run() {
-        linearOp(params->at(W), params->at(B), params->at(X), params->at(Y));
+        linearOp(params->at(W), params->at(B), params->at(X), params->at(Y), alpha1, alpha2);
     }
     
     void LINEAR::encodeParams(unsigned char *file,size_t &offset) {
@@ -59,6 +59,11 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void CONV2D::run() {
@@ -491,7 +496,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        auto* linear = new LINEAR(W, B, X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* linear = new LINEAR(W, B, X, Y, alpha1, alpha2);
         return linear;
     }
     
