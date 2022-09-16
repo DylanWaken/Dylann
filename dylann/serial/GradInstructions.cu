@@ -63,7 +63,7 @@ namespace dylann {
     
     void CONV2D_GRADS::run() {
         conv2dOpGrads((*params)[X], (*params)[W], (*params)[B], (*params)[Y],
-                      padH, padW, strideH, strideW, dilationH, dilationW);
+                      padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
     }
     
     void CONV2D_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -92,6 +92,11 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = dilationW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void MAXPOOL2D_GRADS::run() {
@@ -170,7 +175,7 @@ namespace dylann {
     
     void BATCHNORM_GRADS::run() {
         batchnormOpGrads((*params)[X], (*params)[Y], (*params)[mean], (*params)[var]
-                ,(*params)[gamma], (*params)[beta], eps, expAvgFactor);
+                ,(*params)[gamma], (*params)[beta], eps, expAvgFactor, alpha1, alpha2);
     }
     
     void BATCHNORM_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -194,6 +199,11 @@ namespace dylann {
         *(float*)(file + offset) = eps;
         offset += sizeof(float);
         *(float*)(file + offset) = expAvgFactor;
+        offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
         offset += sizeof(float);
     }
     
@@ -308,7 +318,7 @@ namespace dylann {
     }
     
     void RELU_GRADS::run() {
-        reluOpGrads((*params)[X], (*params)[Y]);
+        reluOpGrads((*params)[X], (*params)[Y], alpha1, alpha2);
     }
     
     void RELU_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -321,10 +331,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SIGMOID_GRADS::run() {
-        sigmoidOpGrads((*params)[X], (*params)[Y]);
+        sigmoidOpGrads((*params)[X], (*params)[Y], alpha1, alpha2);
     }
     
     void SIGMOID_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -337,10 +352,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void TANH_GRADS::run() {
-        tanhOpGrads((*params)[X], (*params)[Y]);
+        tanhOpGrads((*params)[X], (*params)[Y], alpha1, alpha2);
     }
     
     void TANH_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -353,10 +373,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void ELU_GRADS::run() {
-        eluOpGrads((*params)[X], (*params)[Y], alpha);
+        eluOpGrads((*params)[X], (*params)[Y], alpha, alpha1, alpha2);
     }
     
     void ELU_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -371,10 +396,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SWISH_GRADS::run() {
-        swishOpGrads((*params)[X], (*params)[Y], beta);
+        swishOpGrads((*params)[X], (*params)[Y], beta, alpha1, alpha2);
     }
     
     void SWISH_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -389,10 +419,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = beta;
         offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void CLIPPED_RELU_GRADS::run() {
-        clippedReluOpGrads((*params)[X], (*params)[Y], threshold);
+        clippedReluOpGrads((*params)[X], (*params)[Y], threshold, alpha1, alpha2);
     }
     
     void CLIPPED_RELU_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -406,6 +441,11 @@ namespace dylann {
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = threshold;
+        offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
         offset += sizeof(float);
     }
     
@@ -469,7 +509,12 @@ namespace dylann {
         int dilationW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        return new CONV2D_GRADS(W, B, X, Y, strideH, strideW, padH, padW, dilationH, dilationW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new CONV2D_GRADS(W, B, X, Y, strideH, strideW, padH, padW, dilationH, dilationW, alpha1, alpha2);
     }
     
     MAXPOOL2D_GRADS* extractMaxPool2DGrads(const unsigned char * file, size_t &offset){
@@ -543,7 +588,12 @@ namespace dylann {
         float avgExpFactor = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new BATCHNORM_GRADS(X, Y, gamma, beta, mean, var, eps, avgExpFactor);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new BATCHNORM_GRADS(X, Y, gamma, beta, mean, var, eps, avgExpFactor, alpha1, alpha2);
     }
     
     SOFTMAX_LOG_GRADS* extractSoftmaxLogGrads(const unsigned char * file, size_t &offset){
@@ -609,7 +659,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        return new RELU_GRADS(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new RELU_GRADS(X, Y, alpha1, alpha2);
     }
     
     SIGMOID_GRADS* extractSigmoidGrads(const unsigned char * file, size_t &offset){
@@ -618,7 +673,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        return new SIGMOID_GRADS(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new SIGMOID_GRADS(X, Y, alpha1, alpha2);
     }
     
     TANH_GRADS* extractTanhGrads(const unsigned char * file, size_t &offset){
@@ -627,7 +687,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        return new TANH_GRADS(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new TANH_GRADS(X, Y, alpha1, alpha2);
     }
     
     ELU_GRADS* extractEluGrads(const unsigned char * file, size_t &offset){
@@ -638,7 +703,12 @@ namespace dylann {
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new ELU_GRADS(X, Y, alpha);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new ELU_GRADS(X, Y, alpha, alpha1, alpha2);
     }
     
     SWISH_GRADS* extractSwishGrads(const unsigned char * file, size_t &offset){
@@ -649,7 +719,12 @@ namespace dylann {
         float beta = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new SWISH_GRADS(X, Y, beta);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new SWISH_GRADS(X, Y, beta, alpha1, alpha2);
     }
     
     CLIPPED_RELU_GRADS* extractClippedReluGrads(const unsigned char * file, size_t &offset){
@@ -660,6 +735,11 @@ namespace dylann {
         float max = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new CLIPPED_RELU_GRADS(X, Y, max);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new CLIPPED_RELU_GRADS(X, Y, max, alpha1, alpha2);
     }
 } // dylann

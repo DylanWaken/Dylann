@@ -25,6 +25,9 @@ namespace dylann{
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                      int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
+    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2);
+    
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B,
                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW);
     cuTensor conv2D(cuTensor& X, int kernelH, int kernelW, int outChannels,

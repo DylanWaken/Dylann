@@ -62,7 +62,8 @@ namespace dylann {
     }
     
     void CONV2D::run() {
-        conv2dOp(params->at(X), params->at(W), params->at(B), params->at(Y), padH, padW, strideH, strideW, dilationH, dilationW);
+        conv2dOp(params->at(X), params->at(W), params->at(B), params->at(Y), padH, padW,
+                 strideH, strideW, dilationH, dilationW, alpha1, alpha2);
     }
     
     void CONV2D::encodeParams(unsigned char *file,size_t &offset) {
@@ -91,6 +92,11 @@ namespace dylann {
         offset += sizeof(int);
         *(int*)(file + offset) = dilationW;
         offset += sizeof(int);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     
@@ -205,10 +211,12 @@ namespace dylann {
     void BATCHNORM::run() {
         if (train) {
             batchnormOp(params->at(X), params->at(Y), params->at(mean),
-                        params->at(var), params->at(gamma), params->at(beta), eps, expAvgFactor);
+                        params->at(var), params->at(gamma), params->at(beta), eps, expAvgFactor,
+                        alpha1, alpha2);
         }else{
             batchnormInferOp(params->at(X), params->at(Y), params->at(mean),
-                             params->at(var), params->at(gamma), params->at(beta), eps);
+                             params->at(var), params->at(gamma), params->at(beta), eps,
+                             alpha1, alpha2);
         }
     }
     
@@ -509,7 +517,12 @@ namespace dylann {
         int dilationW = *(int*)(file + offset);
         offset += sizeof(int);
         
-        auto* conv2d = new CONV2D(W, B, X, Y, strideH, strideW, padH, padW, dilationH, dilationW);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* conv2d = new CONV2D(W, B, X, Y, strideH, strideW, padH, padW, dilationH, dilationW, alpha1, alpha2);
         return conv2d;
     }
     
@@ -609,7 +622,12 @@ namespace dylann {
         float expAvgFactor = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* batchNorm = new BATCHNORM(X, Y, weight, bias, mean, var, eps, expAvgFactor);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* batchNorm = new BATCHNORM(X, Y, weight, bias, mean, var, eps, expAvgFactor, alpha1, alpha2);
         return batchNorm;
     }
     

@@ -5,7 +5,7 @@
 #include "cuConv.cuh"
 namespace dylann{
     cuTensorBase* conv2dOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
-                           int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+                           int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2){
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
     
@@ -32,11 +32,11 @@ namespace dylann{
     
         checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
-        float alpha = 1.0f, alpha2 = 0.0f;
+        //float alpha1 = 1.0f, alpha2 = 0.0f;
 
         checkCUDNN(cudnnConvolutionBiasActivationForward(
                 cudnnHdlG,
-                &alpha,
+                &alpha1,
                 X->desc.cudnnDesc,
                 X->data->data,
                 filterDesc,
@@ -66,7 +66,7 @@ namespace dylann{
     
     cuTensorBase* conv2dActiveOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
                                  int padH, int padW, int strideH, int strideW, int dilationH, int dilationW,
-                                 cudnnActivationMode_t mode, float coef){
+                                 cudnnActivationMode_t mode, float coef, float alpha1, float alpha2){
         assertAllocated({W, B, X, Y});
         assertOnSameDev({W, B, X, Y});
     
@@ -91,11 +91,11 @@ namespace dylann{
     
         checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
-        float alpha = 1.0f, alpha2 = 0.0f;
+        //float alpha = 1.0f, alpha2 = 0.0f;
     
         checkCUDNN(cudnnConvolutionBiasActivationForward(
                 cudnnHdlG,
-                &alpha,
+                &alpha1,
                 X->desc.cudnnDesc,
                 X->data->data,
                 filterDesc,
@@ -123,7 +123,7 @@ namespace dylann{
     }
     
     cuTensorBase* conv2dOpGrads(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
-                                int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+                                int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2){
         cudaSetDevice(W->data->deviceID);
     
         cudnnConvolutionDescriptor_t convDesc;
@@ -132,7 +132,7 @@ namespace dylann{
         cudnnFilterDescriptor_t filterDesc;
         cudnnCreateFilterDescriptor(&filterDesc);
     
-        float alpha = 1.0f, beta = 1.0f;
+        //float alpha = 1.0f, beta = 1.0f;
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
                                                    CUDNN_CONVOLUTION, Y->desc.dType))
@@ -146,7 +146,7 @@ namespace dylann{
         checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
         checkCUDNN(cudnnConvolutionBackwardData(cudnnHdlG,
-                                                &alpha,
+                                                &alpha1,
                                                 filterDesc,
                                                 W->data->data,
                                                 Y->desc.cudnnDesc,
@@ -155,14 +155,14 @@ namespace dylann{
                                                 CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
                                                 cudnnWorkspaceG,
                                                 CUDNN_WORKSPACE_SIZE_G,
-                                                &beta,
+                                                &alpha2,
                                                 X->desc.cudnnDesc,
                                                 X->grad->data
         ))
     
         checkCUDNN(cudnnConvolutionBackwardFilter(
                 cudnnHdlG,
-                &alpha,
+                &alpha1,
                 X->desc.cudnnDesc,
                 X->data->data,
                 Y->desc.cudnnDesc,
@@ -171,17 +171,17 @@ namespace dylann{
                 CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
                 cudnnWorkspaceG,
                 CUDNN_WORKSPACE_SIZE_G,
-                &beta,
+                &alpha2,
                 filterDesc,
                 W->grad->data
         ))
     
         checkCUDNN(cudnnConvolutionBackwardBias(
                 cudnnHdlG,
-                &alpha,
+                &alpha1,
                 Y->desc.cudnnDesc,
                 Y->grad->data,
-                &beta,
+                &alpha2,
                 B->desc.cudnnDesc,
                 B->grad->data
         ))

@@ -150,16 +150,21 @@ namespace dylann {
         int dilationH;
         int dilationW;
         
-        CONV2D(TENSOR_PTR W, TENSOR_PTR B, TENSOR_PTR X, TENSOR_PTR Y, int strideH, int strideW, int padH, int padW, int dilationH, int dilationW) :
+        float alpha1;
+        float alpha2;
+        
+        CONV2D(TENSOR_PTR W, TENSOR_PTR B, TENSOR_PTR X, TENSOR_PTR Y, int strideH, int strideW, int padH, int padW, int dilationH, int dilationW,
+               float alpha1, float alpha2) :
                 Operation(INS_CONV2D, 10), W(W), B(B), X(X), Y(Y),
-                strideH(strideH), strideW(strideW), padH(padH), padW(padW), dilationH(dilationH), dilationW(dilationW) {}
+                strideH(strideH), strideW(strideW), padH(padH), padW(padW), dilationH(dilationH), dilationW(dilationW),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 4 + sizeof(int) * 6;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 4 + sizeof(int) * 6 + sizeof(float) * 2;
         }
         
         void print() override {

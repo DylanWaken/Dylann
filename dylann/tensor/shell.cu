@@ -50,13 +50,26 @@ namespace dylann{
     }
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2){
+        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new CONV2D(X.desc().uuid, W.desc().uuid, B.desc().uuid, Y.desc().uuid,
+                                    padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
-        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW);
+        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
             auto* inst = new CONV2D(W.desc().uuid, B.desc().uuid, X.desc().uuid,  Y.desc().uuid,
-                                    strideH, strideW, padH, padW, dilationH, dilationW);
+                                    strideH, strideW, padH, padW, dilationH, dilationW, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -221,12 +234,12 @@ namespace dylann{
     cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
                        cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
         batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
-                    gamma.impl, beta.impl, eps, expAvgFactor, 1, 0);
+                    gamma.impl, beta.impl, eps, expAvgFactor, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
             auto* inst = new BATCHNORM(X.desc().uuid, Y.desc().uuid, gamma.desc().uuid, beta.desc().uuid,
-                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, 1, 0);
+                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -243,6 +256,8 @@ namespace dylann{
                                        runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
+        
+        return Y;
     }
     
     cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
@@ -363,11 +378,11 @@ namespace dylann{
     }
     
     cuTensor relu(cuTensor& X, cuTensor& Y){
-        reluOp(X.impl, Y.impl, 1, 0);
+        reluOp(X.impl, Y.impl, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new RELU(X.desc().uuid, Y.desc().uuid, 1, 0);
+            auto* inst = new RELU(X.desc().uuid, Y.desc().uuid, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -391,11 +406,11 @@ namespace dylann{
     }
     
     cuTensor sigmoid(cuTensor& X, cuTensor& Y){
-        sigmoidOp(X.impl, Y.impl, 1, 0);
+        sigmoidOp(X.impl, Y.impl, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new SIGMOID(X.desc().uuid, Y.desc().uuid, 1, 0);
+            auto* inst = new SIGMOID(X.desc().uuid, Y.desc().uuid, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -419,11 +434,11 @@ namespace dylann{
     }
     
     cuTensor tanh(cuTensor& X, cuTensor& Y){
-        tanhOp(X.impl, Y.impl, 1, 0);
+        tanhOp(X.impl, Y.impl, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new TANH(X.desc().uuid, Y.desc().uuid, 1, 0);
+            auto* inst = new TANH(X.desc().uuid, Y.desc().uuid, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -447,11 +462,11 @@ namespace dylann{
     }
     
     cuTensor elu(cuTensor& X, cuTensor& Y, float alpha){
-        eluOp(X.impl, Y.impl, alpha, 1, 0);
+        eluOp(X.impl, Y.impl, alpha, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new ELU(X.desc().uuid, Y.desc().uuid, alpha, 1, 0);
+            auto* inst = new ELU(X.desc().uuid, Y.desc().uuid, alpha, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -475,11 +490,11 @@ namespace dylann{
     }
     
     cuTensor swish(cuTensor& X, cuTensor& Y, float beta){
-        swishOp(X.impl, Y.impl, beta, 1, 0);
+        swishOp(X.impl, Y.impl, beta, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new SWISH(X.desc().uuid, Y.desc().uuid, beta, 1, 0);
+            auto* inst = new SWISH(X.desc().uuid, Y.desc().uuid, beta, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -503,11 +518,11 @@ namespace dylann{
     }
     
     cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold){
-        clippedReluOp(X.impl, Y.impl, threshold, 1, 0);
+        clippedReluOp(X.impl, Y.impl, threshold, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new CLIPPED_RELU(X.desc().uuid, Y.desc().uuid, threshold, 1, 0);
+            auto* inst = new CLIPPED_RELU(X.desc().uuid, Y.desc().uuid, threshold, 1, 1);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
