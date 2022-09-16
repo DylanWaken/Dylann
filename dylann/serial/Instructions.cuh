@@ -431,16 +431,19 @@ namespace dylann {
     public:
         TENSOR_PTR X;
         TENSOR_PTR Y;
+        float alpha1;
+        float alpha2;
         
-        RELU(TENSOR_PTR X, TENSOR_PTR Y) :
-                Operation(INS_RELU, 2), X(X), Y(Y) {}
+        RELU(TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+                Operation(INS_RELU, 4), X(X), Y(Y),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof (float) * 2;
         }
         
         void print() override {
@@ -452,16 +455,19 @@ namespace dylann {
     public:
         TENSOR_PTR X;
         TENSOR_PTR Y;
+        float alpha1;
+        float alpha2;
         
-        SIGMOID(TENSOR_PTR X, TENSOR_PTR Y) :
-                Operation(INS_SIGMOID, 2), X(X), Y(Y) {}
+        SIGMOID(TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+                Operation(INS_SIGMOID, 4), X(X), Y(Y),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof (float) * 2;
         }
         
         void print() override {
@@ -473,16 +479,19 @@ namespace dylann {
     public:
         TENSOR_PTR X;
         TENSOR_PTR Y;
+        float alpha1;
+        float alpha2;
         
-        TANH(TENSOR_PTR X, TENSOR_PTR Y) :
-                Operation(INS_TANH, 2), X(X), Y(Y) {}
+        TANH(TENSOR_PTR X, TENSOR_PTR Y, float alpha1, float alpha2) :
+                Operation(INS_TANH, 2), X(X), Y(Y),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof (float) * 2;
         }
         
         void print() override {
@@ -495,16 +504,19 @@ namespace dylann {
         TENSOR_PTR X;
         TENSOR_PTR Y;
         float alpha;
+        float alpha1;
+        float alpha2;
         
-        ELU(TENSOR_PTR X, TENSOR_PTR Y, float alpha) :
-                Operation(INS_ELU, 3), X(X), Y(Y), alpha(alpha) {}
+        ELU(TENSOR_PTR X, TENSOR_PTR Y, float alpha, float alpha1, float alpha2) :
+                Operation(INS_ELU, 3), X(X), Y(Y), alpha(alpha),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float);
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) + sizeof (float) * 2;
         }
         
         void print() override {
@@ -517,16 +529,19 @@ namespace dylann {
         TENSOR_PTR X;
         TENSOR_PTR Y;
         float beta;
+        float alpha1;
+        float alpha2;
         
-        SWISH(TENSOR_PTR X, TENSOR_PTR Y, float beta) :
-                Operation(INS_SWISH, 3), X(X), Y(Y), beta(beta) {}
+        SWISH(TENSOR_PTR X, TENSOR_PTR Y, float beta, float alpha1, float alpha2) :
+                Operation(INS_SWISH, 3), X(X), Y(Y), beta(beta),
+                alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float);
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) + sizeof (float) * 2;
         }
         
         void print() override {
@@ -539,16 +554,19 @@ namespace dylann {
         TENSOR_PTR X;
         TENSOR_PTR Y;
         float threshold;
+        float alpha1;
+        float alpha2;
         
-        CLIPPED_RELU(TENSOR_PTR X, TENSOR_PTR Y, float threshold) :
-                Operation(INS_CLIPPED_RELU, 3), X(X), Y(Y), threshold(threshold) {}
+        CLIPPED_RELU(TENSOR_PTR X, TENSOR_PTR Y, float threshold, float alpha1, float alpha2) :
+                Operation(INS_CLIPPED_RELU, 3), X(X), Y(Y), threshold(threshold),
+                alpha1(alpha1), alpha2(alpha2) {}
                 
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float);
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) + sizeof (float) * 2;
         }
         
         void print() override {

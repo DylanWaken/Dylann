@@ -337,11 +337,22 @@ namespace dylann{
     }
     
     cuTensor relu(cuTensor& X, cuTensor& Y){
-        reluOp(X.impl, Y.impl);
+        reluOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new RELU(X.desc().uuid, Y.desc().uuid);
+            auto* inst = new RELU(X.desc().uuid, Y.desc().uuid, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor relu(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+        reluOp(X.impl, Y.impl, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new RELU(X.desc().uuid, Y.desc().uuid, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -354,11 +365,22 @@ namespace dylann{
     }
     
     cuTensor sigmoid(cuTensor& X, cuTensor& Y){
-        sigmoidOp(X.impl, Y.impl);
+        sigmoidOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new SIGMOID(X.desc().uuid, Y.desc().uuid);
+            auto* inst = new SIGMOID(X.desc().uuid, Y.desc().uuid, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor sigmoid(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+        sigmoidOp(X.impl, Y.impl, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new SIGMOID(X.desc().uuid, Y.desc().uuid, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -371,11 +393,22 @@ namespace dylann{
     }
     
     cuTensor tanh(cuTensor& X, cuTensor& Y){
-        tanhOp(X.impl, Y.impl);
+        tanhOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new TANH(X.desc().uuid, Y.desc().uuid);
+            auto* inst = new TANH(X.desc().uuid, Y.desc().uuid, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor tanh(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+        tanhOp(X.impl, Y.impl, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new TANH(X.desc().uuid, Y.desc().uuid, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -388,11 +421,22 @@ namespace dylann{
     }
     
     cuTensor elu(cuTensor& X, cuTensor& Y, float alpha){
-        eluOp(X.impl, Y.impl, alpha);
+        eluOp(X.impl, Y.impl, alpha, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new ELU(X.desc().uuid, Y.desc().uuid, alpha);
+            auto* inst = new ELU(X.desc().uuid, Y.desc().uuid, alpha, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor elu(cuTensor& X, cuTensor& Y, float alpha, float alpha1, float alpha2){
+        eluOp(X.impl, Y.impl, alpha, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new ELU(X.desc().uuid, Y.desc().uuid, alpha, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -405,11 +449,22 @@ namespace dylann{
     }
     
     cuTensor swish(cuTensor& X, cuTensor& Y, float beta){
-        swishOp(X.impl, Y.impl, beta);
+        swishOp(X.impl, Y.impl, beta, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new SWISH(X.desc().uuid, Y.desc().uuid, beta);
+            auto* inst = new SWISH(X.desc().uuid, Y.desc().uuid, beta, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor swish(cuTensor& X, cuTensor& Y, float beta, float alpha1, float alpha2){
+        swishOp(X.impl, Y.impl, beta, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new SWISH(X.desc().uuid, Y.desc().uuid, beta, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
@@ -422,11 +477,22 @@ namespace dylann{
     }
     
     cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold){
-        clippedReluOp(X.impl, Y.impl, threshold);
+        clippedReluOp(X.impl, Y.impl, threshold, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new CLIPPED_RELU(X.desc().uuid, Y.desc().uuid, threshold);
+            auto* inst = new CLIPPED_RELU(X.desc().uuid, Y.desc().uuid, threshold, 1, 0);
+            forwardOpsCTX.push_back(inst);
+        }
+        return Y;
+    }
+    
+    cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold, float alpha1, float alpha2){
+        clippedReluOp(X.impl, Y.impl, threshold, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new CLIPPED_RELU(X.desc().uuid, Y.desc().uuid, threshold, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;

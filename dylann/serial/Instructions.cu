@@ -313,7 +313,7 @@ namespace dylann {
     }
     
     void RELU::run() {
-        reluOp(params->at(X), params->at(Y));
+        reluOp(params->at(X), params->at(Y), alpha1, alpha2);
     }
     
     void RELU::encodeParams(unsigned char *file,size_t &offset) {
@@ -326,10 +326,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SIGMOID::run() {
-        sigmoidOp(params->at(X), params->at(Y));
+        sigmoidOp(params->at(X), params->at(Y), alpha1, alpha2);
     }
     
     void SIGMOID::encodeParams(unsigned char *file,size_t &offset) {
@@ -342,10 +347,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void TANH::run() {
-        tanhOp(params->at(X), params->at(Y));
+        tanhOp(params->at(X), params->at(Y), alpha1, alpha2);
     }
     
     void TANH::encodeParams(unsigned char *file,size_t &offset) {
@@ -358,10 +368,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void ELU::run() {
-        eluOp(params->at(X), params->at(Y), alpha);
+        eluOp(params->at(X), params->at(Y), alpha, alpha1, alpha2 );
     }
     
     void ELU::encodeParams(unsigned char *file,size_t &offset) {
@@ -376,10 +391,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void SWISH::run() {
-        swishOp(params->at(X), params->at(Y), beta);
+        swishOp(params->at(X), params->at(Y), beta, alpha1, alpha2);
     }
     
     void SWISH::encodeParams(unsigned char *file,size_t &offset) {
@@ -394,10 +414,15 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = beta;
         offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
     }
     
     void CLIPPED_RELU::run() {
-        clippedReluOp(params->at(X), params->at(Y), threshold);
+        clippedReluOp(params->at(X), params->at(Y), threshold, alpha1, alpha2);
     }
     
     void CLIPPED_RELU::encodeParams(unsigned char *file,size_t &offset) {
@@ -411,6 +436,11 @@ namespace dylann {
         *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = threshold;
+        offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
         offset += sizeof(float);
     }
     
@@ -639,7 +669,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        auto* relu = new RELU(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* relu = new RELU(X, Y, alpha1, alpha2);
         return relu;
     }
     
@@ -649,7 +684,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        auto* sigmoid = new SIGMOID(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* sigmoid = new SIGMOID(X, Y, alpha1, alpha2);
         return sigmoid;
     }
     
@@ -659,7 +699,12 @@ namespace dylann {
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         
-        auto* tanh = new TANH(X, Y);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* tanh = new TANH(X, Y, alpha1, alpha2);
         return tanh;
     }
     
@@ -671,7 +716,12 @@ namespace dylann {
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* elu = new ELU(X, Y, alpha);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* elu = new ELU(X, Y, alpha, alpha1, alpha2);
         return elu;
     }
     
@@ -683,7 +733,12 @@ namespace dylann {
         float beta = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* swish = new SWISH(X, Y, beta);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* swish = new SWISH(X, Y, beta, alpha1, alpha2);
         return swish;
     }
     
@@ -695,7 +750,12 @@ namespace dylann {
         float threshold = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* clippedRelu = new CLIPPED_RELU(X, Y, threshold);
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* clippedRelu = new CLIPPED_RELU(X, Y, threshold, alpha1, alpha2);
         return clippedRelu;
     }
 } // dylann

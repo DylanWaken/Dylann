@@ -78,21 +78,27 @@ namespace dylann{
     //Activations
     cuTensor relu(cuTensor& X);
     cuTensor relu(cuTensor& X, cuTensor& Y);
+    cuTensor relu(cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     
     cuTensor sigmoid(cuTensor& X);
     cuTensor sigmoid(cuTensor& X, cuTensor& Y);
+    cuTensor sigmoid(cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     
     cuTensor tanh(cuTensor& X);
     cuTensor tanh(cuTensor& X, cuTensor& Y);
+    cuTensor tanh(cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     
     cuTensor elu(cuTensor& X, float alpha);
     cuTensor elu(cuTensor& X, cuTensor& Y, float alpha);
+    cuTensor elu(cuTensor& X, cuTensor& Y, float alpha, float alpha1, float alpha2);
     
     cuTensor swish(cuTensor& X, float beta);
     cuTensor swish(cuTensor& X, cuTensor& Y, float beta);
+    cuTensor swish(cuTensor& X, cuTensor& Y, float beta, float alpha1, float alpha2);
     
     cuTensor clippedRelu(cuTensor& X, float threshold);
     cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold);
+    cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold, float alpha1, float alpha2);
     
     //rand init
     cuTensor randUniform(cuTensor& A, double min, double max);
