@@ -6,20 +6,20 @@
 
 namespace dylann {
     cuTensorBase* batchnormOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
-                              cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor) {
+                              cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor, float alpha1, float alpha2) {
         assertAllocated({X, Y, runningMean, runningVar, gamma, beta});
         assertOnSameDev({X, Y, runningMean, runningVar, gamma, beta});
         
         cudaSetDevice(X->data->deviceID);
         
-        float a = 1.0f, b = 0.0f;
+//        float a = 1.0f, b = 0.0f;
         
         //in this function, to save space, we use the grads for runningMean and runningVar as temp storage
         checkCUDNN(cudnnBatchNormalizationForwardTraining(
                 cudnnHdlG,
                 CUDNN_BATCHNORM_SPATIAL,
-                &a,
-                &b,
+                &alpha1,
+                &alpha2,
                 X->desc.cudnnDesc,
                 X->data->data,
                 Y->desc.cudnnDesc,
@@ -39,19 +39,19 @@ namespace dylann {
     }
     
     cuTensorBase* batchnormInferOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
-                                   cuTensorBase* gamma, cuTensorBase* beta, float eps) {
+                                   cuTensorBase* gamma, cuTensorBase* beta, float eps, float alpha1, float alpha2) {
         assertAllocated({X, Y, runningMean, runningVar, gamma, beta});
         assertOnSameDev({X, Y, runningMean, runningVar, gamma, beta});
         
         cudaSetDevice(X->data->deviceID);
         
-        float a = 1.0f, b = 0.0f;
+//        float a = 1.0f, b = 0.0f;
         
         checkCUDNN(cudnnBatchNormalizationForwardInference(
                 cudnnHdlG,
                 CUDNN_BATCHNORM_SPATIAL,
-                &a,
-                &b,
+                &alpha1,
+                &alpha2,
                 X->desc.cudnnDesc,
                 X->data->data,
                 Y->desc.cudnnDesc,
@@ -68,18 +68,18 @@ namespace dylann {
     }
     
     cuTensorBase* batchnormOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
-                                   cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor){
+                                   cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor, float alpha1, float alpha2) {
         cudaSetDevice(X->data->deviceID);
         
-        float a = 1.0f, b = 1.0f;
+//        float a = 1.0f, b = 1.0f;
         
         checkCUDNN(cudnnBatchNormalizationBackward(
                 cudnnHdlG,
                 CUDNN_BATCHNORM_SPATIAL,
-                &a,
-                &b,
-                &a,
-                &b,
+                &alpha1,
+                &alpha2,
+                &alpha1,
+                &alpha2,
                 X->desc.cudnnDesc,
                 X->data->data,
                 Y->desc.cudnnDesc,

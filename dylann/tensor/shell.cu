@@ -221,15 +221,28 @@ namespace dylann{
     cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
                        cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
         batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
-                    gamma.impl, beta.impl, eps, expAvgFactor);
+                    gamma.impl, beta.impl, eps, expAvgFactor, 1, 0);
         
         if(regisModeCTX){
             //push forward instruction
             auto* inst = new BATCHNORM(X.desc().uuid, Y.desc().uuid, gamma.desc().uuid, beta.desc().uuid,
-                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor);
+                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, 1, 0);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
+    }
+    
+    cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2){
+        batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
+                    gamma.impl, beta.impl, eps, expAvgFactor, alpha1, alpha2);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new BATCHNORM(X.desc().uuid, Y.desc().uuid, gamma.desc().uuid, beta.desc().uuid,
+                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, alpha1, alpha2);
+            forwardOpsCTX.push_back(inst);
+        }
     }
     
     cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
@@ -237,6 +250,19 @@ namespace dylann{
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return batchnorm(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
+    }
+    
+    cuTensor batchnorm(cuTensor& X, float eps, float expAvgFactor){
+        cuTensor runningMean = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                                1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+        cuTensor runningVar = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                                  1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+        cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                            1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+        cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+        
+        return batchnorm(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
     cuTensor dropout(cuTensor& X, cuTensor& Y, float p){

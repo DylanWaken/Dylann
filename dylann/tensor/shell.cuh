@@ -55,9 +55,13 @@ namespace dylann{
     cuTensor channelConcat(cuTensor* Xs, int inputCount);
     
     cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2);
+    cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
                        cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
     cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
                          cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
+    cuTensor batchnorm(cuTensor& X, float eps, float expAvgFactor);
+    
     
     cuTensor dropout(cuTensor& X, cuTensor& Y, float p);
     cuTensor dropout(cuTensor& X, float p);

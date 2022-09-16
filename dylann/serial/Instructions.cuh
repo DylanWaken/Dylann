@@ -302,17 +302,20 @@ namespace dylann {
         float eps;
         float expAvgFactor;
         
+        float alpha1;
+        float alpha2;
+        
         BATCHNORM(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
-                  TENSOR_PTR var, float eps, float expAvgFactor) :
+                  TENSOR_PTR var, float eps, float expAvgFactor, float alpha1, float alpha2) :
                 Operation(INS_BATCHNORM, 8), X(X), Y(Y), gamma(gamma), beta(beta),
-                mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor) {}
+                mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor), alpha1(alpha1), alpha2(alpha2) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 6 + sizeof(float) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 6 + sizeof(float) * 2 + sizeof(float) * 2;
         }
         
         void print() override {
