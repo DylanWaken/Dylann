@@ -197,4 +197,5 @@ namespace dylann{
         
         cudaFreeHost(view);
     }
+    
 }

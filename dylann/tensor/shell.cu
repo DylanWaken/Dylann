@@ -55,8 +55,8 @@ namespace dylann{
     }
     
     cuTensor linear(cuTensor& X, int outDim){
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w);
-        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim);
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w).asNetworkParam();
+        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim).asNetworkParam();
         return linear(W, B, X);
     }
     
@@ -109,8 +109,8 @@ namespace dylann{
         unsigned int Bh = 1;
         unsigned int Bw = 1;
         
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww);
-        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw);
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam();
+        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw).asNetworkParam();
         
         return conv2D(X, W, B, padH, padW, strideH, strideW, dilationH, dilationW);
     }
@@ -281,12 +281,16 @@ namespace dylann{
     cuTensor batchnorm(cuTensor& X, float eps, float expAvgFactor){
         cuTensor runningMean = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                                 1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+
         cuTensor runningVar = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                                   1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+                                                  
         cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
-                                            1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+                                            1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
+                                                    .asNetworkParam();
         cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,
-                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
+                                                     .asNetworkParam();
         
         return batchnorm(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }

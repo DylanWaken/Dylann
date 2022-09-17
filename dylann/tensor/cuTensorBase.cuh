@@ -119,6 +119,7 @@ namespace dylann {
         //state
         bool isAllocated = false;
         bool withGrad = false;
+        bool isParam = false;
         
         static TDescriptor* create(shape4 dims, cudnnDataType_t dType) {
             //create the global cudnn Handle

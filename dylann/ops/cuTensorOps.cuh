@@ -12,6 +12,14 @@
 
 namespace dylann{
     
+    cuTensorBase* hadamardOp(cuTensorBase* X, cuTensorBase* Y);
+    void hadamard(cudnnDataType_t dtype, void* X, void* Y, unsigned int size);
+    
+    void RSMPropV(cudnnDataType_t dtype, void* V, void* G, float BETA, unsigned int size);
+    void RSMPropA(cudnnDataType_t dtype, void* W, void* V, void* G, float EPSILON, float LR, float L2, unsigned int size);
+    
+    void AdamA(cudnnDataType_t dtype, void* W, void* M, void* V, float EPSILON, float LR, float L2, unsigned int size);
+    
     //addOp operation (for data)
     cuTensorBase* addOp(cuTensorBase* A, cuTensorBase* B, float alpha, float beta);
     cuTensorBase* addOpGrad(cuTensorBase* X, cuTensorBase* Y, float alpha, float beta);

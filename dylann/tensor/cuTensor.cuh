@@ -19,7 +19,7 @@ namespace dylann{
         cuTensorBase* impl;
         
         template<cudnnDataType_t dtype>
-        static cuTensor declare(shape4 dims){;
+        static cuTensor declare(shape4 dims){
             return cuTensor{cuTensorBase::create(dims, dtype)};
         }
         
@@ -119,13 +119,13 @@ namespace dylann{
         
         //debug
         void print() const;
-        void toFile(const char *basePath) const;
+        void toFile(const char *basePath);
+        
+        cuTensor asNetworkParam() { impl->desc.isParam = true; return *this; }
         
         //operators
         cuTensor operator+=(cuTensor& other);
         cuTensor operator-=(cuTensor& other);
-    
-        void toFile(const char *basePath);
     };
 }
 

@@ -27,6 +27,14 @@ namespace dylann {
         onModelRegisterG = true;
     }
     
+    void allocModelParams(){
+        for(auto it : tensorsCTX){
+            if(it.second->desc.isParam){
+                paramsCTX.insert(it);
+            }
+        }
+    }
+    
     void endModelRegister(){
         regisModeCTX = false;
         onModelRegisterG = false;

@@ -8,6 +8,7 @@
 #include <vector>
 #include "serial/Instructions.cuh"
 #include "serial/GradInstructions.cuh"
+#include "tensor/cuTensor.cuh"
 
 using namespace std;
 namespace dylann {
@@ -33,6 +34,8 @@ namespace dylann {
     void initEngineContext();
     
     void beganModelRegister();
+    
+    void allocModelParams();
     
     void endModelRegister();
     

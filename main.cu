@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "dylann/tensor/shell.cuh"
+#include "dylann/optim/Optimizers.cuh"
 
 using namespace dylann;
 
@@ -32,11 +33,16 @@ int main() {
     }
     
     generateGrads(forwardOpsCTX, backwardOpsCTX);
+    allocModelParams();
     
-    for (int p = 0; p < 1; p++) {
+    auto opt = Adam(0.001);
+    opt.bindDefaultParams();
+    
+    for (int p = 0; p < 100000; p++) {
         for (auto &i: backwardOpsCTX) {
             i->run();
-            i->print();
+            opt.apply();
         }
     }
+    
 }
