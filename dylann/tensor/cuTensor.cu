@@ -179,7 +179,7 @@ namespace dylann{
         void* view;
         
         ofstream dataFile = ofstream(basePath + to_string(impl->desc.uuid) + string("data.txt"));
-        ofstream gradFile = ofstream(basePath + to_string(impl->desc.uuid) + string("grad.txt"));
+        ofstream gradFile = ofstream(basePath + to_string(impl->desc.uuid) + string("backward.txt"));
         
         cudaMallocHost(&view, impl->data->memSize);
         assertCuda(__FILE__, __LINE__);

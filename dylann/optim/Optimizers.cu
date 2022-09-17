@@ -81,7 +81,7 @@ void dylann::RMSProp::bindDefaultParams() {
 //RMSProp : V[t] = V[t-1] * β + (1 - β) * g[t]^2
 //          w[t] = w[t-1] - η * g[t] / sqrt(V[t] + ε)
 
-//the grad in optimBufCTX is actually V[t]
+//the backward in optimBufCTX is actually V[t]
 void dylann::RMSProp::apply() {
     for (auto p : (*paramsRes)) {
         RSMPropV(p.second->desc.dType, optimBufCTX[p.first]->grad->data,
@@ -145,7 +145,7 @@ void dylann::Adam::apply() {
         
         t++;
         
-        //reset grad
+        //reset backward
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);
     }
