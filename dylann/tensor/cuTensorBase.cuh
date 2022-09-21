@@ -36,7 +36,7 @@
     }                                                        \
 }
 
-#define CUDNN_WORKSPACE_SIZE_G (1024 * 1024 * 64)
+#define CUDNN_WORKSPACE_SIZE_G (1024 * 1024 * 256)
 typedef unsigned int TENSOR_PTR;
 
 using namespace std;
@@ -220,6 +220,11 @@ namespace dylann {
             if(onModelRegisterG) tensorPoolG->insert({tensor->desc.uuid, tensor});
             
             return tensor;
+        }
+        
+        cuTensorBase* instantiate(int deviceID){
+            this->data = TStorage::create(deviceID, this->desc.numel * this->desc.elementSize);
+            return this;
         }
     };
     

@@ -23,16 +23,16 @@ void dylann::SGD::zeroGrad() {
 void dylann::Momentum::bindParams(map<TENSOR_PTR, dylann::cuTensorBase *> *params) {
     OPTIM_BASE::bindParams(params);
     for(auto& param : *params){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                   param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 
 void dylann::Momentum::bindDefaultParams() {
     OPTIM_BASE::bindDefaultParams();
     for(auto& param : *paramsRes){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                           param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 
@@ -65,16 +65,16 @@ void dylann::Momentum::zeroGrad() {
 void dylann::RMSProp::bindParams(map<TENSOR_PTR, dylann::cuTensorBase *> *params) {
     OPTIM_BASE::bindParams(params);
     for(auto& param : *params){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                   param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 
 void dylann::RMSProp::bindDefaultParams() {
     OPTIM_BASE::bindDefaultParams();
     for(auto& param : *paramsRes){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                           param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 
@@ -104,16 +104,16 @@ void dylann::RMSProp::zeroGrad() {
 void dylann::Adam::bindParams(map<TENSOR_PTR, dylann::cuTensorBase *> *params) {
     OPTIM_BASE::bindParams(params);
     for(auto& param : *params){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                   param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 
 void dylann::Adam::bindDefaultParams() {
     OPTIM_BASE::bindDefaultParams();
     for(auto& param : *paramsRes){
-        optimBufCTX.insert({param.first, cuTensor::create(param.second->data->deviceID,
-                           param.second->desc.dType,param.second->desc.sizes).impl});
+        optimBufCTX.insert({param.first, cuTensorBase::create(param.second->desc.sizes, param.second->desc.dType)
+                ->instantiate(param.second->data->deviceID)});
     }
 }
 

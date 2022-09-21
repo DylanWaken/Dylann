@@ -8,7 +8,7 @@
 #include <vector>
 #include "serial/Instructions.cuh"
 #include "serial/GradInstructions.cuh"
-#include "tensor/cuTensor.cuh"
+#include "module/Sequence.cuh"
 
 using namespace std;
 namespace dylann {
@@ -30,6 +30,7 @@ namespace dylann {
     
     extern bool regisModeCTX;
     extern unsigned int tensorIDSeqCTX;
+    extern bool engineAliveCTX;
     
     void initEngineContext();
     
@@ -38,6 +39,9 @@ namespace dylann {
     void allocModelParams();
     
     void endModelRegister();
+    
+    Sequence* ctx2seq();
+    Sequence* ctx2SeqExport();
     
 } // dylann
 

@@ -67,8 +67,8 @@ namespace dylann {
     }
     
     void CONV2D::run() {
-        conv2dOp(params->at(X), params->at(W), params->at(B), params->at(Y), padH, padW,
-                 strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+        conv2dOp(params->at(X), params->at(W), params->at(B), params->at(Y),
+                 strideH, strideW, padH, padW, dilationH, dilationW, alpha1, alpha2);
     }
     
     void CONV2D::encodeParams(unsigned char *file,size_t &offset) {

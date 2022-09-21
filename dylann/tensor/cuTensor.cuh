@@ -8,6 +8,8 @@
 #include <stack>
 #include "cuTensorBase.cuh"
 #include "../ops/cuTensorOps.cuh"
+#include "../serial/AutoGrad.cuh"
+
 
 using namespace std;
 
@@ -17,6 +19,7 @@ namespace dylann{
     struct cuTensor{
     public:
         cuTensorBase* impl;
+        static vector<Operation*>* instructions;
         
         template<cudnnDataType_t dtype>
         static cuTensor declare(shape4 dims){

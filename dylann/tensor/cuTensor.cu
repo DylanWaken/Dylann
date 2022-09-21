@@ -9,13 +9,22 @@
 
 
 namespace dylann{
+    vector<Operation*>* cuTensor::instructions;
+    
     cuTensor cuTensor::operator+=(cuTensor& A) {
         addOp(this->impl, A.impl, 1, 1);
+        
+        auto* op = new ADD(this->impl->desc.uuid, A.impl->desc.uuid, 1, 1);
+        instructions->push_back(op);
+        
         return *this;
     }
     
     cuTensor cuTensor::operator-=(cuTensor &other) {
         addOp(this->impl, other.impl, 1, -1);
+    
+        auto* op = new ADD(this->impl->desc.uuid, other.impl->desc.uuid, 1, -1);
+        instructions->push_back(op);
         return *this;
     }
     

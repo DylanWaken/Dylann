@@ -61,21 +61,21 @@ namespace dylann{
     }
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
-                     int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2){
-        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+                      int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2){
+        conv2dOp(X.impl, W.impl, B.impl, Y.impl,  strideH, strideW,padH, padW, dilationH, dilationW, alpha1, alpha2);
         
         if(regisModeCTX){
             //push forward instruction
             auto* inst = new CONV2D(X.desc().uuid, W.desc().uuid, B.desc().uuid, Y.desc().uuid,
-                                    padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+                                    strideH, strideW, padH, padW, dilationH, dilationW, alpha1, alpha2);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
     }
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
-                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
-        conv2dOp(X.impl, W.impl, B.impl, Y.impl, padH, padW, strideH, strideW, dilationH, dilationW, 1, 1);
+                    int strideH, int strideW, int padH, int padW, int dilationH, int dilationW){
+        conv2dOp(X.impl, W.impl, B.impl, Y.impl, strideH, strideW, padH, padW, dilationH, dilationW, 1, 1);
         
         if(regisModeCTX){
             //push forward instruction
@@ -87,18 +87,18 @@ namespace dylann{
     }
     
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B,
-                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+                    int strideH, int strideW, int padH, int padW,int dilationH, int dilationW){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = W.desc().sizes.n;
         unsigned int h = (X.desc().sizes.h + 2*padH - (dilationH*(W.desc().sizes.h-1) + 1))/strideH + 1;
         unsigned int w = (X.desc().sizes.w + 2*padW - (dilationW*(W.desc().sizes.w-1) + 1))/strideW + 1;
         
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, n, c, h, w);
-        return conv2D(X, W, B, Y, padH, padW, strideH, strideW, dilationH, dilationW);
+        return conv2D(X, W, B, Y,  strideH, strideW,padH, padW, dilationH, dilationW);
     }
     
     cuTensor conv2D(cuTensor& X, int kernelH, int kernelW, int outChannels,
-                    int padH, int padW, int strideH, int strideW, int dilationH, int dilationW){
+                    int strideH, int strideW, int padH, int padW, int dilationH, int dilationW){
         unsigned int Wn = outChannels;
         unsigned int Wc = X.desc().sizes.c;
         unsigned int Wh = kernelH;
@@ -112,7 +112,7 @@ namespace dylann{
         cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam();
         cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw).asNetworkParam();
         
-        return conv2D(X, W, B, padH, padW, strideH, strideW, dilationH, dilationW);
+        return conv2D(X, W, B, strideH, strideW, padH, padW,  dilationH, dilationW);
     }
     
     

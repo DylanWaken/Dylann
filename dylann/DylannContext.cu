@@ -3,6 +3,7 @@
 //
 
 #include "DylannContext.cuh"
+#include "tensor/cuTensor.cuh"
 
 namespace dylann {
     
@@ -13,13 +14,19 @@ namespace dylann {
     vector<Operation*> backwardOpsCTX;
     
     bool regisModeCTX;
-    unsigned int tensorIDSeqCTX;
+    unsigned int tensorIDSeqCTX = 0;
+    bool engineAliveCTX = false;
     
+    //register mode is automatically started after initialized engine context
     void initEngineContext(){
-        cudaMallocHost(&tensorIDSeqG, sizeof(unsigned int));
         *tensorIDSeqG = tensorIDSeqCTX;
         
         cuTensorBase::tensorPoolG = &tensorsCTX;
+        cuTensor::instructions = &forwardOpsCTX;
+        
+        engineAliveCTX = true;
+        regisModeCTX = true;
+        onModelRegisterG = true;
     }
     
     void beganModelRegister(){
@@ -38,5 +45,49 @@ namespace dylann {
     void endModelRegister(){
         regisModeCTX = false;
         onModelRegisterG = false;
+    }
+    
+    Sequence* ctx2seq(){
+        Sequence* seq;
+        cudaMallocHost(&seq, sizeof(Sequence));
+        seq->tensorsSeq = tensorsCTX;
+        seq->paramsSeq = paramsCTX;
+        seq->forwardOpSeq = forwardOpsCTX;
+        seq->backwardOpSeq = backwardOpsCTX;
+    
+        for (auto& op : seq->forwardOpSeq) {
+            op->bind(&seq->tensorsSeq);
+        }
+        
+        for (auto& op : seq->backwardOpSeq) {
+            op->bind(&seq->tensorsSeq);
+        }
+    
+        tensorsCTX.clear();
+        paramsCTX.clear();
+        forwardOpsCTX.clear();
+        backwardOpsCTX.clear();
+    
+        *tensorIDSeqG = 0;
+        return seq;
+    }
+    
+    Sequence* ctx2SeqExport(){
+        Sequence* seq;
+        cudaMallocHost(&seq, sizeof(Sequence));
+        seq->tensorsSeq = tensorsCTX;
+        seq->paramsSeq = paramsCTX;
+        seq->forwardOpSeq = forwardOpsCTX;
+        seq->backwardOpSeq = backwardOpsCTX;
+    
+        for (auto& op : seq->forwardOpSeq) {
+            op->bind(&seq->tensorsSeq);
+        }
+    
+        for (auto& op : seq->backwardOpSeq) {
+            op->bind(&seq->tensorsSeq);
+        }
+        
+        return seq;
     }
 } // dylann

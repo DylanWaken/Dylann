@@ -52,7 +52,7 @@ namespace dylann {
         
         //control train or inference
         bool train = true;
-        map<TENSOR_PTR ,cuTensorBase*>* params{};
+        map<TENSOR_PTR ,cuTensorBase*>* params = nullptr;
         
         Operation(unsigned int opCode, unsigned int paramCount) : opCode(opCode), paramCount(paramCount) {}
         

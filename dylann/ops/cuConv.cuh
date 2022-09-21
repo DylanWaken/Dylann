@@ -9,13 +9,13 @@
 
 namespace dylann{
     cuTensorBase* conv2dOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
-                           int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2);
+                            int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2);
     
     cuTensorBase* conv2dOpGrads(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
-                                int padH, int padW, int strideH, int strideW, int dilationH, int dilationW, float alpha1, float alpha2);
+                                int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2);
     
     cuTensorBase* conv2dActiveOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
-                                 int padH, int padW, int strideH, int strideW, int dilationH, int dilationW,
+                                  int strideH, int strideW,int padH, int padW, int dilationH, int dilationW,
                                  cudnnActivationMode_t mode, float coef, float alpha1, float alpha2);
 }
 

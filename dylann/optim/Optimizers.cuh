@@ -7,7 +7,7 @@
 
 
 #include "../tensor/cuTensorBase.cuh"
-#include "../DylannContext.cuh"
+#include "../serial/AutoGrad.cuh"
 
 namespace dylann {
     
@@ -17,7 +17,7 @@ namespace dylann {
         float L2 = 0.0001;
         //grads in optimBufCTX can be used as second order momentum
         map<TENSOR_PTR, cuTensorBase*> optimBufCTX;
-        map<TENSOR_PTR, cuTensorBase*>* paramsRes;
+        map<TENSOR_PTR, cuTensorBase*>* paramsRes = nullptr;
         
         OPTIM_BASE() = default;
     

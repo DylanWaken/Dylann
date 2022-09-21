@@ -5,8 +5,9 @@
 #ifndef DYLANN_MODULE_CUH
 #define DYLANN_MODULE_CUH
 
-#include "../serial/Instructions.cuh"
-#include "../serial/GradInstructions.cuh"
+#include "../serial/AutoGrad.cuh"
+#include "../tensor/cuTensor.cuh"
+#include "../tensor/shell.cuh"
 
 namespace dylann {
     
@@ -15,7 +16,8 @@ namespace dylann {
      * the defined computations in modules would be translated into instructions
      */
     struct Module {
-    
+    public:
+        virtual cuTensor forward(cuTensor& X) = 0;
     };
     
 } // dylann

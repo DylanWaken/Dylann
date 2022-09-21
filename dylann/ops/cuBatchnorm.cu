@@ -17,7 +17,7 @@ namespace dylann {
         //in this function, to save space, we use the grads for runningMean and runningVar as temp storage
         checkCUDNN(cudnnBatchNormalizationForwardTraining(
                 cudnnHdlG,
-                CUDNN_BATCHNORM_SPATIAL,
+                CUDNN_BATCHNORM_PER_ACTIVATION,
                 &alpha1,
                 &alpha2,
                 X->desc.cudnnDesc,
@@ -49,7 +49,7 @@ namespace dylann {
         
         checkCUDNN(cudnnBatchNormalizationForwardInference(
                 cudnnHdlG,
-                CUDNN_BATCHNORM_SPATIAL,
+                CUDNN_BATCHNORM_PER_ACTIVATION,
                 &alpha1,
                 &alpha2,
                 X->desc.cudnnDesc,
@@ -75,7 +75,7 @@ namespace dylann {
         
         checkCUDNN(cudnnBatchNormalizationBackward(
                 cudnnHdlG,
-                CUDNN_BATCHNORM_SPATIAL,
+                CUDNN_BATCHNORM_PER_ACTIVATION,
                 &alpha1,
                 &alpha2,
                 &alpha1,

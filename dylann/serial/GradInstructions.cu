@@ -68,7 +68,7 @@ namespace dylann {
     
     void CONV2D_GRADS::run() {
         conv2dOpGrads((*params)[X], (*params)[W], (*params)[B], (*params)[Y],
-                      padH, padW, strideH, strideW, dilationH, dilationW, alpha1, alpha2);
+                      strideH, strideW, padH, padW, dilationH, dilationW, alpha1, alpha2);
     }
     
     void CONV2D_GRADS::encodeParams(unsigned char * file, size_t &offset){
