@@ -98,6 +98,16 @@ namespace dylann {
                 : index4(1, 1, 1, w){ size = w; }
     };
     
+    enum PARAM_INIT_TYPE{
+        INIT_ZERO,
+        INIT_XAVIER_LINEAR_WEIGHT,
+        INIT_XAVIER_LINEAR_BIAS,
+        INIT_STD_CONV_WEIGHT,
+        INIT_STD_CONV_BIAS,
+        INIT_STD_BN_WEIGHT,
+        INIT_STD_BN_BIAS,
+    };
+    
     struct TDescriptor{
     public:
         //desc
@@ -110,16 +120,11 @@ namespace dylann {
         
         uint64_t uuid;
         
-        //this is used as a key
-        //when the recursive backwardCalc function is called with branching network
-        //only backwardRecur() call from the tensor with key would continue the recursion
-        //some models like resnet and densenet depends heavily on this feature
-        uint64_t gradSrcUuid;
-        
         //state
         bool isAllocated = false;
         bool withGrad = false;
         bool isParam = false;
+        PARAM_INIT_TYPE paramInitType;
         
         static TDescriptor* create(shape4 dims, cudnnDataType_t dType) {
             //create the global cudnn Handle
@@ -224,6 +229,26 @@ namespace dylann {
         
         cuTensorBase* instantiate(int deviceID){
             this->data = TStorage::create(deviceID, this->desc.numel * this->desc.elementSize);
+            this->grad = TStorage::create(deviceID, this->desc.numel * this->desc.elementSize);
+            return this;
+        }
+        
+        cuTensorBase* setInitType(PARAM_INIT_TYPE initType){
+            if(this->desc.isParam){
+                this->desc.paramInitType = initType;
+            }
+            return this;
+        }
+        
+        cuTensorBase* zeroData(){
+            cudaSetDevice(this->data->deviceID);
+            cudaMemset(this->data->data, 0, this->data->memSize);
+            return this;
+        }
+        
+        cuTensorBase* zeroGrad(){
+            cudaSetDevice(this->grad->deviceID);
+            cudaMemset(this->grad->data, 0, this->grad->memSize);
             return this;
         }
     };

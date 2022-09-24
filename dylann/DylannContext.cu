@@ -19,7 +19,7 @@ namespace dylann {
     
     //register mode is automatically started after initialized engine context
     void initEngineContext(){
-        *tensorIDSeqG = tensorIDSeqCTX;
+        tensorIDSeqG = &tensorIDSeqCTX;
         
         cuTensorBase::tensorPoolG = &tensorsCTX;
         cuTensor::instructions = &forwardOpsCTX;
@@ -48,12 +48,13 @@ namespace dylann {
     }
     
     Sequence* ctx2seq(){
-        Sequence* seq;
-        cudaMallocHost(&seq, sizeof(Sequence));
-        seq->tensorsSeq = tensorsCTX;
-        seq->paramsSeq = paramsCTX;
+        auto* seq = new Sequence();
+       // cudaMallocHost(&seq, sizeof(Sequence));
+        
         seq->forwardOpSeq = forwardOpsCTX;
         seq->backwardOpSeq = backwardOpsCTX;
+        seq->tensorsSeq.insert(tensorsCTX.begin(), tensorsCTX.end());
+        seq->paramsSeq.insert(paramsCTX.begin(), paramsCTX.end());
     
         for (auto& op : seq->forwardOpSeq) {
             op->bind(&seq->tensorsSeq);
@@ -73,12 +74,13 @@ namespace dylann {
     }
     
     Sequence* ctx2SeqExport(){
-        Sequence* seq;
-        cudaMallocHost(&seq, sizeof(Sequence));
-        seq->tensorsSeq = tensorsCTX;
-        seq->paramsSeq = paramsCTX;
-        seq->forwardOpSeq = forwardOpsCTX;
-        seq->backwardOpSeq = backwardOpsCTX;
+        auto* seq = new Sequence();
+        //cudaMallocHost(&seq, sizeof(Sequence));
+        
+        seq->tensorsSeq.insert(tensorsCTX.begin(), tensorsCTX.end());
+        seq->paramsSeq.insert(paramsCTX.begin(), paramsCTX.end());
+        seq->forwardOpSeq.insert(seq->forwardOpSeq.end(), forwardOpsCTX.begin(), forwardOpsCTX.end());
+        seq->backwardOpSeq.insert(seq->backwardOpSeq.end(), backwardOpsCTX.begin(), backwardOpsCTX.end());
     
         for (auto& op : seq->forwardOpSeq) {
             op->bind(&seq->tensorsSeq);

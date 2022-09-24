@@ -20,7 +20,7 @@ namespace dylann{
     };
     
     void FLOAT_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        //run gemm (linear operation)
+        //forward gemm (linear operation)
         //float a = 1.0f, b = 1.0f;
         
         checkCUBLAS(cublasSgemm_v2(cublasHdlG,
@@ -79,7 +79,7 @@ namespace dylann{
     }
     
     void HALF_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        //run gemm (linear operation)
+        //forward gemm (linear operation)
         half a = __float2half(alpha1);
         half b = __float2half(alpha2);
     
@@ -142,7 +142,7 @@ namespace dylann{
     }
     
     void DOUBLE_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        //run gemm (linear operation)
+        //forward gemm (linear operation)
         auto a = (double)alpha1, b = (double )alpha2;
     
         checkCUBLAS(cublasDgemm_v2(cublasHdlG,
@@ -217,7 +217,7 @@ namespace dylann{
         assert(W->desc.dType == X->desc.dType
            && W->desc.dType == Y->desc.dType);
         
-        //run gemm (linear operation)
+        //forward gemm (linear operation)
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
                 FLOAT_LINEAR(W, X, Y, alpha1, alpha2);
@@ -244,7 +244,7 @@ namespace dylann{
     
         cudaSetDevice(W->data->deviceID);
     
-        //run gradient for features
+        //forward gradient for features
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
                 FLOAT_LINEAR_GRAD_X(W, X, Y, alpha1, alpha2);
@@ -259,7 +259,7 @@ namespace dylann{
                 throw std::runtime_error("unsupported dtype");
         }
     
-        //run gradients for weights
+        //forward gradients for weights
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
                 FLOAT_LINEAR_GRAD_W(W, X, Y, alpha1, alpha2);
@@ -274,7 +274,7 @@ namespace dylann{
                 throw std::runtime_error("unsupported dtype");
         }
     
-        //run gradients for biases
+        //forward gradients for biases
         cudaMemcpy(B->grad->data, Y->grad->data, B->grad->memSize, cudaMemcpyDeviceToHost);
         
         return Y;

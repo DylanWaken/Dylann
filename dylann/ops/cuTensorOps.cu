@@ -417,4 +417,38 @@ namespace dylann{
         cudaDeviceSynchronize();
         assertCuda(__FILE__, __LINE__);
     }
+    
+    cuTensorBase* initParamOp(cuTensorBase* A) {
+        switch (A->desc.paramInitType) {
+            case INIT_ZERO:
+                randNormalOp(A, 0, 0);
+                break;
+            case INIT_XAVIER_LINEAR_WEIGHT:
+            case INIT_XAVIER_LINEAR_BIAS:
+                //Xavier Initialization : W ~ U(-1/sqrt(n), 1/sqrt(n))
+                randUniformOp(A, -1.0 / sqrt(A->desc.sizes.w), 1.0 / sqrt(A->desc.sizes.w));
+                break;
+        
+            case INIT_STD_CONV_WEIGHT:
+                //torch default : W ~ N(0, 2/sqrt(fh*fw*in))
+                randNormalOp(A, 0, 2.0 / sqrt(A->desc.sizes.h * A->desc.sizes.w * A->desc.sizes.c));
+                break;
+        
+            case INIT_STD_CONV_BIAS:
+                //torch default : B ~ N(0, 2/sqrt(in))
+                randNormalOp(A, 0, 2.0 / sqrt(A->desc.sizes.c));
+                break;
+        
+            case INIT_STD_BN_WEIGHT:
+                //set 1
+                randNormalOp(A, 1, 0);
+                break;
+        
+            case INIT_STD_BN_BIAS:
+                //set 0
+                randNormalOp(A, 0, 0);
+                break;
+        }
+        return A;
+    }
 }

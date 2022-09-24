@@ -39,6 +39,9 @@ namespace dylann{
     //debug function
     //randomly / constantly fill gradient to test gradient computation
     cuTensorBase* randNormalGradOp(cuTensorBase* A, double mean, double stddev);
+    
+    //standard parameter initializations
+    cuTensorBase* initParamOp(cuTensorBase* A);
 }
 
 

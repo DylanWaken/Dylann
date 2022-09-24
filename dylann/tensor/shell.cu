@@ -55,8 +55,11 @@ namespace dylann{
     }
     
     cuTensor linear(cuTensor& X, int outDim){
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w).asNetworkParam();
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w)
+                .asNetworkParam();
+        W.impl->setInitType(INIT_XAVIER_LINEAR_WEIGHT);
         cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim).asNetworkParam();
+        B.impl->setInitType(INIT_XAVIER_LINEAR_BIAS);
         return linear(W, B, X);
     }
     
@@ -110,7 +113,9 @@ namespace dylann{
         unsigned int Bw = 1;
         
         cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam();
+        W.impl->setInitType(INIT_STD_CONV_WEIGHT);
         cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw).asNetworkParam();
+        B.impl->setInitType(INIT_STD_CONV_BIAS);
         
         return conv2D(X, W, B, strideH, strideW, padH, padW,  dilationH, dilationW);
     }
@@ -288,9 +293,12 @@ namespace dylann{
         cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
                                                     .asNetworkParam();
+        gamma.impl->setInitType(INIT_STD_BN_WEIGHT);
+        
         cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                              1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
                                                      .asNetworkParam();
+        beta.impl->setInitType(INIT_STD_BN_BIAS);
         
         return batchnorm(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }

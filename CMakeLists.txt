@@ -43,7 +43,6 @@ add_executable(Dylann main.cu
 
         dylann/ops/cuActivation.cu
         dylann/ops/cuActivation.cuh
-        dylann/Config.cuh
         dylann/ops/cuReduce.cu
         dylann/ops/cuReduce.cuh
         dylann/serial/Instructions.cu
@@ -68,7 +67,16 @@ add_executable(Dylann main.cu
         dylann/optim/Optimizers.cuh
         dylann/optim/Loss.cu
         dylann/optim/Loss.cuh
-        presets/Resnet.cu presets/Resnet.cuh dylann/module/Sequence.cu dylann/module/Sequence.cuh)
+        presets/Resnet.cu presets/Resnet.cuh
+        dylann/module/Sequence.cu
+        dylann/module/Sequence.cuh
+        io/dataset/Data.cu
+        io/dataset/Data.cuh
+        io/dataset/AugCVInstructions.cu
+        io/dataset/AugCVInstructions.cuh
+        cudautil/ThreadController.cu
+        cudautil/ThreadController.cuh
+        io/dataset/DataPipeline.cu io/dataset/DataPipeline.cuh)
 
 target_link_libraries(Dylann ${OpenCV_LIBS})
 include_directories(${CUDNN_PATH}/include)
