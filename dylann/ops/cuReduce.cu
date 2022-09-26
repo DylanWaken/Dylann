@@ -243,6 +243,8 @@ namespace dylann{
     cuTensorBase* softmaxCEOpGrads(cuTensorBase* X, cuTensorBase* Y, int step){
         float af = 1.0f, bf = -1.0f;
     
+        cudaMemcpy(X->grad->data, Y->data->data, X->data->memSize, cudaMemcpyDeviceToDevice);
+        
         checkCUDNN(cudnnAddTensor(
                 cudnnHdlG,
                 &bf,

@@ -19,44 +19,45 @@ namespace io {
         }
     }
     
-    void pipelineCV(int tid, int tc, ReadFuncCV* readFunc, vector<AugmentIns*> augIns, Data* data, int sampleCount, int begin){
+    void pipelineCV(int tid, int tc, ReadFuncCV* readFunc, vector<AugmentInsCV*>& augIns,
+                    vector<AugmentInsTensor*>& procIns,vector<Data>& data, int sampleCount, int begin, int EPOCH_SIZE, bool istest){
         
         int sampleBeg = (sampleCount / tc) * tid;
         int sampleEnd = tid == tc - 1 ? sampleCount : (sampleCount / tc) * (tid + 1);
         
         for(int sid = sampleBeg; sid < sampleEnd; sid++){
-            //read the image as mat
-            cv::Mat mat = readFunc->readNxt(tid + begin);
-            //read label
-            readFunc->readNxtLabel(tid, tid + begin, data);
     
-            //augment the image
-            for(auto& augIn : augIns){
-                mat = augIn->augment(mat);
+            assert(sid < data.size());
+            //read the image as mat
+            cv::Mat mat = readFunc->readNxt((sid + begin) % EPOCH_SIZE, tid, tc , istest);
+            //read label
+            readFunc->readNxtLabel(sid, (sid + begin) % EPOCH_SIZE, data[sid], tid, tc, istest);
+    
+            if(!istest) {
+                //augment the image
+                for (auto &augIn: augIns) {
+                    mat = augIn->augment(mat);
+                }
             }
     
             //convert to tensor
-            switch (data->X->dataType) {
+            switch (data[sid].X->dataType) {
                 case CUDNN_DATA_FLOAT:
-                    mat2HostTensor<float>(mat, data->X);
+                    mat2HostTensor<float>(mat, data[sid].X);
                     break;
                 case CUDNN_DATA_DOUBLE:
-                    mat2HostTensor<double>(mat, data->X);
+                    mat2HostTensor<double>(mat, data[sid].X);
                     break;
                 case CUDNN_DATA_HALF:
-                    mat2HostTensor<half>(mat, data->X);
-                    break;
-                case CUDNN_DATA_INT8:
-                    mat2HostTensor<int8_t>(mat, data->X);
-                    break;
-                case CUDNN_DATA_INT32:
-                    mat2HostTensor<int32_t>(mat, data->X);
-                    break;
-                case CUDNN_DATA_INT64:
-                    mat2HostTensor<int64>(mat, data->X);
+                    mat2HostTensor<half>(mat, data[sid].X);
                     break;
                 default:
-                    break;
+                    throw runtime_error("Unsupported data type");
+            }
+            
+            //process the tensor
+            for(auto& procIn : procIns){
+                procIn->process(data[sid]);
             }
         }
     }

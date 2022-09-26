@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include "AugCVInstructions.cuh"
+#include "AngTensorInstructions.cuh"
 #include "Data.cuh"
 
 #include <thread>
@@ -19,11 +20,14 @@ using namespace std;
 namespace io {
     
     struct ReadFuncCV{
-        virtual cv::Mat readNxt(unsigned int sampleID) = 0;
-        virtual void readNxtLabel( unsigned int seq, unsigned int sampleID, Data* data) = 0;
+        virtual cv::Mat readNxt(unsigned int sampleID, int tid, int tc, bool istest) = 0;
+        virtual void readNxtLabel(unsigned int batchSampleID, unsigned int sampleID, Data& data,
+                                  int tid, int tc, bool istest) = 0;
     };
     
-    void pipelineCV(int tid, int tc, ReadFuncCV* readFunc, vector<AugmentIns*> augIns, Data* data, int sampleCount, int begin);
+    void pipelineCV(int tid, int tc, ReadFuncCV* readFunc, vector<AugmentInsCV*>& augIns,
+                    vector<AugmentInsTensor*>& procIns, vector<Data>& data, int EPOCH_SIZE, int sampleCount,
+                    int begin, bool istest);
     
 } // io
 

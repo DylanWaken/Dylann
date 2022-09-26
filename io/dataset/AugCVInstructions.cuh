@@ -8,7 +8,7 @@
 #include <opencv2/opencv.hpp>
 
 namespace io {
-    struct AugmentIns {
+    struct AugmentInsCV {
         virtual cv::Mat augment(cv::Mat& imgIn) = 0;
     };
 }

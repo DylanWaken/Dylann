@@ -150,21 +150,6 @@ namespace dylann{
                 (half*)A->data->data, A->desc.numel, seed, min, max);
                 break;
                 
-            case CUDNN_DATA_INT8 :
-                randUniformD<int8_t><<<gridSize, blockSize>>>(
-                (int8_t*)A->data->data, A->desc.numel, seed, min, max);
-                break;
-    
-            case CUDNN_DATA_INT32 :
-                randUniformD<int32_t><<<gridSize, blockSize>>>(
-                (int32_t*)A->data->data, A->desc.numel, seed, min, max);
-                break;
-    
-            case CUDNN_DATA_INT64 :
-                randUniformD<int64_t><<<gridSize, blockSize>>>(
-                (int64_t*)A->data->data, A->desc.numel, seed, min, max);
-                break;
-                
             default: throw std::runtime_error("unsupported dtype");
         }
         cudaDeviceSynchronize();
@@ -204,18 +189,6 @@ namespace dylann{
             case CUDNN_DATA_HALF : randNormalD<half><<<gridSize, blockSize>>>(
                     (half *) A->data->data, A->desc.numel, seed, mean, stddev);
                     break;
-    
-            case CUDNN_DATA_INT8 : randNormalD<int8_t><<<gridSize, blockSize>>>(
-                    (int8_t *) A->data->data, A->desc.numel, seed, mean, stddev);
-                    break;
-                    
-            case CUDNN_DATA_INT32 : randNormalD<int32_t><<<gridSize, blockSize>>>(
-                    (int32_t *) A->data->data, A->desc.numel, seed, mean, stddev);
-                    break;
-                    
-            case CUDNN_DATA_INT64 : randNormalD<int64_t><<<gridSize, blockSize>>>(
-                    (int64_t *) A->data->data, A->desc.numel, seed, mean, stddev);
-                    break;
                     
             default :  throw std::runtime_error("unsupported dtype");
         }
@@ -246,18 +219,6 @@ namespace dylann{
                         (half *) A->grad->data, A->desc.numel, seed, mean, stddev);
                 break;
             
-            case CUDNN_DATA_INT8 : randNormalD<int8_t><<<gridSize, blockSize>>>(
-                        (int8_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
-                break;
-            
-            case CUDNN_DATA_INT32 : randNormalD<int32_t><<<gridSize, blockSize>>>(
-                        (int32_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
-                break;
-            
-            case CUDNN_DATA_INT64 : randNormalD<int64_t><<<gridSize, blockSize>>>(
-                        (int64_t *) A->grad->data, A->desc.numel, seed, mean, stddev);
-                break;
-            
             default :  throw std::runtime_error("unsupported dtype");
         }
         cudaDeviceSynchronize();
@@ -285,15 +246,6 @@ namespace dylann{
                 break;
             case CUDNN_DATA_HALF : hadamardD<half><<<gridSize, blockSize>>>(
                     *(TDescriptor*)X, (half*)X, (half*)Y);
-                break;
-            case CUDNN_DATA_INT8 : hadamardD<int8_t><<<gridSize, blockSize>>>(
-                    *(TDescriptor*)X, (int8_t*)X, (int8_t*)Y);
-                break;
-            case CUDNN_DATA_INT32 : hadamardD<int32_t><<<gridSize, blockSize>>>(
-                    *(TDescriptor*)X, (int32_t*)X, (int32_t*)Y);
-                break;
-            case CUDNN_DATA_INT64 : hadamardD<int64_t><<<gridSize, blockSize>>>(
-                    *(TDescriptor*)X, (int64_t*)X, (int64_t*)Y);
                 break;
             default : throw std::runtime_error("unsupported dtype");
         }
@@ -338,15 +290,6 @@ namespace dylann{
             case CUDNN_DATA_HALF : RSMPropVD<half><<<gridSize, blockSize>>>(
                      (half*)V, (half*)G, BETA, size);
                 break;
-            case CUDNN_DATA_INT8 : RSMPropVD<int8_t><<<gridSize, blockSize>>>(
-                     (int8_t*)V, (int8_t*)G, BETA, size);
-                break;
-            case CUDNN_DATA_INT32 : RSMPropVD<int32_t><<<gridSize, blockSize>>>(
-                     (int32_t*)V, (int32_t*)G, BETA, size);
-                break;
-            case CUDNN_DATA_INT64 : RSMPropVD<int64_t><<<gridSize, blockSize>>>(
-                     (int64_t*)V, (int64_t*)G, BETA, size);
-                break;
             default : throw std::runtime_error("unsupported dtype");
         }
         cudaDeviceSynchronize();
@@ -365,15 +308,6 @@ namespace dylann{
                 break;
             case CUDNN_DATA_HALF : RSMPropAD<half><<<gridSize, blockSize>>>(
                      (half*)W, (half*)V, (half*)G, LR, size, L2, EPSILON);
-                break;
-            case CUDNN_DATA_INT8 : RSMPropAD<int8_t><<<gridSize, blockSize>>>(
-                     (int8_t*)W, (int8_t*)V, (int8_t*)G, LR, size, L2, EPSILON);
-                break;
-            case CUDNN_DATA_INT32 : RSMPropAD<int32_t><<<gridSize, blockSize>>>(
-                     (int32_t*)W, (int32_t*)V, (int32_t*)G, LR, size, L2, EPSILON);
-                break;
-            case CUDNN_DATA_INT64 : RSMPropAD<int64_t><<<gridSize, blockSize>>>(
-                     (int64_t*)W, (int64_t*)V, (int64_t*)G, LR, size, L2, EPSILON);
                 break;
             default : throw std::runtime_error("unsupported dtype");
         }
@@ -402,15 +336,6 @@ namespace dylann{
                 break;
             case CUDNN_DATA_HALF : AdamAD<half><<<gridSize, blockSize>>>(
                     dtype, (half*)W, (half*)M, (half*)V, LR, L2, size, EPSILON);
-                break;
-            case CUDNN_DATA_INT8 : AdamAD<int8_t><<<gridSize, blockSize>>>(
-                    dtype, (int8_t*)W, (int8_t*)M, (int8_t*)V, LR, L2, size, EPSILON);
-                break;
-            case CUDNN_DATA_INT32 : AdamAD<int32_t><<<gridSize, blockSize>>>(
-                    dtype, (int32_t*)W, (int32_t*)M, (int32_t*)V, LR, L2, size, EPSILON);
-                break;
-            case CUDNN_DATA_INT64 : AdamAD<int64_t><<<gridSize, blockSize>>>(
-                    dtype, (int64_t*)W, (int64_t*)M, (int64_t*)V, LR, L2, size, EPSILON);
                 break;
             default : throw std::runtime_error("unsupported dtype");
         }

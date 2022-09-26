@@ -6,68 +6,105 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include "io/dataset/DataPipeline.cuh"
-#include "cudautil/ThreadController.cuh"
-
+#include "io/dataset/Dataset.cuh"
+#include "presets/readFuncs/BuildinReadfuncs.cuh"
+#define MINI_BATCH_SIZE 1
 
 using namespace dylann;
 using namespace std;
 using namespace io;
 
-struct TestReadFunc : public ReadFuncCV{
-    cv::Mat readNxt(unsigned int sampleID) override {
-        this_thread::sleep_for(chrono::milliseconds(1));
-        return cv::Mat(224, 224, CV_8UC3, cv::Scalar(sampleID%256, sampleID%256, sampleID%256));
-    }
-    
-    void readNxtLabel(unsigned int seq, unsigned int sampleID, Data* data) override {
-        this_thread::sleep_for(chrono::milliseconds(1));
-        ((float*)data->Y->data)[0] = sampleID;
-    }
-};
-
-struct testAug : public AugmentIns{
-    cv::Mat augment(cv::Mat& input) override {
-        this_thread::sleep_for(chrono::milliseconds(1));
-        return input;
-    }
-};
-
 int main() {
-//    initEngineContext();
-//
-//    auto X = cuTensor::create<CUDNN_DATA_FLOAT>(shape4(64, 64, 32, 32), 0);
-//
-//    ResnetConv id = ResnetConv();
-//    auto Y = id.forward(X);
-//    auto Z = id.forward(Y);
-//    auto W = id.forward(Z);
-//
-//    auto seq = ctx2seq();
-//    seq->setOpt(new Momentum(0.001));
-//    seq->randomizeParams();
-//
-//    for (int i = 0; i < 1; i++) {
-//        seq->forward();
-//        seq->backward();
-//        W.print();
-//        seq->opt->apply();
+
+
+    //register model
+    initEngineContext();
+    auto X0 = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 3, 32, 32});
+
+    ResnetBottleNeck neck = ResnetBottleNeck();
+    ResnetBottleNeckJoint joint = ResnetBottleNeckJoint();
+    
+//    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
+//    X = batchnorm(X, 1e-8, 1);
+//    X = relu(X);
+    
+//    //residual blocks
+//    for (int i = 0; i < 2; i++) {
+//        X = neck.forward(X);
 //    }
+//    X = joint.forward(X);
+//
+//    for (int i = 0; i < 3; i++) {
+//        X = neck.forward(X);
+//    }
+//    X = joint.forward(X);
+//
+//    for (int i = 0; i < 5; i++) {
+//        X = neck.forward(X);
+//    }
+//    X = joint.forward(X);
+//
+//    for (int i = 0; i < 3; i++) {
+//        X = neck.forward(X);
+//    }
+//
+//    X = globalAvgPool2D(X);
+//    X = flatten(X);
+//
+//    auto X2 = linear(X, 10);
+    auto X1 = linear(X0, 120);
+    auto X2 = linear(X1, 120);
+    auto X3 = linear(X2, 10);
+    auto Y = softmaxCE(X3, 10);
 
-    
+    auto seq = ctx2seq();
+    seq->generateGrad();
+    seq->setLoss(new CrossEntropy());
+    seq->setOpt(new Momentum(0.001));
+    seq->bindInOut(X0.impl,Y.impl);
+    seq->randomizeParams();
+    seq->resetGrad();
 
-    Data* dataset;
-    cudaMallocHost(&dataset, 10000 * sizeof(Data));
-    for (int i = 0; i < 10000; i++){
-        dataset[i].X = HostTensorBase::create(shape4(224, 224, 3, 1), CUDNN_DATA_FLOAT);
-        dataset[i].Y = HostTensorBase::create(shape4(1, 1, 1, 1), CUDNN_DATA_FLOAT);
+    for(auto& i : seq->forwardOpSeq){
+        i->print();
     }
+
+
+    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,3200,
+                                       {1, 3, 32, 32},
+                                       shape4(10), CUDNN_DATA_FLOAT);
+
+    ReadFuncCV* readFunc = new CIFAR_10ReadFunc(R"(D:\Resources\Datasets\cifar-10-bin)", 16);
+    dataset->bindReadFunc(readFunc);
+    dataset->bindAugCV({});
+    dataset->bindAugTensor({new UniformNorm(0, 1)});
+    dataset->construct();
+
+    auto label = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 1, 1,10});
+
+    float runningLoss = 0;
+    for(int i = 0; i < 500000; i++){
+        dataset->nextMiniBatch(X0.impl, label.impl);
+        seq->forward();
+
+        float loss = seq->getLoss(label.impl);
+        runningLoss += loss;
+        seq->backward(label.impl);
+        
+        X2.print();
+        if(i > 2) break;
+
+        seq->opt->apply();
+
+        if(i % 100 == 0){
+            cout << runningLoss / 100 << ", ";
+            runningLoss = 0;
+        }
     
-    cout<<"start reading"<<endl;
-    vector<AugmentIns*> augIns;
-    augIns.push_back(new testAug());
-    
-    auto* readf = new TestReadFunc();
-    
-    _alloc<16>(pipelineCV, readf, ref(augIns), dataset, 10000, 0);
+        seq->resetGrad();
+
+        if(i % 100 == 0){
+            seq->opt->zeroGrad();
+        }
+    }
 }

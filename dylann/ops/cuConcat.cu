@@ -58,17 +58,8 @@ namespace dylann {
             case CUDNN_DATA_HALF:
                 concatD<half><<<grid, block>>>(Xs, inputCount, Y);
                 break;
-            case CUDNN_DATA_INT8:
-                concatD<char><<<grid, block>>>(Xs, inputCount, Y);
-                break;
-            case CUDNN_DATA_INT32:
-                concatD<int><<<grid, block>>>(Xs, inputCount, Y);
-                break;
-            case CUDNN_DATA_INT64:
-                concatD<long long><<<grid, block>>>(Xs, inputCount, Y);
-                break;
             default:
-                break;
+                throw std::runtime_error("Unsupported data type");
         }
 
         cudaDeviceSynchronize();
@@ -117,17 +108,8 @@ namespace dylann {
             case CUDNN_DATA_HALF:
                 concatGradsD<half><<<grid, block>>>(Xs, inputCount, Y);
                 break;
-            case CUDNN_DATA_INT8:
-                concatGradsD<char><<<grid, block>>>(Xs, inputCount, Y);
-                break;
-            case CUDNN_DATA_INT32:
-                concatGradsD<int><<<grid, block>>>(Xs, inputCount, Y);
-                break;
-            case CUDNN_DATA_INT64:
-                concatGradsD<long long><<<grid, block>>>(Xs, inputCount, Y);
-                break;
             default:
-                break;
+                throw std::runtime_error("Unsupported data type");
         }
     
         cudaDeviceSynchronize();

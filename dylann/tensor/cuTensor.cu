@@ -94,18 +94,6 @@ namespace dylann{
             case CUDNN_DATA_HALF:
                 printHalf(data, desc);
                 break;
-            case CUDNN_DATA_INT8:
-                printLoop<int8_t>(data, desc);
-                break;
-            case CUDNN_DATA_INT32:
-                printLoop<int32_t>(data, desc);
-                break;
-            case CUDNN_DATA_INT64:
-                printLoop<int64_t>(data, desc);
-                break;
-            case CUDNN_DATA_UINT8:
-                printLoop<uint8_t>(data, desc);
-                break;
             default:
                 throw std::runtime_error("unsupported dtype");
         }
@@ -122,18 +110,6 @@ namespace dylann{
             case CUDNN_DATA_HALF:
                 toFileHalf(data, desc, file);
                 break;
-            case CUDNN_DATA_INT8:
-                toFileLoop<int8_t>(data, desc, file);
-                break;
-            case CUDNN_DATA_INT32:
-                toFileLoop<int32_t>(data, desc, file);
-                break;
-            case CUDNN_DATA_INT64:
-                toFileLoop<int64_t>(data, desc, file);
-                break;
-            case CUDNN_DATA_UINT8:
-                toFileLoop<uint8_t>(data, desc, file);
-                break;
             default:
                 throw std::runtime_error("unsupported dtype");
         }
@@ -147,12 +123,6 @@ namespace dylann{
                 return "CUDNN_DATA_DOUBLE";
             case CUDNN_DATA_HALF:
                 return "CUDNN_DATA_HALF";
-            case CUDNN_DATA_INT8:
-                return "CUDNN_DATA_INT8";
-            case CUDNN_DATA_INT32:
-                return "CUDNN_DATA_INT32";
-            case CUDNN_DATA_INT64:
-                return "CUDNN_DATA_INT64";
             default:
                 throw std::runtime_error("unsupported dtype");
         }

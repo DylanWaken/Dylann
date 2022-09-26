@@ -39,6 +39,20 @@ namespace dylann{
             t.join();
         }
     }
+    
+    template< typename ...Args, typename ...Args0>
+    void _alloc(int tc, void(*func)(Args...), Args0... args){
+        vector<thread> threads;
+        threads.reserve(tc);
+        for(int i = 0; i < tc; i++){
+            threads.push_back(thread(func, i, tc, args...));
+        }
+
+        for(auto& t : threads){
+            t.join();
+        }
+    }
+    
 }
 
 

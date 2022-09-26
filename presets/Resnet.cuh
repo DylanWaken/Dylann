@@ -69,13 +69,13 @@ namespace dylann {
         ResnetBottleNeckJoint() = default;
         
         cuTensor forward(cuTensor& X) override {
-            auto Y = conv2D(X, 1, 1, (int)X.desc().sizes.c / 4, 0, 0, 1, 1, 1, 1);
+            auto Y = conv2D(X, 1, 1, (int)X.desc().sizes.c / 4, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
             Y = conv2D(Y, 3, 3, (int)X.desc().sizes.c / 4, 2, 2, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 1, 1, (int)X.desc().sizes.c * 2, 0, 0, 1, 1, 1, 1);
+            Y = conv2D(Y, 1, 1, (int)X.desc().sizes.c * 2, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             
             auto X_ = conv2D(X, 1, 1, (int)X.desc().sizes.c * 2, 2, 2, 0, 0, 1, 1);

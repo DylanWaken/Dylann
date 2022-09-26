@@ -92,7 +92,7 @@ namespace dylann {
         if(calcBuf == nullptr){
             calcBuf = cuTensor::create(pred->data->deviceID, pred->desc.dType, pred->desc.sizes).impl;
             lossVal = cuTensor::create(pred->data->deviceID, pred->desc.dType, 1).impl;
-            cudaMalloc(&lossHost, pred->desc.elementSize);
+            cudaMallocHost(&lossHost, pred->desc.elementSize);
             assertCuda(__FILE__, __LINE__);
         }
     
@@ -125,16 +125,16 @@ namespace dylann {
         reduceOp(calcBuf, lossVal, (int)calcBuf->desc.sizes.size);
         assertCuda(__FILE__, __LINE__);
         
-        cudaMemcpy(&lossHost, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
+        cudaMemcpy(lossHost, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
         assertCuda(__FILE__, __LINE__);
     
         switch (pred->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                return (float)*((float*)lossHost);
+                return *((float*)lossHost)/(float)pred->desc.sizes.n;
             case CUDNN_DATA_DOUBLE:
-                return (float)*((double*)lossHost);
+                return (float)*((double*)lossHost)/(float)pred->desc.sizes.n;
             case CUDNN_DATA_HALF:
-                return (float)*((half*)lossHost);
+                return (float)*((half*)lossHost)/(float)pred->desc.sizes.n;
             default:
                 throw std::runtime_error("Unsupported data type");
         }

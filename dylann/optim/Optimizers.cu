@@ -5,8 +5,15 @@
 #include "Optimizers.cuh"
 
 void dylann::SGD::apply() {
-    float a = 1 - L2, b = - LEARNING_RATE;
+    float a = 1, b = - LEARNING_RATE;
+    float alpha = 1 - L2;
     for (auto p : (*paramsRes)) {
+        cudnnScaleTensor(
+                cudnnHdlG, p.second->desc.cudnnDesc,
+                p.second->data->data,
+                &alpha
+        );
+        
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, p.second->desc.cudnnDesc, p.second->grad->data,
                &a, p.second->desc.cudnnDesc, p.second->data->data
@@ -39,7 +46,7 @@ void dylann::Momentum::bindDefaultParams() {
 //Momentum : m[t] = m[t-1] * β + (1 - β) * g[t]
 //           w[t] = w[t-1] - η * m[t]
 void dylann::Momentum::apply() {
-    float m1 = BETA, m2 = 1 - BETA, a = 1 - L2, b = - LEARNING_RATE;
+    float m1 = BETA, m2 = 1 - BETA, a = 1 - L2, b = - LEARNING_RATE * (1 - L2);
     for (auto p : (*paramsRes)) {
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &m2, p.second->desc.cudnnDesc, p.second->grad->data,

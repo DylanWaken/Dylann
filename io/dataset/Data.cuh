@@ -33,9 +33,31 @@ namespace io {
             this->Y = Y;
         }
         
-        Data(shape4 sizes, cudnnDataType_t dataType){
-            this->X = HostTensorBase::create(sizes, dataType);
-            this->Y = HostTensorBase::create(sizes, dataType);
+        Data(shape4 dataSizes, shape4 labelSizes, cudnnDataType_t dataType){
+            this->X = HostTensorBase::create(dataSizes, dataType);
+            this->Y = HostTensorBase::create(labelSizes, dataType);
+        }
+        
+        static Data* create(shape4 dataSizes, shape4 labelSizes, cudnnDataType_t dataType){
+            Data* data;
+            cudaMallocHost(&data, sizeof(Data));
+            assertCuda(__FILE__, __LINE__);
+            
+            data->X = HostTensorBase::create(dataSizes, dataType);
+            data->Y = HostTensorBase::create(labelSizes, dataType);
+            
+            return data;
+        }
+        
+        void free(){
+            cudaFreeHost(X->data);
+            assertCuda(__FILE__, __LINE__);
+            cudaFreeHost(Y->data);
+            assertCuda(__FILE__, __LINE__);
+            cudaFreeHost(X);
+            assertCuda(__FILE__, __LINE__);
+            cudaFreeHost(Y);
+            assertCuda(__FILE__, __LINE__);
         }
     };
 }
