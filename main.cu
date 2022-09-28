@@ -8,7 +8,7 @@
 #include <condition_variable>
 #include "io/dataset/Dataset.cuh"
 #include "presets/readFuncs/BuildinReadfuncs.cuh"
-#define MINI_BATCH_SIZE 1
+#define MINI_BATCH_SIZE 64
 
 using namespace dylann;
 using namespace std;
@@ -23,37 +23,42 @@ int main() {
 
     ResnetBottleNeck neck = ResnetBottleNeck();
     ResnetBottleNeckJoint joint = ResnetBottleNeckJoint();
-    
-//    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
-//    X = batchnorm(X, 1e-8, 1);
-//    X = relu(X);
-    
-//    //residual blocks
-//    for (int i = 0; i < 2; i++) {
-//        X = neck.forward(X);
-//    }
-//    X = joint.forward(X);
+    ResnetIdentity id = ResnetIdentity();
+    ResnetConv cv = ResnetConv();
+
+    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
+    X = batchnorm(X, 1e-8, 1);
+    X = relu(X);
+
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = joint.forward(X);
+
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = joint.forward(X);
+
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = neck.forward(X);
+    X = joint.forward(X);
+
+    X = neck.forward(X);
+    X = neck.forward(X);
+    auto X2 = joint.forward(X);
+
+//    auto X1 = conv2D(X0, 3, 3, 8, 1, 1, 1, 1, 1, 1);
+//    auto X2 = batchnorm(X1, 1e-8, 1);
+//    X2 = relu(X2);
 //
-//    for (int i = 0; i < 3; i++) {
-//        X = neck.forward(X);
-//    }
-//    X = joint.forward(X);
+//    X2 = id.forward(X2);
 //
-//    for (int i = 0; i < 5; i++) {
-//        X = neck.forward(X);
-//    }
-//    X = joint.forward(X);
-//
-//    for (int i = 0; i < 3; i++) {
-//        X = neck.forward(X);
-//    }
-//
-//    X = globalAvgPool2D(X);
-//    X = flatten(X);
-//
-//    auto X2 = linear(X, 10);
-    auto X1 = linear(X0, 120);
-    auto X2 = linear(X1, 120);
+    X2 = flatten(X2);
+    X2 = linear(X2, 120);
+    X2 = relu(X2);
     auto X3 = linear(X2, 10);
     auto Y = softmaxCE(X3, 10);
 
@@ -63,9 +68,12 @@ int main() {
     seq->setOpt(new Momentum(0.001));
     seq->bindInOut(X0.impl,Y.impl);
     seq->randomizeParams();
-    seq->resetGrad();
 
     for(auto& i : seq->forwardOpSeq){
+        i->print();
+    }
+
+    for(auto& i : seq->backwardOpSeq){
         i->print();
     }
 
@@ -90,21 +98,20 @@ int main() {
         float loss = seq->getLoss(label.impl);
         runningLoss += loss;
         seq->backward(label.impl);
-        
-        X2.print();
-        if(i > 2) break;
-
         seq->opt->apply();
+
+        seq->resetGrad();
 
         if(i % 100 == 0){
             cout << runningLoss / 100 << ", ";
             runningLoss = 0;
         }
-    
+
         seq->resetGrad();
 
         if(i % 100 == 0){
             seq->opt->zeroGrad();
         }
     }
+
 }

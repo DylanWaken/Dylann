@@ -56,6 +56,9 @@ namespace dylann{
         
         void resetGrad(){
             for(auto it : tensorsSeq){
+                if (!it.second->desc.isParam){
+                    it.second->zeroData();
+                }
                 it.second->zeroGrad();
             }
         }

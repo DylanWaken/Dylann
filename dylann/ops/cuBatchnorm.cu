@@ -91,8 +91,8 @@ namespace dylann {
                 gamma->grad->data,
                 beta->grad->data,
                 eps,
-                runningMean->grad->data,
-                runningVar->grad->data
+                nullptr,//runningMean->grad->data,
+                nullptr//runningVar->grad->data
                 ))
                 
         return X;

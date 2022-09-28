@@ -230,6 +230,8 @@ namespace dylann {
         cuTensorBase* instantiate(int deviceID){
             this->data = TStorage::create(deviceID, this->desc.numel * this->desc.elementSize);
             this->grad = TStorage::create(deviceID, this->desc.numel * this->desc.elementSize);
+            this->desc.isAllocated = true;
+            this->desc.withGrad = true;
             return this;
         }
         

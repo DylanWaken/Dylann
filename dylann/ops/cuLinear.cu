@@ -9,13 +9,13 @@ namespace dylann{
      * @see: https://www.adityaagrawal.net/blog/deep_learning/row_column_major
      */
     
-    void fillBias(cuTensorBase* B, cuTensorBase* Y){
+    void fillBias(cuTensorBase* B, cuTensorBase* Y, float alpha2){
         for(auto i = 0; i < Y->desc.sizes.n; i++){
             auto offset = i * Y->desc.sizes.w;
             char* destPtr = (char*)Y->data->data + offset * Y->desc.elementSize;
-            float a = 1, b = 1;
+            float a = 1;
             checkCUDNN(cudnnAddTensor(cudnnHdlG, &a, B->desc.cudnnDesc, B->data->data,
-                           &b, B->desc.cudnnDesc, destPtr))
+                           &alpha2, B->desc.cudnnDesc, destPtr))
         }
     };
     
@@ -211,7 +211,7 @@ namespace dylann{
         
         //set cublas
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
-        fillBias(B, Y);
+        fillBias(B, Y, alpha2);
         
         //assert same dtye
         assert(W->desc.dType == X->desc.dType
@@ -220,13 +220,13 @@ namespace dylann{
         //forward gemm (linear operation)
         switch (X->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                FLOAT_LINEAR(W, X, Y, alpha1, alpha2);
+                FLOAT_LINEAR(W, X, Y, alpha1, 1);
                 break;
             case CUDNN_DATA_HALF:
-                HALF_LINEAR(W, X, Y, alpha1, alpha2);
+                HALF_LINEAR(W, X, Y, alpha1, 1);
                 break;
             case CUDNN_DATA_DOUBLE:
-                DOUBLE_LINEAR(W, X, Y, alpha1, alpha2);
+                DOUBLE_LINEAR(W, X, Y, alpha1, 1);
                 break;
             default:
                 throw std::runtime_error("unsupported dtype");

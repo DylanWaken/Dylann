@@ -310,7 +310,7 @@ namespace dylann {
         }
     
         void print() override {
-            cout << "SOFTMAX " << std::hex << X << " 0x" << Y << " 0x" << std::dec << step << endl;
+            cout << "SOFTMAX" << " 0x" << std::hex << X << " 0x" << Y  << std::dec << step << endl;
         }
     };
     

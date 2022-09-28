@@ -5,18 +5,13 @@
 #include "Optimizers.cuh"
 
 void dylann::SGD::apply() {
-    float a = 1, b = - LEARNING_RATE;
+    float b = - LEARNING_RATE;
     float alpha = 1 - L2;
     for (auto p : (*paramsRes)) {
-        cudnnScaleTensor(
-                cudnnHdlG, p.second->desc.cudnnDesc,
-                p.second->data->data,
-                &alpha
-        );
         
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, p.second->desc.cudnnDesc, p.second->grad->data,
-               &a, p.second->desc.cudnnDesc, p.second->data->data
+               &alpha, p.second->desc.cudnnDesc, p.second->data->data
         ))
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);

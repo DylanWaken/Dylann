@@ -14,7 +14,7 @@ namespace dylann {
     struct OPTIM_BASE {
     public:
         float LEARNING_RATE{};
-        float L2 = 0.0001;
+        float L2 = 0.0001f;
         //grads in optimBufCTX can be used as second order momentum
         map<TENSOR_PTR, cuTensorBase*> optimBufCTX;
         map<TENSOR_PTR, cuTensorBase*>* paramsRes = nullptr;
