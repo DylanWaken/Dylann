@@ -131,6 +131,7 @@ namespace dylann{
         void toFile(const char *basePath);
         
         cuTensor asNetworkParam() { impl->desc.isParam = true; return *this; }
+        cuTensor asNetworkWeight() { impl->desc.isWeight = true; return *this; }
         
         //operators
         cuTensor operator+=(cuTensor& other);

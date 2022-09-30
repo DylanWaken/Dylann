@@ -61,7 +61,7 @@ int main() {
     }
 
 
-    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,3200,
+    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,6400,
                                        {1, 3, 32, 32},
                                        shape4(10), CUDNN_DATA_FLOAT);
 
@@ -95,7 +95,7 @@ int main() {
                 valLoss += seq->getLoss(label.impl);
                 seq->resetGrad();
                 
-                if(valLoss == 0){ Y.print(); label.print(); }
+            //     if(valLoss == 0){ Y.print(); label.print(); }
             }
             cout << valLoss / 50 << ", ";
         }

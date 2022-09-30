@@ -41,6 +41,11 @@ namespace dylann{
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y){
         linearOp(W.impl, B.impl, X.impl, Y.impl, 1, 0);
         
+        W.asNetworkParam().asNetworkWeight();
+        B.asNetworkParam();
+        W.impl->setInitType(INIT_XAVIER_LINEAR_WEIGHT);
+        B.impl->setInitType(INIT_XAVIER_LINEAR_BIAS);
+        
         if(regisModeCTX){
             //push forward instruction
             auto* inst = new LINEAR(W.desc().uuid, B.desc().uuid, X.desc().uuid, Y.desc().uuid ,1, 0);
@@ -55,11 +60,8 @@ namespace dylann{
     }
     
     cuTensor linear(cuTensor& X, int outDim){
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w)
-                .asNetworkParam();
-        W.impl->setInitType(INIT_XAVIER_LINEAR_WEIGHT);
-        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim).asNetworkParam();
-        B.impl->setInitType(INIT_XAVIER_LINEAR_BIAS);
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w);
+        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim);
         return linear(W, B, X);
     }
     
@@ -112,7 +114,7 @@ namespace dylann{
         unsigned int Bh = 1;
         unsigned int Bw = 1;
         
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam();
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam().asNetworkWeight();
         W.impl->setInitType(INIT_STD_CONV_WEIGHT);
         cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw).asNetworkParam();
         B.impl->setInitType(INIT_STD_CONV_BIAS);
@@ -292,7 +294,7 @@ namespace dylann{
                                                   
         cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
-                                                    .asNetworkParam();
+                                                    .asNetworkParam().asNetworkWeight();
         gamma.impl->setInitType(INIT_STD_BN_WEIGHT);
         
         cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,

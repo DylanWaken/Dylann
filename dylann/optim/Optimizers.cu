@@ -6,12 +6,12 @@
 
 void dylann::SGD::apply() {
     float b = - LEARNING_RATE;
-    float alpha = 1 - L2;
+    float alphaW = 1 - L2, alphaB = 1;
     for (auto p : (*paramsRes)) {
         
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, p.second->desc.cudnnDesc, p.second->grad->data,
-               &alpha, p.second->desc.cudnnDesc, p.second->data->data
+               p.second->desc.isWeight ? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
         ))
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);
@@ -41,7 +41,7 @@ void dylann::Momentum::bindDefaultParams() {
 //Momentum : m[t] = m[t-1] * β + (1 - β) * g[t]
 //           w[t] = w[t-1] - η * m[t]
 void dylann::Momentum::apply() {
-    float m1 = BETA, m2 = 1 - BETA, a = 1 - L2, b = - LEARNING_RATE * (1 - L2);
+    float m1 = BETA, m2 = 1 - BETA, alphaW = 1 - L2, alphaB = 1, b = - LEARNING_RATE;
     for (auto p : (*paramsRes)) {
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &m2, p.second->desc.cudnnDesc, p.second->grad->data,
@@ -49,7 +49,7 @@ void dylann::Momentum::apply() {
         ))
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, optimBufCTX[p.first]->desc.cudnnDesc, optimBufCTX[p.first]->data->data,
-               &a, p.second->desc.cudnnDesc, p.second->data->data
+               p.second->desc.isWeight ? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
         ))
     
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
