@@ -10,8 +10,12 @@
 #include "../serial/GradInstructions.cuh"
 #include "../optim/Optimizers.cuh"
 #include "../optim/Loss.cuh"
+#include <fstream>
 
 namespace dylann{
+    
+    extern unsigned int MAGIC_NUMBER;
+    
     class Sequence{
     public:
         map<TENSOR_PTR ,cuTensorBase*> tensorsSeq = {};
@@ -117,6 +121,8 @@ namespace dylann{
             this->netX = X;
             this->netY = Y;
         }
+        
+        void toFile(const string& basePath, const string& saveName);
     };
 }
 

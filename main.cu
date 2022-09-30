@@ -21,8 +21,8 @@ int main() {
     initEngineContext();
     auto X0 = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 3, 32, 32});
 
-    ResnetBottleNeck neck = ResnetBottleNeck();
-    ResnetBottleNeckJoint joint = ResnetBottleNeckJoint();
+//    ResnetBottleNeck neck = ResnetBottleNeck();
+//    ResnetBottleNeckcv joint = ResnetBottleNeckcv();
     ResnetIdentity id = ResnetIdentity();
     ResnetConv cv = ResnetConv();
 
@@ -30,34 +30,17 @@ int main() {
     X = batchnorm(X, 1e-8, 1);
     X = relu(X);
 
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = joint.forward(X);
+    for(auto i = 0; i < 9; i++)  id.forward(X);
+    X = cv.forward(X);
 
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = joint.forward(X);
+    for(auto i = 0; i < 9; i++) X = id.forward(X);
+    X = cv.forward(X);
 
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = neck.forward(X);
-    X = joint.forward(X);
+    for(auto i = 0; i < 9; i++) X = id.forward(X);
+    auto X2 = cv.forward(X);
 
-    X = neck.forward(X);
-    X = neck.forward(X);
-    auto X2 = joint.forward(X);
-
-//    auto X1 = conv2D(X0, 3, 3, 8, 1, 1, 1, 1, 1, 1);
-//    auto X2 = batchnorm(X1, 1e-8, 1);
-//    X2 = relu(X2);
-//
-//    X2 = id.forward(X2);
-//
     X2 = flatten(X2);
-    X2 = linear(X2, 120);
+    X2 = linear(X2, 256);
     X2 = relu(X2);
     auto X3 = linear(X2, 10);
     auto Y = softmaxCE(X3, 10);
@@ -99,19 +82,26 @@ int main() {
         runningLoss += loss;
         seq->backward(label.impl);
         seq->opt->apply();
-
         seq->resetGrad();
 
-        if(i % 100 == 0){
+        if(i % 100 == 0 && i != 0){
             cout << runningLoss / 100 << ", ";
             runningLoss = 0;
+            
+            float valLoss = 0;
+            for(int j = 0; j < 50; j++){
+                dataset->nextValBatch(X0.impl, label.impl);
+                seq->forward();
+                valLoss += seq->getLoss(label.impl);
+                seq->resetGrad();
+                
+                if(valLoss == 0){ Y.print(); label.print(); }
+            }
+            cout << valLoss / 50 << ", ";
         }
-
-        seq->resetGrad();
 
         if(i % 100 == 0){
             seq->opt->zeroGrad();
         }
     }
-
 }

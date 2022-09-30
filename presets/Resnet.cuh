@@ -13,10 +13,11 @@ namespace dylann {
         ResnetIdentity() = default;
         
         cuTensor forward(cuTensor& X) override {
-            auto Y = conv2D(X, 3, 3, (int)X.desc().sizes.c, 1, 1, 1, 1, 1, 1);
+            int procDim = (int)X.desc().sizes.c;
+            auto Y = conv2D(X, 3, 3, procDim, 1, 1, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 3, 3, (int)X.desc().sizes.c, 1, 1, 1, 1, 1, 1);
+            Y = conv2D(Y, 3, 3, procDim, 1, 1, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y += X;
             return relu(Y);
@@ -30,13 +31,14 @@ namespace dylann {
         ResnetConv() = default;
         
         cuTensor forward(cuTensor& X) override {
-            auto Y = conv2D(X, 3, 3, (int)X.desc().sizes.c * 2, 2, 2, 1, 1, 1, 1);
+            int procDim = (int)X.desc().sizes.c;
+            auto Y = conv2D(X, 3, 3, procDim * 2, 2, 2, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 3, 3, (int)X.desc().sizes.c * 2, 1, 1, 1, 1, 1, 1);
+            Y = conv2D(Y, 3, 3, procDim * 2, 1, 1, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             
-            auto X_ = conv2D(X, 1, 1, (int)X.desc().sizes.c * 2, 2, 2, 0, 0, 1, 1);
+            auto X_ = conv2D(X, 1, 1, procDim * 2, 2, 2, 0, 0, 1, 1);
             X_ = batchnorm(X_, 1e-8, 0.1);
             
             Y += X_;
@@ -49,13 +51,14 @@ namespace dylann {
         ResnetBottleNeck() = default;
         
         cuTensor forward(cuTensor& X) override {
-            auto Y = conv2D(X, 1, 1, (int)X.desc().sizes.c / 4, 1, 1, 0, 0, 1, 1);\
+            int procDim = (int)X.desc().sizes.c;
+            auto Y = conv2D(X, 1, 1, procDim / 4, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 3, 3, (int)X.desc().sizes.c / 4, 1, 1, 1, 1, 1, 1);
+            Y = conv2D(Y, 3, 3, procDim / 4, 1, 1, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 1, 1, (int)X.desc().sizes.c, 1, 1, 0, 0, 1, 1);
+            Y = conv2D(Y, 1, 1, procDim, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y += X;
             return relu(Y);
@@ -69,16 +72,17 @@ namespace dylann {
         ResnetBottleNeckJoint() = default;
         
         cuTensor forward(cuTensor& X) override {
-            auto Y = conv2D(X, 1, 1, (int)X.desc().sizes.c / 4, 1, 1, 0, 0, 1, 1);
+            int procDim = (int)X.desc().sizes.c;
+            auto Y = conv2D(X, 1, 1, procDim / 4, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 3, 3, (int)X.desc().sizes.c / 4, 2, 2, 1, 1, 1, 1);
+            Y = conv2D(Y, 3, 3, procDim / 4, 2, 2, 1, 1, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             Y = relu(Y);
-            Y = conv2D(Y, 1, 1, (int)X.desc().sizes.c * 2, 1, 1, 0, 0, 1, 1);
+            Y = conv2D(Y, 1, 1, procDim * 2, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
             
-            auto X_ = conv2D(X, 1, 1, (int)X.desc().sizes.c * 2, 2, 2, 0, 0, 1, 1);
+            auto X_ = conv2D(X, 1, 1, procDim * 2, 2, 2, 0, 0, 1, 1);
             X_ = batchnorm(X_, 1e-8, 0.1);
             
             Y += X_;

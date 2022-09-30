@@ -55,6 +55,29 @@ namespace io {
         }
     }
     
+    void Dataset::nextValBatch(cuTensorBase *X, cuTensorBase *Y) {
+        //copy data to GPU
+    for (int i = 0; i < MINI_BATCH_SIZE; i++) {
+            size_t xOffset = i * X->desc.elementSize * X->desc.sizes.size / MINI_BATCH_SIZE;
+            size_t yOffset = i * Y->desc.elementSize * Y->desc.sizes.size / MINI_BATCH_SIZE;
+            
+            void* copyPtrX = valid[valSampleID].X->data;
+            
+            assertCuda(__FILE__, __LINE__);
+            cudaMemcpy((unsigned char *) X->data->data + xOffset,
+                       copyPtrX, X->desc.elementSize * X->desc.sizes.size / MINI_BATCH_SIZE,
+                       cudaMemcpyHostToDevice);
+            assertCuda(__FILE__, __LINE__);
+            
+            cudaMemcpy((unsigned char *) Y->data->data + yOffset,
+                       valid[valSampleID].Y->data, Y->desc.elementSize * Y->desc.sizes.size / MINI_BATCH_SIZE,
+                       cudaMemcpyHostToDevice);
+            assertCuda(__FILE__, __LINE__);
+            
+            valSampleID = (valSampleID + 1) % valid.size();
+        }
+    }
+    
     Dataset::Dataset(unsigned int EPOCH_SIZE, unsigned int RAM_BATCH_SIZE, unsigned int MINI_BATCH_SIZE,
                      unsigned int CPU_WORKERS, unsigned int VAL_BATCH_SIZE, shape4 dataShape, shape4 labelShape, cudnnDataType_t dataType) :
                      EPOCH_SIZE(EPOCH_SIZE), RAM_BATCH_SIZE(RAM_BATCH_SIZE), MINI_BATCH_SIZE(MINI_BATCH_SIZE),

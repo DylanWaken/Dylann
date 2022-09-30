@@ -37,6 +37,7 @@ namespace io {
         //loading data in batches to ram for maximizing CPU utilization
         unsigned int ramLoadID = 0;
         unsigned int globalSampleID = 0;
+        unsigned int valSampleID = 0;
         
         bool isDataFetching = false;
         
@@ -47,6 +48,8 @@ namespace io {
         
         //store next mini batch of data in X and Y
         void nextMiniBatch(cuTensorBase* X, cuTensorBase* Y);
+        
+        void nextValBatch(cuTensorBase* X, cuTensorBase* Y);
         
         virtual void launchPipeline(vector<Data>& data) = 0;
         

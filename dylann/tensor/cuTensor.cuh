@@ -21,6 +21,12 @@ namespace dylann{
         cuTensorBase* impl;
         static vector<Operation*>* instructions;
         
+        static cuTensor inherit(cuTensorBase* impl){
+            cuTensor tensor{};
+            tensor.impl = impl;
+            return tensor;
+        }
+        
         template<cudnnDataType_t dtype>
         static cuTensor declare(shape4 dims){
             return cuTensor{cuTensorBase::create(dims, dtype)};
