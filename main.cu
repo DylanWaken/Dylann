@@ -26,20 +26,20 @@ int main() {
     ResnetIdentity id = ResnetIdentity();
     ResnetConv cv = ResnetConv();
 
-    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
-    X = batchnorm(X, 1e-8, 1);
-    X = relu(X);
+//    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
+//    X = batchnorm(X, 1e-8, 1);
+//    X = relu(X);
+//
+//    for(auto i = 0; i < 5; i++)  id.forward(X);
+//    X = cv.forward(X);
+//
+//    for(auto i = 0; i < 5; i++) X = id.forward(X);
+//    X = cv.forward(X);
+//
+//    for(auto i = 0; i < 5; i++) X = id.forward(X);
+//    auto X2 = cv.forward(X);
 
-    for(auto i = 0; i < 9; i++)  id.forward(X);
-    X = cv.forward(X);
-
-    for(auto i = 0; i < 9; i++) X = id.forward(X);
-    X = cv.forward(X);
-
-    for(auto i = 0; i < 9; i++) X = id.forward(X);
-    auto X2 = cv.forward(X);
-
-    X2 = flatten(X2);
+    auto X2 = flatten(X0);
     X2 = linear(X2, 256);
     X2 = relu(X2);
     auto X3 = linear(X2, 10);
@@ -61,7 +61,7 @@ int main() {
     }
 
 
-    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,3200,
+    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,6400,
                                        {1, 3, 32, 32},
                                        shape4(10), CUDNN_DATA_FLOAT);
 
@@ -94,8 +94,6 @@ int main() {
                 seq->forward();
                 valLoss += seq->getLoss(label.impl);
                 seq->resetGrad();
-                
-                if(valLoss == 0){ Y.print(); label.print(); }
             }
             cout << valLoss / 50 << ", ";
         }

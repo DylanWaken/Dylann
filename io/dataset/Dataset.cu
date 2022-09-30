@@ -96,7 +96,7 @@ namespace io {
             data[1].push_back(*Data::create(dataShape, labelShape, dataType));
         }
         
-        for (int i = 0; i < RAM_BATCH_SIZE; i++) {
+        for (int i = 0; i < VAL_BATCH_SIZE; i++) {
             valid.push_back(*Data::create(dataShape, labelShape, dataType));
         }
         
