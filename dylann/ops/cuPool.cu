@@ -7,8 +7,6 @@
 namespace dylann {
     cuTensorBase *maxPoolOp(cuTensorBase* X, cuTensorBase* Y, int rangeH, int rangeW,
                             int padH, int padW, int strideH, int strideW, float alpha1, float alpha2) {
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
         
         cudaSetDevice(X->data->deviceID);
         
@@ -82,8 +80,6 @@ namespace dylann {
     
     cuTensorBase *avgPoolOp(cuTensorBase* X, cuTensorBase* Y, int rangeH, int rangeW,
                             int padH, int padW, int strideH, int strideW, float alpha1, float alpha2) {
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
     
         cudaSetDevice(X->data->deviceID);
     
@@ -156,9 +152,6 @@ namespace dylann {
     }
     
     cuTensorBase *globalAvgPoolOp(cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2) {
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
-    
         cudaSetDevice(X->data->deviceID);
     
         cudnnPoolingDescriptor_t poolDesc;

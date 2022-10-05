@@ -15,6 +15,7 @@
 #define INS_GRADS_AVGPOOL2D 1005
 #define INS_GRADS_SOFTMAX 1006
 #define INS_GRADS_BATCHNORM 1007
+#define INS_GRADS_BATCHNORM2D 1014
 #define INS_GRADS_SOFTMAX_LOG 1008
 #define INS_GRADS_CONCAT_CHANNEL 1009
 #define INS_GRADS_DROPOUT 1010
@@ -34,35 +35,37 @@ namespace dylann {
      
         struct ADD_GRADS : public Operation{
             public:
-            TENSOR_PTR A;
-            TENSOR_PTR B;
+            TENSOR_PTR X1;
+            TENSOR_PTR X2;
+            TENSOR_PTR Y;
             float alpha;
             float beta;
             
-            ADD_GRADS(TENSOR_PTR A, TENSOR_PTR B, float alpha, float beta)
-                 : Operation(INS_GRADS_ADD, 4), A(A), B(B), alpha(alpha), beta(beta) {}
+            ADD_GRADS(TENSOR_PTR X1, TENSOR_PTR X2, TENSOR_PTR Y, float alpha, float beta)
+                 : Operation(INS_GRADS_ADD, 4), X1(X1), X2(X2), Y(Y), alpha(alpha), beta(beta) {}
             
             void run() override;
             
             void encodeParams(unsigned char * file, size_t &offset) override;
             
             size_t getEncodedSize() override {
-                 return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) * 2;
+                 return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 3 + sizeof(float) * 2;
             }
             
             void print() override {
-                 cout << "GRADS_ADD 0x" << std::hex << A << " 0x" << std::hex
-                      << B << " " << std::dec << alpha << " " << beta << endl;
+                 cout << "GRADS_ADD 0x" << std::hex << X1 << " 0x" << std::hex
+                      << X2 << " 0x" << std::hex << Y << " " << std::dec << alpha << " " << beta << endl;
             }
         };
         
         struct SCALE_GRADS : public Operation{
             public:
-            TENSOR_PTR A;
+            TENSOR_PTR X;
+            TENSOR_PTR Y;
             float alpha;
             
-            SCALE_GRADS(TENSOR_PTR A, float alpha)
-                 : Operation(INS_GRADS_SCALE, 2), A(A), alpha(alpha) {}
+            SCALE_GRADS(TENSOR_PTR X, TENSOR_PTR Y, float alpha)
+                 : Operation(INS_GRADS_SCALE, 2), X(X), Y(Y), alpha(alpha) {}
             
             void run() override;
             
@@ -73,7 +76,8 @@ namespace dylann {
             }
             
             void print() override {
-                 cout << "GRADS_SCALE 0x" << std::hex << A << " " << std::dec << alpha << endl;
+                 cout << "GRADS_SCALE 0x" << std::hex << X << " 0x" << Y
+                 << " " << std::dec << alpha << endl;
             }
         };
      
@@ -256,6 +260,39 @@ namespace dylann {
             
             void print() override {
                 cout << "GRADS_BATCHNORM 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " <<
+                std::dec << eps << " " << expAvgFactor << endl;
+            }
+        };
+        
+        struct BATCHNORM2D_GRADS : public Operation{
+        public:
+            TENSOR_PTR X;
+            TENSOR_PTR Y;
+            TENSOR_PTR gamma;
+            TENSOR_PTR beta;
+            TENSOR_PTR mean;
+            TENSOR_PTR var;
+            float eps;
+            float expAvgFactor;
+            
+            float alpha1;
+            float alpha2;
+    
+            BATCHNORM2D_GRADS(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
+                            TENSOR_PTR var, float eps, float expAvgFactor, float alpha1, float alpha2) :
+            Operation(INS_GRADS_BATCHNORM2D, 8), X(X), Y(Y), gamma(gamma), beta(beta),
+                            mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor), alpha1(alpha1), alpha2(alpha2) {}
+                            
+            void run() override;
+            
+            void encodeParams(unsigned char * file, size_t &offset) override;
+            
+            size_t getEncodedSize() override {
+                return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 6 + sizeof(float) * 2 + sizeof(float) * 2;
+            }
+            
+            void print() override {
+                cout << "GRADS_BATCHNORM2D 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " <<
                 std::dec << eps << " " << expAvgFactor << endl;
             }
         };

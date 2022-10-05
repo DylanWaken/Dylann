@@ -76,7 +76,17 @@ add_executable(Dylann main.cu
         io/dataset/AugCVInstructions.cuh
         cudautil/ThreadController.cu
         cudautil/ThreadController.cuh
-        io/dataset/DataPipeline.cu io/dataset/DataPipeline.cuh io/dataset/Dataset.cu io/dataset/Dataset.cuh io/dataset/AngTensorInstructions.cu io/dataset/AngTensorInstructions.cuh presets/readFuncs/BuildinReadfuncs.cu presets/readFuncs/BuildinReadfuncs.cuh)
+        io/dataset/DataPipeline.cu
+        io/dataset/DataPipeline.cuh
+        io/dataset/Dataset.cu
+        io/dataset/Dataset.cuh
+        io/dataset/AngTensorInstructions.cu
+        io/dataset/AngTensorInstructions.cuh
+        presets/readFuncs/BuildinReadfuncs.cu
+        presets/readFuncs/BuildinReadfuncs.cuh
+#        testExec.cu
+#        testOptim.cu
+        dylann/optim/OptImpl.cu dylann/optim/OptImpl.cuh)
 
 target_link_libraries(Dylann ${OpenCV_LIBS})
 include_directories(${CUDNN_PATH}/include)

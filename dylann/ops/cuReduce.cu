@@ -120,8 +120,6 @@ namespace dylann{
     }
     
     cuTensorBase* softmaxOp(cuTensorBase* X, cuTensorBase* Y, int step){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
         
         float af = 1.0f, bf = 0.0f;
         shape4 sizeSrc = X->desc.sizes;
@@ -179,9 +177,6 @@ namespace dylann{
     
     
     cuTensorBase* softmaxLogOp(cuTensorBase* X, cuTensorBase* Y, int step){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
-        
         float af = 1.0f, bf = 0.0f;
         shape4 sizeSrc = X->desc.sizes;
     
@@ -241,20 +236,8 @@ namespace dylann{
     }
     
     cuTensorBase* softmaxCEOpGrads(cuTensorBase* X, cuTensorBase* Y, int step){
-        float af = 1.0f, bf = -1.0f;
-    
-        cudaMemcpy(X->grad->data, Y->data->data, X->data->memSize, cudaMemcpyDeviceToDevice);
-        
-        checkCUDNN(cudnnAddTensor(
-                cudnnHdlG,
-                &bf,
-                Y->desc.cudnnDesc,
-                Y->grad->data,
-                &af,
-                X->desc.cudnnDesc,
-                X->grad->data
-                ))
-                
+        cudaMemcpy(X->grad->data, Y->grad->data, X->grad->memSize, cudaMemcpyDeviceToDevice);
+        assertCuda(__FILE__,__LINE__);
         return X;
     }
 }

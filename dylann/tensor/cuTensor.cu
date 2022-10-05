@@ -11,21 +11,23 @@
 namespace dylann{
     vector<Operation*>* cuTensor::instructions;
     
-    cuTensor cuTensor::operator+=(cuTensor& A) {
-        addOp(this->impl, A.impl, 1, 1);
+    cuTensor cuTensor::operator+(cuTensor& A) {
+        auto Y = cuTensor::create(impl->data->deviceID, impl->desc.dType, impl->desc.sizes);
+        addOp(this->impl, A.impl, Y.impl, 1, 1);
         
-        auto* op = new ADD(this->impl->desc.uuid, A.impl->desc.uuid, 1, 1);
+        auto* op = new ADD(this->impl->desc.uuid, A.impl->desc.uuid, Y.impl->desc.uuid, 1, 1);
         instructions->push_back(op);
         
-        return *this;
+        return Y;
     }
     
-    cuTensor cuTensor::operator-=(cuTensor &other) {
-        addOp(this->impl, other.impl, 1, -1);
+    cuTensor cuTensor::operator-(cuTensor &other) {
+        auto Y = cuTensor::create(impl->data->deviceID, impl->desc.dType, impl->desc.sizes);
+        addOp(this->impl, other.impl, Y.impl, 1, -1);
     
-        auto* op = new ADD(this->impl->desc.uuid, other.impl->desc.uuid, 1, -1);
+        auto* op = new ADD(this->impl->desc.uuid, other.impl->desc.uuid, Y.impl->desc.uuid, 1, -1);
         instructions->push_back(op);
-        return *this;
+        return Y;
     }
     
     template<typename T>
@@ -158,7 +160,7 @@ namespace dylann{
         void* view;
         
         ofstream dataFile = ofstream(basePath + to_string(impl->desc.uuid) + string("data.txt"));
-        ofstream gradFile = ofstream(basePath + to_string(impl->desc.uuid) + string("backward.txt"));
+        ofstream gradFile = ofstream(basePath + to_string(impl->desc.uuid) + string("grad.txt"));
         
         cudaMallocHost(&view, impl->data->memSize);
         assertCuda(__FILE__, __LINE__);

@@ -15,9 +15,11 @@
 namespace dylann{
     //these are the "operations" defined for cuTensorBase
     //but implemented with "cuTensor" with gradient tracking functionalities
-    cuTensor add(cuTensor& A, cuTensor& B, float alpha, float beta);
+    cuTensor add(cuTensor& X1, cuTensor& X2, float alpha, float beta);
+    cuTensor add(cuTensor& X1, cuTensor& X2, cuTensor& Y, float alpha, float beta);
     
-    cuTensor scale(cuTensor& A, float alpha);
+    cuTensor scale(cuTensor& X, float alpha);
+    cuTensor scale(cuTensor& X, cuTensor& Y, float alpha);
     
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y, float alpha1, float alpha2);
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y);
@@ -65,6 +67,14 @@ namespace dylann{
     cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
                          cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
     cuTensor batchnorm(cuTensor& X, float eps, float expAvgFactor);
+    
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2);
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                            cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
+                            cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor);
+    cuTensor batchnorm2d(cuTensor& X, float eps, float expAvgFactor);
     
     
     cuTensor dropout(cuTensor& X, cuTensor& Y, float p);

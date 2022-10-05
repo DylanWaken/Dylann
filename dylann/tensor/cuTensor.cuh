@@ -134,8 +134,8 @@ namespace dylann{
         cuTensor asNetworkWeight() { impl->desc.isWeight = true; return *this; }
         
         //operators
-        cuTensor operator+=(cuTensor& other);
-        cuTensor operator-=(cuTensor& other);
+        cuTensor operator+(cuTensor& other);
+        cuTensor operator-(cuTensor& other);
     };
 }
 

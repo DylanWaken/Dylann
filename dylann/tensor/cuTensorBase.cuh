@@ -124,7 +124,8 @@ namespace dylann {
         bool isAllocated = false;
         bool withGrad = false;
         bool isParam = false;
-        bool isWeight = false;  //Apply L2 regularization
+        bool isWeight = false;
+
         PARAM_INIT_TYPE paramInitType;
         
         static TDescriptor* create(shape4 dims, cudnnDataType_t dType) {

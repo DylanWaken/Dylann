@@ -32,65 +32,92 @@ namespace dylann{
         return pow(x, 0.5);
     }
     
-    cuTensorBase* addOp(cuTensorBase* A, cuTensorBase* B, float alpha, float beta){
-        assertAllocated({A, B});
-        assertOnSameDev({A, B});
-        cudaSetDevice(A->data->deviceID);
+    cuTensorBase* addOp(cuTensorBase* X1, cuTensorBase* X2, cuTensorBase* Y, float alpha, float beta){
+        cudaSetDevice(X1->data->deviceID);
+    
+        float base = 1.0f;
+        
+        //add X1 to Y
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &alpha,
+                X1->desc.cudnnDesc,
+                X1->data->data,
+                &base,
+                Y->desc.cudnnDesc,
+                Y->data->data
+                ))
         
         //result is write back to A
-        checkCUDNN(cudnnAddTensor(cudnnHdlG,
-                       &beta,
-                       B->desc.cudnnDesc,
-                       B->data->data,
-                       &alpha,
-                       A->desc.cudnnDesc,
-                       A->data->data))
-        return A;
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &beta,
+                X2->desc.cudnnDesc,
+                X2->data->data,
+                &base,
+                Y->desc.cudnnDesc,
+                Y->data->data
+                ))
+        
+        return Y;
     }
 
-    cuTensorBase* addOpGrad(cuTensorBase* A, cuTensorBase* B, float alpha, float beta){
-        assert(A->desc.withGrad);
-        cudaSetDevice(A->data->deviceID);
+    cuTensorBase* addOpGrad(cuTensorBase* X1, cuTensorBase* X2, cuTensorBase* Y, float alpha, float beta){
+        assert(X1->desc.withGrad);
+        cudaSetDevice(Y->data->deviceID);
         
         float a = 1.0f;
-        //add grads in A to B
-        checkCUDNN(cudnnAddTensor(cudnnHdlG,
-                                  &beta,
-                                  A->desc.cudnnDesc,
-                                  A->grad->data,
-                                  &a,
-                                  B->desc.cudnnDesc,
-                                  B->grad->data))
-    
-        checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    A->desc.cudnnDesc,
-                                    A->data->data,
-                                    &alpha))
+        
+        //add the grad of Y back to X1
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &alpha,
+                Y->desc.cudnnDesc,
+                Y->grad->data,
+                &a,
+                X1->desc.cudnnDesc,
+                X1->grad->data
+                ))
+        
+        //add the grad of Y back to X2
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &beta,
+                Y->desc.cudnnDesc,
+                Y->grad->data,
+                &a,
+                X2->desc.cudnnDesc,
+                X2->grad->data
+                ))
                                     
-        return A;
+        return X1;
     }
     
-    cuTensorBase* scale(cuTensorBase* A, float alpha){
-        assertAllocated({A});
-        cudaSetDevice(A->data->deviceID);
-        
+    cuTensorBase* scale(cuTensorBase* X, cuTensorBase* Y, float alpha){
+        cudaSetDevice(X->data->deviceID);
+    
+        cudaMemcpy(Y->data->data, X->data->data, X->data->memSize, cudaMemcpyDeviceToDevice);
+        assertCuda(__FILE__, __LINE__);
         checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                       A->desc.cudnnDesc,
-                       A->data->data,
+                       Y->desc.cudnnDesc,
+                       Y->data->data,
                        &alpha))
-        return A;
+        return Y;
     }
     
-    cuTensorBase* scaleOpGrad(cuTensorBase* A, float alpha){
-        assert(A->desc.withGrad);
-        cudaSetDevice(A->data->deviceID);
+    cuTensorBase* scaleOpGrad(cuTensorBase* X, cuTensorBase* Y, float alpha){
+        cudaSetDevice(Y->data->deviceID);
     
-        checkCUDNN(cudnnScaleTensor(cudnnHdlG,
-                                    A->desc.cudnnDesc,
-                                    A->grad->data,
-                                    &alpha));
+        float base = 1.0f;
+        checkCUDNN(cudnnAddTensor(cudnnHdlG,
+                       &alpha,
+                       Y->desc.cudnnDesc,
+                       Y->grad->data,
+                       &base,
+                       X->desc.cudnnDesc,
+                       X->grad->data))
         
-        return A;
+        return X;
     }
     
     cuTensorBase* flattenOp(cuTensorBase* X, cuTensorBase* Y){
@@ -111,7 +138,7 @@ namespace dylann{
         
         cudaMemcpy(X->grad->data, Y->grad->data, X->grad->memSize, cudaMemcpyDeviceToDevice);
         assertCuda(__FILE__, __LINE__);
-        return Y;
+        return X;
     };
     
     //random fill with uniform distrib

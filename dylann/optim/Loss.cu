@@ -22,7 +22,7 @@ namespace dylann {
         }
     }
     
-    float MSE::loss(cuTensorBase *pred, cuTensorBase *target) {
+    float MSE::loss(cuTensorBase *target) {
         if(calcBuf == nullptr){
             calcBuf = cuTensor::create(pred->data->deviceID, pred->desc.dType, pred->desc.sizes).impl;
             lossVal = cuTensor::create(pred->data->deviceID, pred->desc.dType, 1).impl;
@@ -71,7 +71,7 @@ namespace dylann {
         }
     }
     
-    cuTensorBase *MSE::backward(cuTensorBase *pred, cuTensorBase *target) {
+    cuTensorBase *MSE::backward(cuTensorBase *target) {
         cudaMemcpy(pred->grad->data, pred->data->data, pred->data->memSize, cudaMemcpyDeviceToDevice);
     
         float a = 1.0f, a2 = -1.0f;
@@ -88,7 +88,7 @@ namespace dylann {
         return pred;
     }
     
-    float CrossEntropy::loss(cuTensorBase *pred, cuTensorBase *target) {
+    float CrossEntropy::loss(cuTensorBase *target) {
         if(calcBuf == nullptr){
             calcBuf = cuTensor::create(pred->data->deviceID, pred->desc.dType, pred->desc.sizes).impl;
             lossVal = cuTensor::create(pred->data->deviceID, pred->desc.dType, 1).impl;
@@ -141,8 +141,22 @@ namespace dylann {
     }
     
     //The actual subtract calc will be at the softmaxCE operand
-    cuTensorBase *CrossEntropy::backward(cuTensorBase *pred, cuTensorBase *target) {
-        cudaMemcpy(pred->grad->data, target->data->data, pred->data->memSize, cudaMemcpyDeviceToDevice);
+    cuTensorBase *CrossEntropy::backward(cuTensorBase *target) {
+        float af = 1.0f, bf = -1.0f;
+    
+        cudaMemcpy(pred->grad->data, pred->data->data, pred->data->memSize, cudaMemcpyDeviceToDevice);
+        assertCuda(__FILE__, __LINE__);
+    
+        checkCUDNN(cudnnAddTensor(
+                cudnnHdlG,
+                &bf,
+                target->desc.cudnnDesc,
+                target->data->data,
+                &af,
+                pred->desc.cudnnDesc,
+                pred->grad->data
+        ))
+        
         return pred;
     }
 } // dylann

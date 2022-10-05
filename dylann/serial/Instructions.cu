@@ -6,7 +6,7 @@
 
 namespace dylann {
     void ADD::run() {
-        addOp(params->at(A), params->at(B), alpha, beta);
+        addOp(params->at(X1), params->at(X2), params->at(Y), alpha, beta);
     }
     
     void ADD::encodeParams(unsigned char *file,size_t &offset) {
@@ -15,9 +15,11 @@ namespace dylann {
         *(unsigned int*)(file + offset) = paramCount;
         offset += sizeof(unsigned int);
         
-        *(TENSOR_PTR*)(file + offset) = A;
+        *(TENSOR_PTR*)(file + offset) = X1;
         offset += sizeof(TENSOR_PTR);
-        *(TENSOR_PTR*)(file + offset) = B;
+        *(TENSOR_PTR*)(file + offset) = X1;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
@@ -26,7 +28,7 @@ namespace dylann {
     }
     
     void SCALE::run() {
-        scale(params->at(A), alpha);
+        scale(params->at(X), params->at(Y), alpha);
     }
     
     void SCALE::encodeParams(unsigned char *file,size_t &offset) {
@@ -35,7 +37,9 @@ namespace dylann {
         *(unsigned int*)(file + offset) = paramCount;
         offset += sizeof(unsigned int);
         
-        *(TENSOR_PTR*)(file + offset) = A;
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
@@ -243,6 +247,43 @@ namespace dylann {
     }
     
     void BATCHNORM::encodeParams(unsigned char * file, size_t &offset){
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+        
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = mean;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = var;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = gamma;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = beta;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = eps;
+        offset += sizeof(float);
+        *(float*)(file + offset) = expAvgFactor;
+        offset += sizeof(float);
+    }
+    
+    
+    void BATCHNORM2D::run() {
+        if (train) {
+            batchnorm2dOp(params->at(X), params->at(Y), params->at(mean),
+                          params->at(var), params->at(gamma), params->at(beta), eps, expAvgFactor,
+                          alpha1, alpha2);
+        }else{
+            batchnorm2dInferOp(params->at(X), params->at(Y), params->at(mean),
+                               params->at(var), params->at(gamma), params->at(beta), eps,
+                               alpha1, alpha2);
+        }
+    }
+    
+    void BATCHNORM2D::encodeParams(unsigned char * file, size_t &offset){
         *(unsigned int*)(file + offset) = opCode;
         offset += sizeof(unsigned int);
         *(unsigned int*)(file + offset) = paramCount;
@@ -480,26 +521,30 @@ namespace dylann {
     //------------------------------------------------------
     
     ADD* extractAdd(const unsigned char * file, size_t &offset) {
-        TENSOR_PTR A = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X1 = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
-        TENSOR_PTR B = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X2 = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         float beta = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* add = new ADD(A, B, alpha, beta);
+        auto* add = new ADD(X1, X2, Y, alpha, beta);
         return add;
     }
     
     SCALE* extractScale(const unsigned char * file, size_t &offset) {
-        TENSOR_PTR A = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* scale = new SCALE(A, alpha);
+        auto* scale = new SCALE(X, Y, alpha);
         return scale;
     }
     
@@ -674,6 +719,35 @@ namespace dylann {
         auto* batchNorm = new BATCHNORM(X, Y, weight, bias, mean, var, eps, expAvgFactor, alpha1, alpha2);
         return batchNorm;
     }
+    
+    BATCHNORM2D* extractBatchNorm2D(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR mean = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR var = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR weight = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR bias = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float eps = *(float*)(file + offset);
+        offset += sizeof(float);
+        float expAvgFactor = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        auto* batchNorm2d = new BATCHNORM2D(X, Y, weight, bias, mean, var, eps, expAvgFactor, alpha1, alpha2);
+        return batchNorm2d;
+    }
+    
+
     
     SOFTMAX_LOG* extractSoftmaxLog(const unsigned char * file, size_t &offset){
         TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);

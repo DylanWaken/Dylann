@@ -12,14 +12,14 @@ namespace dylann {
     Operation* getCorrespondBcwd(Operation* input){
         switch (input->opCode) {
             case INS_ADD:
-                return new ADD_GRADS(((ADD*)input)->A, ((ADD*)input)->B, ((ADD*)input)->alpha, ((ADD*)input)->beta);
+                return new ADD_GRADS(((ADD*)input)->X1, ((ADD*)input)->X2, ((ADD*)input)->Y, ((ADD*)input)->alpha, ((ADD*)input)->beta);
                 
             case INS_SCALE:
-                return new SCALE_GRADS(((SCALE*)input)->A, ((SCALE*)input)->alpha);
+                return new SCALE_GRADS(((SCALE*)input)->X, ((SCALE*)input)->Y, ((SCALE*)input)->alpha);
                 
             case INS_LINEAR:
                 return new LINEAR_GRADS(((LINEAR*)input)->W, ((LINEAR*)input)->B, ((LINEAR*)input)->X, ((LINEAR*)input)->Y,
-                                        1, 0);
+                                        1, 1);
                 
             case INS_CONV2D:
                 return new CONV2D_GRADS(((CONV2D*)input)->W, ((CONV2D*)input)->B, ((CONV2D*)input)->X, ((CONV2D*)input)->Y,
@@ -42,7 +42,12 @@ namespace dylann {
             case INS_BATCHNORM:
                 return new BATCHNORM_GRADS(((BATCHNORM*)input)->X, ((BATCHNORM*)input)->Y, ((BATCHNORM*)input)->gamma, ((BATCHNORM*)input)->beta,
                                            ((BATCHNORM*)input)->mean, ((BATCHNORM*)input)->var, ((BATCHNORM*)input)->eps, ((BATCHNORM*)input)->expAvgFactor,
-                                           1, 0);
+                                           1, 1);
+                
+            case INS_BATCHNORM2D:
+                return new BATCHNORM2D_GRADS(((BATCHNORM2D*)input)->X, ((BATCHNORM2D*)input)->Y, ((BATCHNORM2D*)input)->gamma, ((BATCHNORM2D*)input)->beta,
+                                             ((BATCHNORM2D*)input)->mean, ((BATCHNORM2D*)input)->var, ((BATCHNORM2D*)input)->eps, ((BATCHNORM2D*)input)->expAvgFactor,
+                                             1, 1);
                 
             case INS_DROPOUT:
                 return new DROPOUT_GRADS(((DROPOUT*)input)->X, ((DROPOUT*)input)->Y, ((DROPOUT*)input)->rate);

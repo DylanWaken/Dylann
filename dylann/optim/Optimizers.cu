@@ -11,15 +11,20 @@ void dylann::SGD::apply() {
         
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, p.second->desc.cudnnDesc, p.second->grad->data,
+<<<<<<< HEAD
                p.second->desc.isWeight? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
+=======
+               p.second->desc.isWeight ? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
+>>>>>>> test
         ))
-        cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
-        assertCuda(__FILE__, __LINE__);
     }
 }
 
 void dylann::SGD::zeroGrad() {
-
+    for (auto p : (*paramsRes)) {
+        cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
+        assertCuda(__FILE__, __LINE__);
+    }
 }
 
 void dylann::Momentum::bindParams(map<TENSOR_PTR, dylann::cuTensorBase *> *params) {
@@ -41,25 +46,26 @@ void dylann::Momentum::bindDefaultParams() {
 //Momentum : m[t] = m[t-1] * β + (1 - β) * g[t]
 //           w[t] = w[t-1] - η * m[t]
 void dylann::Momentum::apply() {
-    float m1 = BETA, m2 = 1 - BETA, aW = 1 - L2, aB = 1, b = - LEARNING_RATE;
     for (auto p : (*paramsRes)) {
-        checkCUDNN(cudnnAddTensor(cudnnHdlG,
-               &m2, p.second->desc.cudnnDesc, p.second->grad->data,
-               &m1, optimBufCTX[p.first]->desc.cudnnDesc, optimBufCTX[p.first]->data->data
-        ))
-        checkCUDNN(cudnnAddTensor(cudnnHdlG,
-               &b, optimBufCTX[p.first]->desc.cudnnDesc, optimBufCTX[p.first]->data->data,
-               p.second->desc.isWeight? &aW : &aB, p.second->desc.cudnnDesc, p.second->data->data
-        ))
-    
+        momentumApply(p.second,
+                      optimBufCTX[p.first],
+                      LEARNING_RATE,
+                      BETA,
+                      L2,
+                      p.second->desc.isWeight);
+    }
+}
+
+void dylann::Momentum::zeroGrad() {
+    for (auto p : (*paramsRes)) {
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);
     }
 }
 
-void dylann::Momentum::zeroGrad() {
-    for (auto p : optimBufCTX) {
-        cudaMemset(p.second->data->data, 0, p.second->data->memSize);
+void dylann::Momentum::zeroCache() {
+    for (auto p : (optimBufCTX)) {
+        cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);
     }
 }
@@ -159,5 +165,4 @@ void dylann::Adam::zeroGrad() {
         cudaMemset(p.second->grad->data, 0, p.second->data->memSize);
         assertCuda(__FILE__, __LINE__);
     }
-
 }

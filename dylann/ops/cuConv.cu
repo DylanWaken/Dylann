@@ -6,8 +6,6 @@
 namespace dylann{
     cuTensorBase* conv2dOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
                            int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2){
-        assertAllocated({W, B, X, Y});
-        assertOnSameDev({W, B, X, Y});
     
         cudaSetDevice(W->data->deviceID);
     
@@ -19,7 +17,7 @@ namespace dylann{
         cudnnCreateActivationDescriptor(&activationDesc);
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                        CUDNN_CONVOLUTION, X->desc.dType))
+                                        CUDNN_CROSS_CORRELATION, X->desc.dType))
         checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, X->desc.dType,
                                    CUDNN_TENSOR_NCHW,
                                    (int)W->desc.sizes.n,
@@ -30,7 +28,7 @@ namespace dylann{
                                    
         checkCUDNN(cudnnSetActivationDescriptor(activationDesc, CUDNN_ACTIVATION_IDENTITY, CUDNN_NOT_PROPAGATE_NAN, 0))
     
-        checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
+        //checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
         //float alpha1 = 1.0f, alpha2 = 0.0f;
 
@@ -42,7 +40,7 @@ namespace dylann{
                 filterDesc,
                 W->data->data,
                 convDesc,
-                CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM,
+                CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
                 cudnnWorkspaceG,
                 CUDNN_WORKSPACE_SIZE_G,
                 &alpha2,
@@ -67,8 +65,6 @@ namespace dylann{
     cuTensorBase* conv2dActiveOp(cuTensorBase* X, cuTensorBase* W, cuTensorBase* B, cuTensorBase* Y,
                                  int strideH, int strideW, int padH, int padW, int dilationH, int dilationW,
                                  cudnnActivationMode_t mode, float coef, float alpha1, float alpha2){
-        assertAllocated({W, B, X, Y});
-        assertOnSameDev({W, B, X, Y});
     
         cudaSetDevice(W->data->deviceID);
     
@@ -80,7 +76,7 @@ namespace dylann{
         cudnnCreateActivationDescriptor(&activationDesc);
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                                   CUDNN_CONVOLUTION, X->desc.dType))
+                                                   CUDNN_CROSS_CORRELATION, X->desc.dType))
         checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, X->desc.dType,
                                               CUDNN_TENSOR_NCHW,
                                               (int)W->desc.sizes.n,
@@ -89,7 +85,7 @@ namespace dylann{
                                               (int)W->desc.sizes.w))
         checkCUDNN(cudnnSetActivationDescriptor(activationDesc, mode, CUDNN_NOT_PROPAGATE_NAN, coef))
     
-        checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
+        //checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
         //float alpha = 1.0f, alpha2 = 0.0f;
     
@@ -135,7 +131,7 @@ namespace dylann{
         //float alpha = 1.0f, beta = 1.0f;
     
         checkCUDNN(cudnnSetConvolution2dDescriptor(convDesc, padH, padW, strideH, strideW, dilationH, dilationW,
-                                                   CUDNN_CONVOLUTION, Y->desc.dType))
+                                                   CUDNN_CROSS_CORRELATION, Y->desc.dType))
         checkCUDNN(cudnnSetFilter4dDescriptor(filterDesc, W->desc.dType,
                                               CUDNN_TENSOR_NCHW,
                                               (int)W->desc.sizes.n,
@@ -143,7 +139,7 @@ namespace dylann{
                                               (int)W->desc.sizes.h,
                                               (int)W->desc.sizes.w));
     
-        checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
+        //checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
         checkCUDNN(cudnnConvolutionBackwardData(cudnnHdlG,
                                                 &alpha1,

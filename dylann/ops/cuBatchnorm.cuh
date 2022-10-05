@@ -17,6 +17,19 @@ namespace dylann {
     
     cuTensorBase* batchnormOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
                                    cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor, float alpha1, float alpha2);
+    
+    /**
+     * Batchnorm over channels for Conv Nets
+     */
+    cuTensorBase* batchnorm2dOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
+                                cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor, float alpha1, float alpha2);
+    
+    cuTensorBase* batchnorm2dInferOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
+                                cuTensorBase* gamma, cuTensorBase* beta, float eps, float alpha1, float alpha2);
+    
+    cuTensorBase* batchnorm2dOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* runningMean, cuTensorBase* runningVar,
+                                cuTensorBase* gamma, cuTensorBase* beta, float eps, float expAvgFactor, float alpha1, float alpha2);
+    
 } // dylann
 
 #endif //DYLANN_CUBATCHNORM_CUH

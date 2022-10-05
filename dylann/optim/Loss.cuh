@@ -15,24 +15,32 @@ namespace dylann {
         cuTensorBase* calcBuf = nullptr;
         cuTensorBase* lossVal = nullptr;
         void* lossHost = nullptr;
+        cuTensorBase* pred = nullptr;
         
-        virtual float loss(cuTensorBase* pred, cuTensorBase* target) = 0;
+        explicit Loss(cuTensorBase* pred){ this->pred = pred; }
         
-        virtual cuTensorBase* backward(cuTensorBase* pred, cuTensorBase* target) = 0;
+        virtual float loss(cuTensorBase* target) = 0;
+        
+        virtual cuTensorBase* backward(cuTensorBase* target) = 0;
     };
     
     struct MSE : public Loss {
     public:
-        float loss(cuTensorBase* pred, cuTensorBase* target) override;
         
-        cuTensorBase* backward(cuTensorBase* pred, cuTensorBase* target) override;
+        explicit MSE(cuTensorBase* pred) : Loss(pred) {}
+        
+        float loss(cuTensorBase* target) override;
+        
+        cuTensorBase* backward(cuTensorBase* target) override;
     };
     
     struct CrossEntropy : public Loss {
     public:
-        float loss(cuTensorBase* pred, cuTensorBase* target) override;
+        explicit CrossEntropy(cuTensorBase* pred) : Loss(pred) {}
         
-        cuTensorBase* backward(cuTensorBase* pred, cuTensorBase* target) override;
+        float loss(cuTensorBase* target) override;
+        
+        cuTensorBase* backward(cuTensorBase* target) override;
     };
     
 } // dylann

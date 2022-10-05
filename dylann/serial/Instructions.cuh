@@ -29,6 +29,7 @@
 #define INS_FLATTEN 11
 #define INS_GLOBAL_AVGPOOL 12
 #define INS_SOFTMAX_CE 13
+#define INS_BATCHNORM2D 14
 
 #define INS_RELU 100
 #define INS_SIGMOID 101
@@ -71,46 +72,48 @@ namespace dylann {
     
     struct ADD : public Operation {
     public:
-        TENSOR_PTR A;
-        TENSOR_PTR B;
+        TENSOR_PTR X1;
+        TENSOR_PTR X2;
+        TENSOR_PTR Y;
         float alpha;
         float beta;
         
-        ADD(TENSOR_PTR A, TENSOR_PTR B, float alpha, float beta) :
-                Operation(INS_ADD, 4), A(A), B(B), alpha(alpha), beta(beta) {}
+        ADD(TENSOR_PTR X1, TENSOR_PTR X2, TENSOR_PTR Y, float alpha, float beta) :
+                Operation(INS_ADD, 4), X1(X1), X2(X2), Y(Y), alpha(alpha), beta(beta) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float) * 2;
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 3 + sizeof(float) * 2;
         }
         
         void print() override {
-            cout << "ADD 0x" << std::hex << A << " 0x" << std::hex
-            << B << " " << std::dec << alpha << " " << beta << endl;
+            cout << "ADD 0x" << std::hex << X1 << " 0x" << std::hex
+            << X2 <<  " 0x" << std::hex << Y <<" " << std::dec << alpha << " " << beta << endl;
         }
     };
     
     struct SCALE : public Operation {
     public:
-        TENSOR_PTR A;
+        TENSOR_PTR X;
+        TENSOR_PTR Y;
         float alpha;
         
-        SCALE(TENSOR_PTR A, float alpha) :
-                Operation(INS_SCALE, 2), A(A), alpha(alpha){}
+        SCALE(TENSOR_PTR X, TENSOR_PTR Y, float alpha) :
+                Operation(INS_SCALE, 2), X(X), Y(Y), alpha(alpha){}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) + sizeof(float);
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float);
         }
         
         void print() override {
-            cout << "SCALE 0x" << std::hex << A << " " << std::dec << alpha << endl;
+            cout << "SCALE 0x" << std::hex << X << " 0x" << std::hex << Y <<" " << std::dec << alpha << endl;
         }
     };
     
@@ -343,6 +346,39 @@ namespace dylann {
         
         void print() override {
             cout << "BATCHNORM 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " << std::dec
+            << eps << " " << expAvgFactor << endl;
+        }
+    };
+    
+    struct BATCHNORM2D : public Operation {
+    public:
+        TENSOR_PTR X;
+        TENSOR_PTR Y;
+        TENSOR_PTR gamma;
+        TENSOR_PTR beta;
+        TENSOR_PTR mean;
+        TENSOR_PTR var;
+        float eps;
+        float expAvgFactor;
+        
+        float alpha1;
+        float alpha2;
+        
+        BATCHNORM2D(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR gamma, TENSOR_PTR beta, TENSOR_PTR mean,
+                    TENSOR_PTR var, float eps, float expAvgFactor, float alpha1, float alpha2) :
+                Operation(INS_BATCHNORM2D, 8), X(X), Y(Y), gamma(gamma), beta(beta),
+                mean(mean), var(var), eps(eps), expAvgFactor(expAvgFactor), alpha1(alpha1), alpha2(alpha2) {}
+        
+        void run() override;
+        
+        void encodeParams(unsigned char * file, size_t &offset) override;
+        
+        size_t getEncodedSize() override {
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 6 + sizeof(float) * 2 + sizeof(float) * 2;
+        }
+        
+        void print() override {
+            cout << "BATCHNORM2D 0x" << std::hex << X << " 0x" << Y << " 0x" << gamma << " 0x" << beta << " 0x" << mean << " 0x" << var << " " << std::dec
             << eps << " " << expAvgFactor << endl;
         }
     };
