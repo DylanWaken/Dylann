@@ -8,16 +8,31 @@ namespace dylann{
     /**
      * @see: https://www.adityaagrawal.net/blog/deep_learning/row_column_major
      */
-    
-    void fillBias(cuTensorBase* B, cuTensorBase* Y, float alpha2){
-        for(auto i = 0; i < Y->desc.sizes.n; i++){
-            auto offset = i * Y->desc.sizes.w;
-            char* destPtr = (char*)Y->data->data + offset * Y->desc.elementSize;
-            float a = 1;
-            checkCUDNN(cudnnAddTensor(cudnnHdlG, &a, B->desc.cudnnDesc, B->data->data,
-                           &alpha2, B->desc.cudnnDesc, destPtr))
+    template<typename T>
+    __global__ void fillBias(cuTensorBase* B, cuTensorBase* Y, float alpha2){
+        unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if(idx < B->desc.sizes.w){
+            T* ptr = (T*)Y->data->data;
+            #pragma unroll
+            for(auto i = 0; i < Y->desc.sizes.n; i++){
+                ptr[i * Y->desc.sizes.w + idx] = ((T*)B->data->data)[idx];
+            }
         }
-    };
+    }
+    
+    template<typename T>
+    __global__ void calcBiasGrad(cuTensorBase* B, cuTensorBase* Y){
+        unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+        if(idx < B->desc.sizes.w){
+            T* ptr = (T*)Y->grad->data;
+            T sum = 0;
+            #pragma unroll
+            for(auto i = 0; i < Y->desc.sizes.n; i++){
+                sum += ptr[i * Y->desc.sizes.w + idx];
+            }
+            ((T*)B->grad->data)[idx] = sum;
+        }
+    }
     
     void FLOAT_LINEAR(cuTensorBase* W, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
         //forward gemm (linear operation)
@@ -204,14 +219,30 @@ namespace dylann{
     
     cuTensorBase *linearOp(cuTensorBase* W, cuTensorBase* B, cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
     
-        assertAllocated({W, B, X, Y});
-        assertOnSameDev({W, B, X, Y});
-    
         cudaSetDevice(W->data->deviceID);
         
         //set cublas
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
-        fillBias(B, Y, alpha2);
+    
+        unsigned int block = 256;
+        unsigned int grid = (B->desc.sizes.w + block - 1) / block;
+
+        switch (Y->desc.dType) {
+            case CUDNN_DATA_FLOAT:
+                fillBias<float><<<grid, block>>>(B, Y, alpha2);
+                break;
+            case CUDNN_DATA_HALF:
+                fillBias<half><<<grid, block>>>(B, Y, alpha2);
+                break;
+            case CUDNN_DATA_DOUBLE:
+                fillBias<double><<<grid, block>>>(B, Y, alpha2);
+                break;
+            default:
+                throw std::runtime_error("Unsupported data type");
+        }
+
+        cudaDeviceSynchronize();
+        assertCuda(__FILE__, __LINE__);
         
         //assert same dtye
         assert(W->desc.dType == X->desc.dType
@@ -274,8 +305,26 @@ namespace dylann{
                 throw std::runtime_error("unsupported dtype");
         }
     
+        unsigned int block = 256;
+        unsigned int grid = (B->desc.sizes.w + block - 1) / block;
+        
         //forward gradients for biases
-        cudaMemcpy(B->grad->data, Y->grad->data, B->grad->memSize, cudaMemcpyDeviceToHost);
+        switch (X->desc.dType) {
+            case CUDNN_DATA_FLOAT:
+                calcBiasGrad<float><<<grid, block>>>(B,Y);
+                break;
+            case CUDNN_DATA_HALF:
+                calcBiasGrad<__half><<<grid, block>>>(B,Y);
+                break;
+            case CUDNN_DATA_DOUBLE:
+                calcBiasGrad<double><<<grid, block>>>(B,Y);
+                break;
+            default:
+                throw std::runtime_error("unsupported dtype");
+        }
+        
+        cudaDeviceSynchronize();
+        assertCuda(__FILE__, __LINE__);
         
         return Y;
     }

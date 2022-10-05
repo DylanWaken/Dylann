@@ -8,6 +8,7 @@
 
 #include "../tensor/cuTensorBase.cuh"
 #include "../serial/AutoGrad.cuh"
+#include "OptImpl.cuh"
 
 namespace dylann {
     
@@ -33,6 +34,8 @@ namespace dylann {
         virtual void apply() = 0;
     
         virtual void zeroGrad() = 0;
+    
+        virtual void zeroCache(){}
     };
     
     //SGD optimizer : Stochastic Gradient Decent, w = w - η * g
@@ -45,6 +48,7 @@ namespace dylann {
         void apply() override;
         
         void zeroGrad() override;
+        
     };
     
     //Momentum : m[t] = m[t-1] * β + (1 - β) * g[t]
@@ -69,6 +73,8 @@ namespace dylann {
         void apply() override;
         
         void zeroGrad() override;
+        
+        void zeroCache() override;
     };
 
 

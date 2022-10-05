@@ -15,12 +15,12 @@ namespace dylann {
         cuTensor forward(cuTensor& X) override {
             int procDim = (int)X.desc().sizes.c;
             auto Y = conv2D(X, 3, 3, procDim, 1, 1, 1, 1, 1, 1);
-            Y = batchnorm(Y, 1e-8, 0.1);
+            Y = batchnorm2d(Y, 1e-8, 1);
             Y = relu(Y);
             Y = conv2D(Y, 3, 3, procDim, 1, 1, 1, 1, 1, 1);
-            Y = batchnorm(Y, 1e-8, 0.1);
-            Y += X;
-            return relu(Y);
+            Y = batchnorm2d(Y, 1e-8, 1);
+            auto Y2 = Y + X;
+            return relu(Y2);
         }
     };
     
@@ -32,17 +32,17 @@ namespace dylann {
         
         cuTensor forward(cuTensor& X) override {
             int procDim = (int)X.desc().sizes.c;
-            auto Y = conv2D(X, 3, 3, procDim * 2, 2, 2, 1, 1, 1, 1);
-            Y = batchnorm(Y, 1e-8, 0.1);
+            auto Y = conv2D(X, 3, 3, procDim, 2, 2, 1, 1, 1, 1);
+            Y = batchnorm2d(Y, 1e-8, 1);
             Y = relu(Y);
             Y = conv2D(Y, 3, 3, procDim * 2, 1, 1, 1, 1, 1, 1);
-            Y = batchnorm(Y, 1e-8, 0.1);
+            Y = batchnorm2d(Y, 1e-8, 1);
             
             auto X_ = conv2D(X, 1, 1, procDim * 2, 2, 2, 0, 0, 1, 1);
-            X_ = batchnorm(X_, 1e-8, 0.1);
-            
-            Y += X_;
-            return relu(Y);
+            X_ = batchnorm2d(X_, 1e-8, 1);
+
+            auto Y2 = Y + X_;
+            return relu(Y2);
         }
     };
     
@@ -60,8 +60,8 @@ namespace dylann {
             Y = relu(Y);
             Y = conv2D(Y, 1, 1, procDim, 1, 1, 0, 0, 1, 1);
             Y = batchnorm(Y, 1e-8, 0.1);
-            Y += X;
-            return relu(Y);
+            auto Y2 = Y + X;
+            return relu(Y2);
         }
     };
     
@@ -85,8 +85,8 @@ namespace dylann {
             auto X_ = conv2D(X, 1, 1, procDim * 2, 2, 2, 0, 0, 1, 1);
             X_ = batchnorm(X_, 1e-8, 0.1);
             
-            Y += X_;
-            return relu(Y);
+            auto Y2 = Y + X_;
+            return relu(Y2);
         }
     };
 } // dylann

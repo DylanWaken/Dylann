@@ -21,12 +21,12 @@ namespace dylann{
     void AdamA(cudnnDataType_t dtype, void* W, void* M, void* V, float EPSILON, float LR, float L2, unsigned int size);
     
     //addOp operation (for data)
-    cuTensorBase* addOp(cuTensorBase* A, cuTensorBase* B, float alpha, float beta);
-    cuTensorBase* addOpGrad(cuTensorBase* A, cuTensorBase* B, float alpha, float beta);
+    cuTensorBase* addOp(cuTensorBase* X1, cuTensorBase* X2, cuTensorBase* Y, float alpha, float beta);
+    cuTensorBase* addOpGrad(cuTensorBase* A, cuTensorBase* B, cuTensorBase* Y, float alpha, float beta);
     
     //multiply by constant (data)
-    cuTensorBase* scale(cuTensorBase* A, float alpha);
-    cuTensorBase* scaleOpGrad(cuTensorBase* A, float alpha);
+    cuTensorBase* scale(cuTensorBase* X, cuTensorBase* Y, float alpha);
+    cuTensorBase* scaleOpGrad(cuTensorBase* X, cuTensorBase* Y, float alpha);
     
     //flatten
     cuTensorBase* flattenOp(cuTensorBase* X, cuTensorBase* Y);

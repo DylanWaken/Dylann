@@ -6,7 +6,7 @@
 
 namespace dylann {
     void ADD_GRADS::run() {
-        addOpGrad((*params)[A], (*params)[B], alpha, beta);
+        addOpGrad((*params)[X1], (*params)[X2], (*params)[Y], alpha, beta);
     }
     
     void ADD_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -15,9 +15,11 @@ namespace dylann {
         *(unsigned int*)(file + offset) = paramCount;
         offset += sizeof(unsigned int);
     
-        *(TENSOR_PTR*)(file + offset) = A;
+        *(TENSOR_PTR*)(file + offset) = X1;
         offset += sizeof(TENSOR_PTR);
-        *(TENSOR_PTR*)(file + offset) = B;
+        *(TENSOR_PTR*)(file + offset) = X2;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
@@ -26,7 +28,7 @@ namespace dylann {
     }
     
     void SCALE_GRADS::run() {
-        scaleOpGrad((*params)[A], alpha);
+        scaleOpGrad((*params)[X], (*params)[Y], alpha);
     }
     
     void SCALE_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -35,7 +37,9 @@ namespace dylann {
         *(unsigned int*)(file + offset) = paramCount;
         offset += sizeof(unsigned int);
     
-        *(TENSOR_PTR*)(file + offset) = A;
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = alpha;
         offset += sizeof(float);
@@ -196,6 +200,40 @@ namespace dylann {
     }
     
     void BATCHNORM_GRADS::encodeParams(unsigned char * file, size_t &offset){
+        *(unsigned int*)(file + offset) = opCode;
+        offset += sizeof(unsigned int);
+        *(unsigned int*)(file + offset) = paramCount;
+        offset += sizeof(unsigned int);
+    
+        *(TENSOR_PTR*)(file + offset) = X;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = mean;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = var;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = gamma;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = beta;
+        offset += sizeof(TENSOR_PTR);
+        *(float*)(file + offset) = eps;
+        offset += sizeof(float);
+        *(float*)(file + offset) = expAvgFactor;
+        offset += sizeof(float);
+        
+        *(float*)(file + offset) = alpha1;
+        offset += sizeof(float);
+        *(float*)(file + offset) = alpha2;
+        offset += sizeof(float);
+    }
+    
+    void BATCHNORM2D_GRADS::run() {
+        batchnorm2dOpGrads((*params)[X], (*params)[Y], (*params)[mean], (*params)[var]
+                ,(*params)[gamma], (*params)[beta], eps, expAvgFactor, alpha1, alpha2);
+    }
+    
+    void BATCHNORM2D_GRADS::encodeParams(unsigned char * file, size_t &offset){
         *(unsigned int*)(file + offset) = opCode;
         offset += sizeof(unsigned int);
         *(unsigned int*)(file + offset) = paramCount;
@@ -475,25 +513,29 @@ namespace dylann {
     
     ADD_GRADS* extractAddGrads(const unsigned char * file, size_t &offset){
         
-        TENSOR_PTR A = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X1 = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
-        TENSOR_PTR B = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X2 = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         float beta = *(float*)(file + offset);
         offset += sizeof(float);
     
-        return new ADD_GRADS(A, B, alpha, beta);
+        return new ADD_GRADS(X1, X2, Y, alpha, beta);
     }
     
     SCALE_GRADS* extractScaleGrads(const unsigned char * file, size_t &offset){
-        TENSOR_PTR A = *(TENSOR_PTR*)(file + offset);
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         float alpha = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new SCALE_GRADS(A, alpha);
+        return new SCALE_GRADS(X, Y, alpha);
     }
     
     LINEAR_GRADS* extractLinearGrads(const unsigned char * file, size_t &offset){
@@ -644,6 +686,32 @@ namespace dylann {
         offset += sizeof(float);
         
         return new BATCHNORM_GRADS(X, Y, gamma, beta, mean, var, eps, avgExpFactor, alpha1, alpha2);
+    }
+    
+    BATCHNORM2D_GRADS* extractBatchNorm2DGrads(const unsigned char * file, size_t &offset){
+        TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR mean = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR var = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR gamma = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR beta = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        float eps = *(float*)(file + offset);
+        offset += sizeof(float);
+        float avgExpFactor = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        float alpha1 = *(float*)(file + offset);
+        offset += sizeof(float);
+        float alpha2 = *(float*)(file + offset);
+        offset += sizeof(float);
+        
+        return new BATCHNORM2D_GRADS(X, Y, gamma, beta, mean, var, eps, avgExpFactor, alpha1, alpha2);
     }
     
     SOFTMAX_LOG_GRADS* extractSoftmaxLogGrads(const unsigned char * file, size_t &offset){

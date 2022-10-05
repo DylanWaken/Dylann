@@ -51,7 +51,7 @@ namespace dylann{
                 generateGrad();
             }
             
-            loss->backward(netY, target);
+            loss->backward(target);
             
             for(auto op : backwardOpSeq){
                 op->run();
@@ -68,7 +68,7 @@ namespace dylann{
         }
         
         float getLoss(cuTensorBase* target) const{
-            return loss->loss(netY, target);
+            return loss->loss(target);
         }
         
         void allocModelParams(){
@@ -96,6 +96,7 @@ namespace dylann{
         }
         
         void randomizeParams(){
+            allocModelParams();
             for(auto it : paramsSeq){
                 initParamOp(it.second);
             }

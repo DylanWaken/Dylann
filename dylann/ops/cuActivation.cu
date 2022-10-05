@@ -31,8 +31,6 @@ namespace dylann{
     }
     
     cuTensorBase* reluOp(cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
         
         if(reluDescG == nullptr){
             cudnnCreateActivationDescriptor(&reluDescG);
@@ -95,8 +93,6 @@ namespace dylann{
     }
     
     cuTensorBase* sigmoidOp(cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
         
         if(reluDescG == nullptr){
             cudnnCreateActivationDescriptor(&sigmoidDescG);
@@ -161,8 +157,8 @@ namespace dylann{
     }
     
     cuTensorBase* tanhOp(cuTensorBase* X, cuTensorBase* Y, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
+        
+        
         
         if(reluDescG == nullptr){
             cudnnCreateActivationDescriptor(&reluDescG);
@@ -229,8 +225,8 @@ namespace dylann{
     }
     
     cuTensorBase* eluOp(cuTensorBase* X, cuTensorBase* Y, float alpha, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
+        
+        
         
         cudnnActivationDescriptor_t eluDesc;
         cudnnCreateActivationDescriptor(&eluDesc);
@@ -279,8 +275,6 @@ namespace dylann{
     }
     
     cuTensorBase* swishOp(cuTensorBase* X, float beta, float alpha1, float alpha2){
-        assertAllocated({X});
-        assertOnSameDev({X});
         
         cudnnActivationDescriptor_t swishDesc;
         cudnnCreateActivationDescriptor(&swishDesc);
@@ -304,8 +298,6 @@ namespace dylann{
     }
     
     cuTensorBase* swishOp(cuTensorBase* X, cuTensorBase* Y, float beta, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
         
         cudnnActivationDescriptor_t swishDesc;
         cudnnCreateActivationDescriptor(&swishDesc);
@@ -353,8 +345,6 @@ namespace dylann{
     }
     
     cuTensorBase* clippedReluOp(cuTensorBase* X, float ceiling, float alpha1, float alpha2){
-        assertAllocated({X});
-        assertOnSameDev({X});
         
         cudnnActivationDescriptor_t clippedReluDesc;
         cudnnCreateActivationDescriptor(&clippedReluDesc);
@@ -379,8 +369,8 @@ namespace dylann{
     }
     
     cuTensorBase* clippedReluOp(cuTensorBase* X, cuTensorBase* Y, float ceiling, float alpha1, float alpha2){
-        assertAllocated({X, Y});
-        assertOnSameDev({X, Y});
+        
+        
         
         cudnnActivationDescriptor_t clippedReluDesc;
         cudnnCreateActivationDescriptor(&clippedReluDesc);

@@ -5,30 +5,45 @@
 #include "shell.cuh"
 
 namespace dylann{
-    cuTensor add(cuTensor& A, cuTensor& B, float alpha, float beta){
-        addOp(A.impl, B.impl, alpha, beta);
-        
-        if(regisModeCTX){
-            //push forward instruction
-            auto* inst = new ADD(A.desc().uuid, B.desc().uuid, alpha, beta);
-            forwardOpsCTX.push_back(inst);
-        }
-        return A;
+    cuTensor add(cuTensor& X1, cuTensor& X2, float alpha, float beta){
+        cuTensor Y = cuTensor::create(X1.data()->deviceID, X1.desc().dType, X1.desc().sizes);
+        return add(X1, X2, Y, alpha, beta);
     }
     
-    cuTensor scale(cuTensor& A, float alpha){
-        scale(A.impl, alpha);
+    cuTensor add(cuTensor& X1, cuTensor& X2, cuTensor& Y, float alpha, float beta){
+        addOp(X1.impl, X2.impl, Y.impl, alpha, beta);
+    
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new ADD(X1.desc().uuid, X2.desc().uuid, Y.desc().uuid, alpha, beta);
+            forwardOpsCTX.push_back(inst);
+        }
+        return X1;
+    }
+    
+    cuTensor scale(cuTensor& X, float alpha){
+        cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes);
+        return scale(X, Y, alpha);
+    }
+    
+    cuTensor scale(cuTensor& X, cuTensor& Y, float alpha){
+        scale(X.impl, Y.impl, alpha);
         
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new SCALE(A.desc().uuid, alpha);
+            auto* inst = new SCALE(X.desc().uuid, Y.desc().uuid, alpha);
             forwardOpsCTX.push_back(inst);
         }
-        return A;
+        return X;
     }
     
     cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
         linearOp(W.impl, B.impl, X.impl, Y.impl, alpha1, alpha2);
+    
+        W.asNetworkParam().asNetworkWeight();
+        B.asNetworkParam();
+        W.impl->setInitType(INIT_XAVIER_LINEAR_WEIGHT);
+        B.impl->setInitType(INIT_XAVIER_LINEAR_BIAS);
         
         if(regisModeCTX){
             //push forward instruction
@@ -68,6 +83,12 @@ namespace dylann{
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                       int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2){
         conv2dOp(X.impl, W.impl, B.impl, Y.impl,  strideH, strideW,padH, padW, dilationH, dilationW, alpha1, alpha2);
+    
+        W.asNetworkParam().asNetworkWeight();
+        B.asNetworkParam();
+    
+        W.impl->setInitType(INIT_STD_CONV_WEIGHT);
+        B.impl->setInitType(INIT_STD_CONV_BIAS);
         
         if(regisModeCTX){
             //push forward instruction
@@ -81,6 +102,12 @@ namespace dylann{
     cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
                     int strideH, int strideW, int padH, int padW, int dilationH, int dilationW){
         conv2dOp(X.impl, W.impl, B.impl, Y.impl, strideH, strideW, padH, padW, dilationH, dilationW, 1, 0);
+        
+        W.asNetworkParam().asNetworkWeight();
+        B.asNetworkParam();
+        
+        W.impl->setInitType(INIT_STD_CONV_WEIGHT);
+        B.impl->setInitType(INIT_STD_CONV_BIAS);
         
         if(regisModeCTX){
             //push forward instruction
@@ -114,10 +141,8 @@ namespace dylann{
         unsigned int Bh = 1;
         unsigned int Bw = 1;
         
-        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww).asNetworkParam().asNetworkWeight();
-        W.impl->setInitType(INIT_STD_CONV_WEIGHT);
-        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw).asNetworkParam();
-        B.impl->setInitType(INIT_STD_CONV_BIAS);
+        cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, Wn, Wc, Wh, Ww);
+        cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, Bn, Bc, Bh, Bw);
         
         return conv2D(X, W, B, strideH, strideW, padH, padW,  dilationH, dilationW);
     }
@@ -251,22 +276,18 @@ namespace dylann{
     
     cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
                        cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
-        batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
-                    gamma.impl, beta.impl, eps, expAvgFactor, 1, 0);
-        
-        if(regisModeCTX){
-            //push forward instruction
-            auto* inst = new BATCHNORM(X.desc().uuid, Y.desc().uuid, gamma.desc().uuid, beta.desc().uuid,
-                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, 1, 1);
-            forwardOpsCTX.push_back(inst);
-        }
-        return Y;
+        return batchnorm(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor, 1, 0);
     }
     
     cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
                        cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2){
         batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
                     gamma.impl, beta.impl, eps, expAvgFactor, alpha1, alpha2);
+    
+        gamma.asNetworkParam().asNetworkWeight();
+        beta.asNetworkParam();
+        gamma.impl->setInitType(INIT_STD_BN_WEIGHT);
+        beta.impl->setInitType(INIT_STD_BN_BIAS);
         
         if(regisModeCTX){
             //push forward instruction
@@ -293,16 +314,60 @@ namespace dylann{
                                                   1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
                                                   
         cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
-                                            1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
-                                                    .asNetworkParam().asNetworkWeight();
-        gamma.impl->setInitType(INIT_STD_BN_WEIGHT);
+                                            1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         
         cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,
-                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w)
-                                                     .asNetworkParam();
-        beta.impl->setInitType(INIT_STD_BN_BIAS);
+                                             1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         
         return batchnorm(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
+    }
+    
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2){
+        batchnorm2dOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
+                    gamma.impl, beta.impl, eps, expAvgFactor, alpha1, alpha2);
+        
+        gamma.asNetworkParam().asNetworkWeight();
+        beta.asNetworkParam();
+        gamma.impl->setInitType(INIT_STD_BN_WEIGHT);
+        beta.impl->setInitType(INIT_STD_BN_BIAS);
+        
+        if(regisModeCTX){
+            //push forward instruction
+            auto* inst = new BATCHNORM2D(X.desc().uuid, Y.desc().uuid, gamma.desc().uuid, beta.desc().uuid,
+                                       runningMean.desc().uuid, runningVar.desc().uuid, eps, expAvgFactor, alpha1, alpha2);
+            forwardOpsCTX.push_back(inst);
+        }
+        
+        return Y;
+    }
+    
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
+                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+        return batchnorm2d(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor, 1, 0);
+    }
+    
+    cuTensor batchnorm2d(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
+                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+        cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
+                                      X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
+        return batchnorm2d(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
+    }
+    
+    cuTensor batchnorm2d(cuTensor& X, float eps, float expAvgFactor){
+        cuTensor runningMean = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                                1, X.desc().sizes.c, 1, 1);
+    
+        cuTensor runningVar = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                               1, X.desc().sizes.c, 1, 1);
+    
+        cuTensor gamma = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                          1, X.desc().sizes.c, 1, 1);
+    
+        cuTensor beta = cuTensor::create(X.data()->deviceID, X.desc().dType,
+                                         1, X.desc().sizes.c, 1, 1);
+    
+        return batchnorm2d(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
     cuTensor dropout(cuTensor& X, cuTensor& Y, float p){
