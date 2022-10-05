@@ -13,7 +13,7 @@ namespace io {
         for(int i = 0; i < mat.rows; i++){
             for(int j = 0; j < mat.cols; j++){
                 for(int k = 0; k < mat.channels(); k++){
-                    data[i * mat.cols * mat.channels() + j * mat.channels() + k] = mat.at<cv::Vec3b>(i, j)[k];
+                    data[k * mat.cols * mat.rows + i * mat.cols + j] = mat.at<cv::Vec3b>(i, j)[k];
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace io {
                     mat = augIn->augment(mat);
                 }
             }
-    
+            
             //convert to tensor
             switch (data[sid].X->dataType) {
                 case CUDNN_DATA_FLOAT:

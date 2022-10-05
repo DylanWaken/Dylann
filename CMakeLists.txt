@@ -86,7 +86,8 @@ add_executable(Dylann main.cu
         presets/readFuncs/BuildinReadfuncs.cuh
 #        testExec.cu
 #        testOptim.cu
-        dylann/optim/OptImpl.cu dylann/optim/OptImpl.cuh)
+        dylann/optim/OptImpl.cu
+        dylann/optim/OptImpl.cuh)
 
 target_link_libraries(Dylann ${OpenCV_LIBS})
 include_directories(${CUDNN_PATH}/include)

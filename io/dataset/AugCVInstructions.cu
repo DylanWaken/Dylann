@@ -68,6 +68,7 @@ cv::Mat io::RandPadCorp::augment(cv::Mat &imgIn) {
     cv::Mat imgProc, imgOut;
     cv::copyMakeBorder(imgIn, imgProc, padPixels, padPixels, padPixels, padPixels, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     
+    
     cv::Rect rect(x, y, imgIn.cols, imgIn.rows);
     imgOut = imgProc(rect);
     

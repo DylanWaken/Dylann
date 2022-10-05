@@ -11,11 +11,7 @@ void dylann::SGD::apply() {
         
         checkCUDNN(cudnnAddTensor(cudnnHdlG,
                &b, p.second->desc.cudnnDesc, p.second->grad->data,
-<<<<<<< HEAD
-               p.second->desc.isWeight? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
-=======
                p.second->desc.isWeight ? &alphaW : &alphaB, p.second->desc.cudnnDesc, p.second->data->data
->>>>>>> test
         ))
     }
 }
