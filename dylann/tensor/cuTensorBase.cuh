@@ -16,7 +16,8 @@
 #include <vector>
 
 
-#define checkCUDNN(expression){                              \
+#define checkCUDNN(expression){ \
+    cudaDeviceSynchronize();                            \
     cudnnStatus_t status = (expression);                     \
     if (status != CUDNN_STATUS_SUCCESS) {                    \
       logFatal(io::LOG_SEG_COMP, "Cudnn failed, error : ");  \
@@ -27,7 +28,9 @@
 }
 
 #define checkCUBLAS(expression){ \
+    cudaDeviceSynchronize();                            \
     cublasStatus_t status = (expression); \
+    cudaDeviceSynchronize();                             \
     if (status != CUBLAS_STATUS_SUCCESS) {                    \
       logFatal(io::LOG_SEG_COMP, "Cublas failed, error : ");  \
       std::cerr << "Error on line " << __LINE__ << ": "      \

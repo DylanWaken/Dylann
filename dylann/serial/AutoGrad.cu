@@ -50,7 +50,7 @@ namespace dylann {
                                              1, 1);
                 
             case INS_DROPOUT:
-                return new DROPOUT_GRADS(((DROPOUT*)input)->X, ((DROPOUT*)input)->Y, ((DROPOUT*)input)->rate);
+                return new DROPOUT_GRADS(((DROPOUT*)input)->X, ((DROPOUT*)input)->Y, ((DROPOUT*)input)->mask,((DROPOUT*)input)->rate);
                 
             case INS_RELU:
                 return new RELU_GRADS(((RELU*)input)->X, ((RELU*)input)->Y, 1, 1);

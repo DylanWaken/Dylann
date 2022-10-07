@@ -3,14 +3,15 @@
 //
 
 #include "shell.cuh"
+#include <chrono>
 
 namespace dylann{
-    cuTensor add(cuTensor& X1, cuTensor& X2, float alpha, float beta){
+    cuTensor add(cuTensor X1, cuTensor X2, float alpha, float beta){
         cuTensor Y = cuTensor::create(X1.data()->deviceID, X1.desc().dType, X1.desc().sizes);
         return add(X1, X2, Y, alpha, beta);
     }
     
-    cuTensor add(cuTensor& X1, cuTensor& X2, cuTensor& Y, float alpha, float beta){
+    cuTensor add(cuTensor X1, cuTensor X2, cuTensor Y, float alpha, float beta){
         addOp(X1.impl, X2.impl, Y.impl, alpha, beta);
     
         if(regisModeCTX){
@@ -21,12 +22,12 @@ namespace dylann{
         return X1;
     }
     
-    cuTensor scale(cuTensor& X, float alpha){
+    cuTensor scale(cuTensor X, float alpha){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes);
         return scale(X, Y, alpha);
     }
     
-    cuTensor scale(cuTensor& X, cuTensor& Y, float alpha){
+    cuTensor scale(cuTensor X, cuTensor Y, float alpha){
         scale(X.impl, Y.impl, alpha);
         
         if(regisModeCTX){
@@ -37,7 +38,7 @@ namespace dylann{
         return X;
     }
     
-    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+    cuTensor linear(cuTensor W, cuTensor B, cuTensor X, cuTensor Y, float alpha1, float alpha2){
         linearOp(W.impl, B.impl, X.impl, Y.impl, alpha1, alpha2);
     
         W.asNetworkParam().asNetworkWeight();
@@ -53,7 +54,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X, cuTensor& Y){
+    cuTensor linear(cuTensor W, cuTensor B, cuTensor X, cuTensor Y){
         linearOp(W.impl, B.impl, X.impl, Y.impl, 1, 0);
     
         W.impl->setInitType(INIT_XAVIER_LINEAR_WEIGHT);
@@ -75,18 +76,18 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor linear(cuTensor& W, cuTensor& B, cuTensor& X){
+    cuTensor linear(cuTensor W, cuTensor B, cuTensor X){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n, 1, 1, W.desc().sizes.h);
         return linear(W, B, X, Y);
     }
     
-    cuTensor linear(cuTensor& X, int outDim){
+    cuTensor linear(cuTensor X, int outDim){
         cuTensor W = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, outDim, X.desc().sizes.w);
         cuTensor B = cuTensor::create(X.data()->deviceID, X.desc().dType, 1, 1, 1, outDim);
         return linear(W, B, X);
     }
     
-    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+    cuTensor conv2D(cuTensor X, cuTensor W, cuTensor B, cuTensor Y,
                       int strideH, int strideW, int padH, int padW, int dilationH, int dilationW, float alpha1, float alpha2){
         conv2dOp(X.impl, W.impl, B.impl, Y.impl,  strideH, strideW,padH, padW, dilationH, dilationW, alpha1, alpha2);
         
@@ -105,7 +106,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B, cuTensor& Y,
+    cuTensor conv2D(cuTensor X, cuTensor W, cuTensor B, cuTensor Y,
                     int strideH, int strideW, int padH, int padW, int dilationH, int dilationW){
         conv2dOp(X.impl, W.impl, B.impl, Y.impl, strideH, strideW, padH, padW, dilationH, dilationW, 1, 0);
     
@@ -130,7 +131,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor conv2D(cuTensor& X, cuTensor& W, cuTensor& B,
+    cuTensor conv2D(cuTensor X, cuTensor W, cuTensor B,
                     int strideH, int strideW, int padH, int padW,int dilationH, int dilationW){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = W.desc().sizes.n;
@@ -141,7 +142,7 @@ namespace dylann{
         return conv2D(X, W, B, Y,  strideH, strideW,padH, padW, dilationH, dilationW);
     }
     
-    cuTensor conv2D(cuTensor& X, int kernelH, int kernelW, int outChannels,
+    cuTensor conv2D(cuTensor X, int kernelH, int kernelW, int outChannels,
                     int strideH, int strideW, int padH, int padW, int dilationH, int dilationW){
         unsigned int Wn = outChannels;
         unsigned int Wc = X.desc().sizes.c;
@@ -160,12 +161,12 @@ namespace dylann{
     }
     
     
-    cuTensor reduce(cuTensor& X, cuTensor& Y, int step){
+    cuTensor reduce(cuTensor X, cuTensor Y, int step){
         reduceOp(X.impl, Y.impl, step);
         return Y;
     }
     
-    cuTensor softmax(cuTensor& X, cuTensor& Y, int step){
+    cuTensor softmax(cuTensor X, cuTensor Y, int step){
         softmaxOp(X.impl, Y.impl, step);
         
         if(regisModeCTX){
@@ -176,13 +177,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor softmax(cuTensor& X, int step){
+    cuTensor softmax(cuTensor X, int step){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return softmax(X, Y, step);
     }
     
-    cuTensor softmaxLog(cuTensor& X, cuTensor& Y, int step){
+    cuTensor softmaxLog(cuTensor X, cuTensor Y, int step){
         softmaxLogOp(X.impl, Y.impl, step);
         
         if(regisModeCTX){
@@ -193,13 +194,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor softmaxLog(cuTensor& X, int step){
+    cuTensor softmaxLog(cuTensor X, int step){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return softmaxLog(X, Y, step);
     }
     
-    cuTensor softmaxCE(cuTensor& X, cuTensor& Y, int step){
+    cuTensor softmaxCE(cuTensor X, cuTensor Y, int step){
         softmaxCEOp(X.impl, Y.impl, step);
         
         if(regisModeCTX){
@@ -210,13 +211,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor softmaxCE(cuTensor& X, int step){
+    cuTensor softmaxCE(cuTensor X, int step){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return softmaxCE(X, Y, step);
     }
     
-    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor& Y){
+    cuTensor channelConcat(cuTensor* Xs, int inputCount, cuTensor Y){
         cuTensorBase** XsImpl;
         cudaMallocHost(&XsImpl, sizeof(cuTensorBase*) * inputCount);
         for(int i = 0; i < inputCount; i++){
@@ -251,7 +252,7 @@ namespace dylann{
         return channelConcat(Xs, inputCount, Y);
     }
     
-    cuTensor channelConcat(std::initializer_list<cuTensor> inputs, cuTensor& Y){
+    cuTensor channelConcat(std::initializer_list<cuTensor> inputs, cuTensor Y){
         cuTensorBase** XsImpl;
         cudaMallocHost(&XsImpl, sizeof(cuTensorBase*) * inputs.size());
         for(int i = 0; i < inputs.size(); i++){
@@ -286,14 +287,14 @@ namespace dylann{
         return channelConcat(inputs, Y);
     }
     
-    cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
-                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+    cuTensor batchnorm(cuTensor X, cuTensor Y, cuTensor runningMean, cuTensor runningVar,
+                       cuTensor gamma, cuTensor beta, float eps, float expAvgFactor){
 
         return batchnorm(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor, 1, 0);
     }
     
-    cuTensor batchnorm(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
-                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2){
+    cuTensor batchnorm(cuTensor X, cuTensor Y, cuTensor runningMean, cuTensor runningVar,
+                       cuTensor gamma, cuTensor beta, float eps, float expAvgFactor, float alpha1, float alpha2){
         batchnormOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
                     gamma.impl, beta.impl, eps, expAvgFactor, alpha1, alpha2);
     
@@ -312,14 +313,14 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor batchnorm(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
-                       cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+    cuTensor batchnorm(cuTensor X, cuTensor runningMean, cuTensor runningVar,
+                       cuTensor gamma, cuTensor beta, float eps, float expAvgFactor){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return batchnorm(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
-    cuTensor batchnorm(cuTensor& X, float eps, float expAvgFactor){
+    cuTensor batchnorm(cuTensor X, float eps, float expAvgFactor){
         cuTensor runningMean = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                                 1, X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
 
@@ -334,8 +335,8 @@ namespace dylann{
         return batchnorm(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
-    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
-                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor, float alpha1, float alpha2){
+    cuTensor batchnorm2d(cuTensor X, cuTensor Y, cuTensor runningMean, cuTensor runningVar,
+                         cuTensor gamma, cuTensor beta, float eps, float expAvgFactor, float alpha1, float alpha2){
         batchnorm2dOp(X.impl, Y.impl, runningMean.impl, runningVar.impl,
                     gamma.impl, beta.impl, eps, expAvgFactor, alpha1, alpha2);
         
@@ -354,19 +355,19 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor batchnorm2d(cuTensor& X, cuTensor& Y, cuTensor& runningMean, cuTensor& runningVar,
-                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+    cuTensor batchnorm2d(cuTensor X, cuTensor Y, cuTensor runningMean, cuTensor runningVar,
+                         cuTensor gamma, cuTensor beta, float eps, float expAvgFactor){
         return batchnorm2d(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor, 1, 0);
     }
     
-    cuTensor batchnorm2d(cuTensor& X, cuTensor& runningMean, cuTensor& runningVar,
-                         cuTensor& gamma, cuTensor& beta, float eps, float expAvgFactor){
+    cuTensor batchnorm2d(cuTensor X, cuTensor runningMean, cuTensor runningVar,
+                         cuTensor gamma, cuTensor beta, float eps, float expAvgFactor){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return batchnorm2d(X, Y, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
-    cuTensor batchnorm2d(cuTensor& X, float eps, float expAvgFactor){
+    cuTensor batchnorm2d(cuTensor X, float eps, float expAvgFactor){
         cuTensor runningMean = cuTensor::create(X.data()->deviceID, X.desc().dType,
                                                 1, X.desc().sizes.c, 1, 1);
     
@@ -382,24 +383,32 @@ namespace dylann{
         return batchnorm2d(X, runningMean, runningVar, gamma, beta, eps, expAvgFactor);
     }
     
-    cuTensor dropout(cuTensor& X, cuTensor& Y, float p){
-        dropoutOp(X.impl, Y.impl, p);
-        
+    cuTensor dropout(cuTensor X, cuTensor Y, cuTensor mask, float p){
+        dropoutOp(X.impl, Y.impl, mask.impl, p);
+    
         if(regisModeCTX){
             //push forward instruction
-            auto* inst = new DROPOUT(X.desc().uuid, Y.desc().uuid, p);
+            auto* inst = new DROPOUT(X.desc().uuid, Y.desc().uuid, mask.desc().uuid, p);
             forwardOpsCTX.push_back(inst);
         }
         return Y;
     }
     
-    cuTensor dropout(cuTensor& X, float p){
+    cuTensor dropout(cuTensor X, cuTensor Y, float p){
+        size_t maskSize;
+        cudnnDropoutGetReserveSpaceSize(X.cudnnDesc(), &maskSize);
+        
+        cuTensor mask = cuTensor::declare(CUDNN_DATA_INT8, maskSize).instantiateData(0);
+        return dropout(X, Y, mask, p);
+    }
+    
+    cuTensor dropout(cuTensor X, float p){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return dropout(X, Y, p);
     }
     
-    cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
+    cuTensor maxPool2D(cuTensor X, cuTensor Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
         maxPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, 1, 1);
         
         if(regisModeCTX){
@@ -410,7 +419,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor maxPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
+    cuTensor maxPool2D(cuTensor X, cuTensor Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
                        float alpha1, float alpha2){
         maxPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, alpha1, alpha2);
         
@@ -422,7 +431,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor maxPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
+    cuTensor maxPool2D(cuTensor X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = X.desc().sizes.c;
         unsigned int h = (X.desc().sizes.h + 2 * padH - kernelH) / strideH + 1;
@@ -431,7 +440,7 @@ namespace dylann{
         return maxPool2D(X, Y, kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
-    cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
+    cuTensor avgPool2D(cuTensor X, cuTensor Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
         avgPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, 1, 1);
         
         if(regisModeCTX){
@@ -442,7 +451,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor avgPool2D(cuTensor& X, cuTensor& Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
+    cuTensor avgPool2D(cuTensor X, cuTensor Y, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW,
                        float alpha1, float alpha2){
         avgPoolOp(X.impl, Y.impl, kernelH, kernelW, padH, padW, strideH, strideW, alpha1, alpha2);
         
@@ -454,7 +463,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor avgPool2D(cuTensor& X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
+    cuTensor avgPool2D(cuTensor X, int kernelH, int kernelW, int padH, int padW, int strideH, int strideW){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = X.desc().sizes.c;
         unsigned int h = (X.desc().sizes.h + 2 * padH - kernelH) / strideH + 1;
@@ -463,7 +472,7 @@ namespace dylann{
         return avgPool2D(X, Y, kernelH, kernelW, padH, padW, strideH, strideW);
     }
     
-    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y){
+    cuTensor globalAvgPool2D(cuTensor X, cuTensor Y){
         globalAvgPoolOp(X.impl, Y.impl, 1, 1);
         
         if(regisModeCTX){
@@ -474,7 +483,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor globalAvgPool2D(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+    cuTensor globalAvgPool2D(cuTensor X, cuTensor Y, float alpha1, float alpha2){
         globalAvgPoolOp(X.impl, Y.impl, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -485,7 +494,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor globalAvgPool2D(cuTensor& X){
+    cuTensor globalAvgPool2D(cuTensor X){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = X.desc().sizes.c;
         unsigned int h = 1;
@@ -494,7 +503,7 @@ namespace dylann{
         return globalAvgPool2D(X, Y);
     }
     
-    cuTensor flatten(cuTensor& X, cuTensor& Y){
+    cuTensor flatten(cuTensor X, cuTensor Y){
         flattenOp(X.impl, Y.impl);
         
         if(regisModeCTX){
@@ -505,7 +514,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor flatten(cuTensor& X){
+    cuTensor flatten(cuTensor X){
         unsigned int n = X.desc().sizes.n;
         unsigned int c = X.desc().sizes.c;
         unsigned int h = X.desc().sizes.h;
@@ -517,13 +526,13 @@ namespace dylann{
     //--------------------------------------------------------------------------------
     //Activations
     
-    cuTensor relu(cuTensor& X){
+    cuTensor relu(cuTensor X){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return relu(X, Y);
     }
     
-    cuTensor relu(cuTensor& X, cuTensor& Y){
+    cuTensor relu(cuTensor X, cuTensor Y){
         reluOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
@@ -534,7 +543,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor relu(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+    cuTensor relu(cuTensor X, cuTensor Y, float alpha1, float alpha2){
         reluOp(X.impl, Y.impl, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -545,13 +554,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor sigmoid(cuTensor& X){
+    cuTensor sigmoid(cuTensor X){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return sigmoid(X, Y);
     }
     
-    cuTensor sigmoid(cuTensor& X, cuTensor& Y){
+    cuTensor sigmoid(cuTensor X, cuTensor Y){
         sigmoidOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
@@ -562,7 +571,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor sigmoid(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+    cuTensor sigmoid(cuTensor X, cuTensor Y, float alpha1, float alpha2){
         sigmoidOp(X.impl, Y.impl, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -573,13 +582,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor tanh(cuTensor& X){
+    cuTensor tanh(cuTensor X){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return tanh(X, Y);
     }
     
-    cuTensor tanh(cuTensor& X, cuTensor& Y){
+    cuTensor tanh(cuTensor X, cuTensor Y){
         tanhOp(X.impl, Y.impl, 1, 0);
         
         if(regisModeCTX){
@@ -590,7 +599,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor tanh(cuTensor& X, cuTensor& Y, float alpha1, float alpha2){
+    cuTensor tanh(cuTensor X, cuTensor Y, float alpha1, float alpha2){
         tanhOp(X.impl, Y.impl, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -601,13 +610,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor elu(cuTensor& X, float alpha){
+    cuTensor elu(cuTensor X, float alpha){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return elu(X, Y, alpha);
     }
     
-    cuTensor elu(cuTensor& X, cuTensor& Y, float alpha){
+    cuTensor elu(cuTensor X, cuTensor Y, float alpha){
         eluOp(X.impl, Y.impl, alpha, 1, 0);
         
         if(regisModeCTX){
@@ -618,7 +627,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor elu(cuTensor& X, cuTensor& Y, float alpha, float alpha1, float alpha2){
+    cuTensor elu(cuTensor X, cuTensor Y, float alpha, float alpha1, float alpha2){
         eluOp(X.impl, Y.impl, alpha, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -629,13 +638,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor swish(cuTensor& X, float beta){
+    cuTensor swish(cuTensor X, float beta){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return swish(X, Y, beta);
     }
     
-    cuTensor swish(cuTensor& X, cuTensor& Y, float beta){
+    cuTensor swish(cuTensor X, cuTensor Y, float beta){
         swishOp(X.impl, Y.impl, beta, 1, 0);
         
         if(regisModeCTX){
@@ -646,7 +655,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor swish(cuTensor& X, cuTensor& Y, float beta, float alpha1, float alpha2){
+    cuTensor swish(cuTensor X, cuTensor Y, float beta, float alpha1, float alpha2){
         swishOp(X.impl, Y.impl, beta, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -657,13 +666,13 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor clippedRelu(cuTensor& X, float threshold){
+    cuTensor clippedRelu(cuTensor X, float threshold){
         cuTensor Y = cuTensor::create(X.data()->deviceID, X.desc().dType, X.desc().sizes.n,
                                       X.desc().sizes.c, X.desc().sizes.h, X.desc().sizes.w);
         return clippedRelu(X, Y, threshold);
     }
     
-    cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold){
+    cuTensor clippedRelu(cuTensor X, cuTensor Y, float threshold){
         clippedReluOp(X.impl, Y.impl, threshold, 1, 0);
         
         if(regisModeCTX){
@@ -674,7 +683,7 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor clippedRelu(cuTensor& X, cuTensor& Y, float threshold, float alpha1, float alpha2){
+    cuTensor clippedRelu(cuTensor X, cuTensor Y, float threshold, float alpha1, float alpha2){
         clippedReluOp(X.impl, Y.impl, threshold, alpha1, alpha2);
         
         if(regisModeCTX){
@@ -685,11 +694,11 @@ namespace dylann{
         return Y;
     }
     
-    cuTensor randUniform(cuTensor& A, double min, double max){
+    cuTensor randUniform(cuTensor A, double min, double max){
         return A.randUniform(min, max);
     }
     
-    cuTensor randNormal(cuTensor& A, double mean, double stddev){
+    cuTensor randNormal(cuTensor A, double mean, double stddev){
         return A.randNormal(mean, stddev);
     }
 }

@@ -350,7 +350,7 @@ namespace dylann {
     }
     
     void DROPOUT::run() {
-        dropoutOp(params->at(X), params->at(Y), rate);
+        dropoutOp(params->at(X), params->at(Y), params->at(mask), rate);
     }
     
     void DROPOUT::encodeParams(unsigned char *file,size_t &offset) {
@@ -362,6 +362,8 @@ namespace dylann {
         *(TENSOR_PTR*)(file + offset) = X;
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = mask;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = rate;
         offset += sizeof(float);
@@ -781,6 +783,8 @@ namespace dylann {
         TENSOR_PTR X = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR mask = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
         float ratio = *(float*)(file + offset);
         offset += sizeof(float);

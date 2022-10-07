@@ -28,9 +28,9 @@ namespace dylann{
                                    
         checkCUDNN(cudnnSetActivationDescriptor(activationDesc, CUDNN_ACTIVATION_IDENTITY, CUDNN_NOT_PROPAGATE_NAN, 0))
     
-        //checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
+        checkCUDNN(cudnnSetConvolutionMathType(convDesc,  CUDNN_TENSOR_OP_MATH))
     
-        //float alpha1 = 1.0f, alpha2 = 0.0f;
+//        float alpha1 = 1.0f, alpha2 = 0.0f;
 
         checkCUDNN(cudnnConvolutionBiasActivationForward(
                 cudnnHdlG,
@@ -56,8 +56,8 @@ namespace dylann{
         cudnnDestroyActivationDescriptor(activationDesc);
         cudnnDestroyFilterDescriptor(filterDesc);
         cudnnDestroyConvolutionDescriptor(convDesc);
-        cudaMemset(cudnnWorkspaceG, 0, CUDNN_WORKSPACE_SIZE_G);
-    
+
+        cudaDeviceSynchronize();
         assertCuda(__FILE__, __LINE__);
         return Y;
     }
@@ -113,7 +113,7 @@ namespace dylann{
         cudnnDestroyActivationDescriptor(activationDesc);
         cudnnDestroyFilterDescriptor(filterDesc);
         cudnnDestroyConvolutionDescriptor(convDesc);
-        cudaMemset(cudnnWorkspaceG, 0, CUDNN_WORKSPACE_SIZE_G);
+        //cudaMemset(cudnnWorkspaceG, 0, CUDNN_WORKSPACE_SIZE_G);
         
         return Y;
     }

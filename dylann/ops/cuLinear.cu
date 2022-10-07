@@ -8,15 +8,11 @@ namespace dylann{
     /**
      * @see: https://www.adityaagrawal.net/blog/deep_learning/row_column_major
      */
-    template<typename T>
-    __global__ void fillBias(cuTensorBase* B, cuTensorBase* Y, float alpha2){
-        unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
-        if(idx < B->desc.sizes.w){
-            T* ptr = (T*)Y->data->data;
-            #pragma unroll
-            for(auto i = 0; i < Y->desc.sizes.n; i++){
-                ptr[i * Y->desc.sizes.w + idx] = ((T*)B->data->data)[idx];
-            }
+    void fillBias(cuTensorBase* B, cuTensorBase* Y, float alpha1, float alpha2){
+        for (int i = 0; i < Y->desc.sizes.n; i++){
+            checkCUDNN(cudnnAddTensor(cudnnHdlG, &alpha1, B->desc.cudnnDesc,
+                           B->data->data, &alpha2, B->desc.cudnnDesc,
+                       (char*)Y->data->data + i * B->data->memSize));
         }
     }
     
@@ -223,26 +219,7 @@ namespace dylann{
         
         //set cublas
         checkCUBLAS(cublasSetMathMode(cublasHdlG, CUBLAS_TENSOR_OP_MATH))
-    
-        unsigned int block = 256;
-        unsigned int grid = (B->desc.sizes.w + block - 1) / block;
-
-        switch (Y->desc.dType) {
-            case CUDNN_DATA_FLOAT:
-                fillBias<float><<<grid, block>>>(B, Y, alpha2);
-                break;
-            case CUDNN_DATA_HALF:
-                fillBias<half><<<grid, block>>>(B, Y, alpha2);
-                break;
-            case CUDNN_DATA_DOUBLE:
-                fillBias<double><<<grid, block>>>(B, Y, alpha2);
-                break;
-            default:
-                throw std::runtime_error("Unsupported data type");
-        }
-
-        cudaDeviceSynchronize();
-        assertCuda(__FILE__, __LINE__);
+        fillBias(B, Y, alpha1, alpha2);
         
         //assert same dtye
         assert(W->desc.dType == X->desc.dType

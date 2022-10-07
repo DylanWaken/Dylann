@@ -305,7 +305,7 @@ namespace dylann {
     }
     
     void DROPOUT_GRADS::run() {
-        dropoutOpGrads((*params)[X], (*params)[Y], p);
+        dropoutOpGrads((*params)[X], (*params)[Y], (*params)[mask], p);
     }
     
     void DROPOUT_GRADS::encodeParams(unsigned char * file, size_t &offset){
@@ -317,6 +317,8 @@ namespace dylann {
         *(TENSOR_PTR*)(file + offset) = X;
         offset += sizeof(TENSOR_PTR);
         *(TENSOR_PTR*)(file + offset) = Y;
+        offset += sizeof(TENSOR_PTR);
+        *(TENSOR_PTR*)(file + offset) = mask;
         offset += sizeof(TENSOR_PTR);
         *(float*)(file + offset) = p;
         offset += sizeof(float);
@@ -745,10 +747,12 @@ namespace dylann {
         offset += sizeof(TENSOR_PTR);
         TENSOR_PTR Y = *(TENSOR_PTR*)(file + offset);
         offset += sizeof(TENSOR_PTR);
+        TENSOR_PTR mask = *(TENSOR_PTR*)(file + offset);
+        offset += sizeof(TENSOR_PTR);
         float p = *(float*)(file + offset);
         offset += sizeof(float);
         
-        return new DROPOUT_GRADS(X, Y, p);
+        return new DROPOUT_GRADS(X, Y, mask, p);
     }
     
     FLATTEN_GRADS* extractFlattenGrads(const unsigned char * file, size_t &offset){

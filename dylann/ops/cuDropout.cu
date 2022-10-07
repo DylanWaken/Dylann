@@ -3,9 +3,10 @@
 //
 
 #include "cuDropout.cuh"
+#include <chrono>
 
 namespace dylann {
-    cuTensorBase* dropoutOp(cuTensorBase* X, cuTensorBase* Y, float b){
+    cuTensorBase* dropoutOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* mask, float b){
     
         //TODO: created device specific workspace buffer
         assertAllocated({X});
@@ -19,7 +20,7 @@ namespace dylann {
                 b,
                 nullptr,
                 0,
-                time(nullptr)
+                chrono::system_clock::now().time_since_epoch().count()
                 ))
     
         checkCUDNN(cudnnDropoutForward(
@@ -29,15 +30,15 @@ namespace dylann {
                     X->data->data,
                     Y->desc.cudnnDesc,
                     Y->data->data,
-                    cudnnWorkspaceG,
-                CUDNN_WORKSPACE_SIZE_G
+                    mask->data->data,
+                mask->data->memSize
                 ))
             
         cudnnDestroyDropoutDescriptor(dropoutDesc);
         return Y;
     }
     
-    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, float b){
+    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* reserved, float b){
     
         cudaSetDevice(X->data->deviceID);
         

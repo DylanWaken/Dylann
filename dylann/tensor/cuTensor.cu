@@ -125,6 +125,8 @@ namespace dylann{
                 return "CUDNN_DATA_DOUBLE";
             case CUDNN_DATA_HALF:
                 return "CUDNN_DATA_HALF";
+            case CUDNN_DATA_INT8:
+                return "CUDNN_DATA_INT8 [BYTES]";
             default:
                 throw std::runtime_error("unsupported dtype");
         }

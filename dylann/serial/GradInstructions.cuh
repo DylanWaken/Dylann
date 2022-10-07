@@ -348,10 +348,11 @@ namespace dylann {
         struct DROPOUT_GRADS : public Operation{
             TENSOR_PTR X;
             TENSOR_PTR Y;
+            TENSOR_PTR mask;
             float p;
             
-            DROPOUT_GRADS(TENSOR_PTR X, TENSOR_PTR Y, float p) :
-            Operation(INS_GRADS_DROPOUT, 4), X(X), Y(Y), p(p) {}
+            DROPOUT_GRADS(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR mask, float p) :
+            Operation(INS_GRADS_DROPOUT, 4), X(X), Y(Y), mask(mask), p(p) {}
             
             void run() override;
             

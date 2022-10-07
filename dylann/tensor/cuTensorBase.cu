@@ -21,6 +21,7 @@ namespace dylann {
             case CUDNN_DATA_FLOAT: return sizeof(float);
             case CUDNN_DATA_DOUBLE: return sizeof(double);
             case CUDNN_DATA_HALF: return sizeof(half);
+            case CUDNN_DATA_INT8: return sizeof(int8_t);
             default:
                 throw std::runtime_error("unsupported dtype");
         }

@@ -447,17 +447,18 @@ namespace dylann {
     public:
         TENSOR_PTR X;
         TENSOR_PTR Y;
+        TENSOR_PTR mask;
         float rate;
         
-        DROPOUT(TENSOR_PTR X, TENSOR_PTR Y, float rate) :
-                Operation(INS_DROPOUT, 3), X(X), Y(Y), rate(rate) {}
+        DROPOUT(TENSOR_PTR X, TENSOR_PTR Y, TENSOR_PTR mask, float rate) :
+                Operation(INS_DROPOUT, 3), X(X), Y(Y), mask(mask), rate(rate) {}
         
         void run() override;
         
         void encodeParams(unsigned char * file, size_t &offset) override;
         
         size_t getEncodedSize() override {
-            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 2 + sizeof(float);
+            return sizeof(unsigned int) * 2 + sizeof(TENSOR_PTR) * 3 + sizeof(float);
         }
         
         void print() override {

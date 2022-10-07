@@ -9,9 +9,9 @@
 
 namespace dylann {
     
-    cuTensorBase* dropoutOp(cuTensorBase* X, cuTensorBase* Y, float b);
+    cuTensorBase* dropoutOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* mask, float b);
     
-    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, float b);
+    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* reserved, float b);
     
 } // dylann
 

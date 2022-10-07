@@ -24,17 +24,17 @@ int main() {
     ResnetIdentity id = ResnetIdentity();
     ResnetConv cv = ResnetConv();
     
-    auto X = conv2D(X0, 3, 3, 16, 1, 1, 1, 1, 1, 1);
+    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
     X = batchnorm2d(X, 1e-8, 1);
     X = relu(X);
 
-    for(auto i = 0; i < 3; i++) X = id.forward(X);
+    for(auto i = 0; i < 5; i++) X = id.forward(X);
     X = cv.forward(X);
 
-    for(auto i = 0; i < 3; i++) X = id.forward(X);
+    for(auto i = 0; i < 5; i++) X = id.forward(X);
     X = cv.forward(X);
 
-    for(auto i = 0; i < 4; i++) X = id.forward(X);
+    for(auto i = 0; i < 6; i++) X = id.forward(X);
 
     auto X2 = flatten(X);
     X2 = linear(X2, 1024);
@@ -73,23 +73,23 @@ int main() {
     dataset->construct();
 
     auto label = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 1, 1,10});
-
+    
     float runningLoss = 0;
     for(int i = 0; i < 500000; i++){
         dataset->nextMiniBatch(X0.impl, label.impl);
         seq->forward();
-
+        
         float loss = seq->getLoss(label.impl);
         runningLoss += loss;
         seq->backward(label.impl);
         seq->opt->apply();
         
         seq->resetGrad();
-
+        
         if(i % 100 == 0 && i != 0){
             cout << runningLoss / 100 << ", ";
             runningLoss = 0;
-
+            
             float valLoss = 0;
             for(int j = 0; j < 50; j++){
                 dataset->nextValBatch(X0.impl, label.impl);
