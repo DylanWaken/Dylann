@@ -397,8 +397,10 @@ namespace dylann{
     cuTensor dropout(cuTensor X, cuTensor Y, float p){
         size_t maskSize;
         cudnnDropoutGetReserveSpaceSize(X.cudnnDesc(), &maskSize);
+        size_t stateSize;
+        cudnnDropoutGetStatesSize(cudnnHdlG, &stateSize);
         
-        cuTensor mask = cuTensor::declare(CUDNN_DATA_INT8, maskSize).instantiateData(0);
+        cuTensor mask = cuTensor::declare(CUDNN_DATA_INT8, maskSize + stateSize).instantiateData(X.data()->deviceID);
         return dropout(X, Y, mask, p);
     }
     

@@ -39,8 +39,10 @@ int main() {
     auto X2 = flatten(X);
     X2 = linear(X2, 1024);
     X2 = relu(X2);
+    X2 = dropout(X2, 0.3);
     X2 = linear(X2, 256);
     X2 = relu(X2);
+    X2 = dropout(X2, 0.4);
     auto X3 = linear(X2, 10);
     auto Y = softmaxCE(X3, 10);
 

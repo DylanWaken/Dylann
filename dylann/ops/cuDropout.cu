@@ -14,12 +14,16 @@ namespace dylann {
         
         cudnnDropoutDescriptor_t dropoutDesc;
         cudnnCreateDropoutDescriptor(&dropoutDesc);
+    
+        size_t stateSize;
+        cudnnDropoutGetStatesSize(cudnnHdlG, &stateSize);
+        
         checkCUDNN(cudnnSetDropoutDescriptor(
                 dropoutDesc,
                 cudnnHdlG,
                 b,
-                nullptr,
-                0,
+                mask->data->data,
+                stateSize,
                 chrono::system_clock::now().time_since_epoch().count()
                 ))
     
@@ -30,27 +34,31 @@ namespace dylann {
                     X->data->data,
                     Y->desc.cudnnDesc,
                     Y->data->data,
-                    mask->data->data,
-                mask->data->memSize
+                   (char*)mask->data->data + stateSize,
+                   mask->data->memSize - stateSize
                 ))
             
         cudnnDestroyDropoutDescriptor(dropoutDesc);
         return Y;
     }
     
-    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* reserved, float b){
+    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* mask, float b){
     
         cudaSetDevice(X->data->deviceID);
         
         cudnnDropoutDescriptor_t dropoutDesc;
         cudnnCreateDropoutDescriptor(&dropoutDesc);
+    
+        size_t stateSize;
+        cudnnDropoutGetStatesSize(cudnnHdlG, &stateSize);
+        
         checkCUDNN(cudnnSetDropoutDescriptor(
                 dropoutDesc,
                 cudnnHdlG,
                 b,
-                nullptr,
-                0,
-                time(nullptr)
+                mask->data->data,
+                stateSize,
+                chrono::system_clock::now().time_since_epoch().count()
                 ))
     
         checkCUDNN(cudnnDropoutBackward(
@@ -60,8 +68,8 @@ namespace dylann {
                     Y->grad->data,
                     X->desc.cudnnDesc,
                     X->grad->data,
-                    cudnnWorkspaceG,
-                CUDNN_WORKSPACE_SIZE_G
+                    (char*)mask->data->data + stateSize,
+                    mask->data->memSize - stateSize
                 ))
             
         cudnnDestroyDropoutDescriptor(dropoutDesc);

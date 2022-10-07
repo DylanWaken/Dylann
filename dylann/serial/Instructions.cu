@@ -789,7 +789,7 @@ namespace dylann {
         float ratio = *(float*)(file + offset);
         offset += sizeof(float);
         
-        auto* dropout = new DROPOUT(X, Y, ratio);
+        auto* dropout = new DROPOUT(X, Y, mask, ratio);
         return dropout;
     }
     

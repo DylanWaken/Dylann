@@ -254,6 +254,7 @@ namespace dylann {
         }
         
         cuTensorBase* zeroGrad(){
+            if (!this->desc.withGrad) return this;
             cudaSetDevice(this->grad->deviceID);
             cudaMemset(this->grad->data, 0, this->grad->memSize);
             return this;

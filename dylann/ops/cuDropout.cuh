@@ -11,7 +11,7 @@ namespace dylann {
     
     cuTensorBase* dropoutOp(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* mask, float b);
     
-    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* reserved, float b);
+    cuTensorBase* dropoutOpGrads(cuTensorBase* X, cuTensorBase* Y, cuTensorBase* mask, float b);
     
 } // dylann
 

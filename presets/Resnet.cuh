@@ -20,7 +20,7 @@ namespace dylann {
             Y = conv2D(Y, 3, 3, procDim, 1, 1, 1, 1, 1, 1);
             Y = batchnorm2d(Y, 1e-8, 1);
             auto Y2 = Y + X;
-            return relu(Y2);
+            return dropout(relu(Y2), 0.2);
         }
     };
     
@@ -42,7 +42,7 @@ namespace dylann {
             X_ = batchnorm2d(X_, 1e-8, 1);
 
             auto Y2 = Y + X_;
-            return relu(Y2);
+            return dropout(relu(Y2), 0.2);
         }
     };
     
