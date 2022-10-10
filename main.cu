@@ -8,6 +8,8 @@
 #include <condition_variable>
 #include "io/dataset/Dataset.cuh"
 #include "presets/readFuncs/BuildinReadfuncs.cuh"
+
+#include "dylann/ops/research/cuHopField.cuh"
 #define MINI_BATCH_SIZE 64
 
 using namespace dylann;
@@ -15,91 +17,55 @@ using namespace std;
 using namespace io;
 
 int main() {
-
-
-    //register model
+    
+    ofstream file("D:\\Projects\\PyCharm\\graphing\\hopfieldNet\\exp.txt");
+    
     initEngineContext();
-    auto X0 = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 3, 32, 32});
+    auto W0 = cuTensor::create(0, CUDNN_DATA_FLOAT, {100, 100});
+    auto LossBuf = cuTensor::create(0, CUDNN_DATA_FLOAT, {1,1});
     
-    ResnetIdentity id = ResnetIdentity();
-    ResnetConv cv = ResnetConv();
-    
-    auto X = conv2D(X0, 3, 3, 64, 1, 1, 1, 1, 1, 1);
-    X = batchnorm2d(X, 1e-8, 1);
-    X = relu(X);
-
-    for(auto i = 0; i < 5; i++) X = id.forward(X);
-    X = cv.forward(X);
-
-    for(auto i = 0; i < 5; i++) X = id.forward(X);
-    X = cv.forward(X);
-
-    for(auto i = 0; i < 6; i++) X = id.forward(X);
-
-    auto X2 = flatten(X);
-    X2 = linear(X2, 1024);
-    X2 = relu(X2);
-    X2 = dropout(X2, 0.3);
-    X2 = linear(X2, 256);
-    X2 = relu(X2);
-    X2 = dropout(X2, 0.4);
-    auto X3 = linear(X2, 10);
-    auto Y = softmaxCE(X3, 10);
-
-    auto seq = ctx2seq();
-    seq->generateGrad();
-    seq->setLoss(new CrossEntropy(Y.impl));
-    seq->setOpt(new Momentum(0.01/64));
-    seq->randomizeParams();
-
-    for(auto& i : seq->forwardOpSeq){
-        i->print();
-    }
-
-    for(auto& i : seq->backwardOpSeq){
-        i->print();
-    }
-
-
-    auto* dataset = new DatasetCV(50000, 6400, MINI_BATCH_SIZE, 16,6400,
-                                       {1, 3, 32, 32},
-                                       shape4(10), CUDNN_DATA_FLOAT);
-
-    ReadFuncCV* readFunc = new CIFAR_10ReadFunc(R"(D:\Resources\Datasets\cifar-10-bin)", 16);
-    dataset->bindReadFunc(readFunc);
-    dataset->bindAugCV({
-        new RandFlip(),
-        new RandPadCorp(4),
-    });
-    dataset->bindAugTensor({new UniformNorm(0, 1)});
-    dataset->construct();
-
-    auto label = cuTensor::create(0, CUDNN_DATA_FLOAT, {MINI_BATCH_SIZE, 1, 1,10});
-    
-    float runningLoss = 0;
-    for(int i = 0; i < 500000; i++){
-        dataset->nextMiniBatch(X0.impl, label.impl);
-        seq->forward();
+    for(uint64_t n = 1; n < 101; n++){
+        auto S0 = cuTensor::create(0, CUDNN_DATA_FLOAT, {n, 1, 1, 100})
+                .randNormal(0, 1);
         
-        float loss = seq->getLoss(label.impl);
-        runningLoss += loss;
-        seq->backward(label.impl);
-        seq->opt->apply();
+        val2binOp(S0.impl, 1, -1);
+        updateHopFieldOp(W0.impl, S0.impl);
         
-        seq->resetGrad();
+        auto SAcc = cuTensor::create(0, CUDNN_DATA_FLOAT, {n, 1, 1, 100});
+        MSE loss = MSE(SAcc.impl);
+        void* WHostBuf, *SAccHostBuf;
         
-        if(i % 100 == 0 && i != 0){
-            cout << runningLoss / 100 << ", ";
-            runningLoss = 0;
+        cudaMallocHost(&WHostBuf, W0.impl->data->memSize);
+        assertCuda(__FILE__, __LINE__);
+        cudaMallocHost(&SAccHostBuf, SAcc.impl->data->memSize);
+        assertCuda(__FILE__, __LINE__);
+        
+        for(int i = 0; i < 100; i += 1){
+            float noise = (float)i/100;
+            cudaMemcpy(SAcc.impl->data->data, S0.impl->data->data, S0.impl->data->memSize, cudaMemcpyDeviceToDevice);
+            assertCuda(__FILE__, __LINE__);
+            randNoiseOp(SAcc.impl, noise);
             
-            float valLoss = 0;
-            for(int j = 0; j < 50; j++){
-                dataset->nextValBatch(X0.impl, label.impl);
-                seq->forward();
-                valLoss += seq->getLoss(label.impl);
-                seq->resetGrad();
-            }
-            cout << valLoss / 50 << ", ";
+            retrieveHopFieldOp( W0.impl, SAcc.impl, WHostBuf, SAccHostBuf);
+            float lossVal = loss.loss(S0.impl);
+            
+            assertCuda(__FILE__, __LINE__);
+            file << lossVal / (n * 200.0f) << ", ";
+    
+//            if(i == 50 && n == 1){ SAcc.print(); S0.print(); exit(0); }
         }
+        
+        cudaFreeHost(WHostBuf);
+        cudaFreeHost(SAccHostBuf);
+    
+        cudaFree(S0.impl->data->data);
+        cudaFree(SAcc.impl->data->data);
+        cudaFreeHost(S0.impl);
+        cudaFreeHost(SAcc.impl);
+        
+        W0.randNormal(0,0);
+        
+        file<<endl;
+        tensorsCTX.clear();
     }
 }

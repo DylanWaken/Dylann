@@ -181,4 +181,16 @@ namespace dylann{
         cudaFreeHost(view);
     }
     
+    cuTensor cuTensor::getDataFromHost(void *hostPtr) {
+        cudaMemcpy(impl->data->data, hostPtr, impl->data->memSize, cudaMemcpyHostToDevice);
+        assertCuda(__FILE__, __LINE__);
+        return *this;
+    }
+    
+    cuTensor cuTensor::storeDataToHost(void *hostPtr) {
+        cudaMemcpy(hostPtr, impl->data->data, impl->data->memSize, cudaMemcpyDeviceToHost);
+        assertCuda(__FILE__, __LINE__);
+        return *this;
+    }
+    
 }

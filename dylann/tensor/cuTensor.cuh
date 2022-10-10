@@ -133,6 +133,9 @@ namespace dylann{
         cuTensor asNetworkParam() { impl->desc.isParam = true; return *this; }
         cuTensor asNetworkWeight() { impl->desc.isWeight = true; return *this; }
         
+        cuTensor getDataFromHost(void* hostPtr);
+        cuTensor storeDataToHost(void* hodtPtr);
+        
         //operators
         cuTensor operator+(cuTensor& other);
         cuTensor operator-(cuTensor& other);

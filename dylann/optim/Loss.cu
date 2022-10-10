@@ -23,11 +23,13 @@ namespace dylann {
     }
     
     float MSE::loss(cuTensorBase *target) {
+        float lossHost = 0;
+        double lossHostD = 0;
+        half lossHostH = 0;
+        
         if(calcBuf == nullptr){
             calcBuf = cuTensor::create(pred->data->deviceID, pred->desc.dType, pred->desc.sizes).impl;
             lossVal = cuTensor::create(pred->data->deviceID, pred->desc.dType, 1).impl;
-            cudaMalloc(&lossHost, pred->desc.elementSize);
-            assertCuda(__FILE__, __LINE__);
         }
     
         cudaMemcpy(calcBuf->data->data, pred->data->data, pred->data->memSize, cudaMemcpyDeviceToDevice);
@@ -56,16 +58,19 @@ namespace dylann {
         reduceOp(calcBuf, lossVal, (int)calcBuf->desc.sizes.size);
         assertCuda(__FILE__, __LINE__);
     
-        cudaMemcpy(&lossHost, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
-        assertCuda(__FILE__, __LINE__);
-    
         switch (pred->desc.dType) {
             case CUDNN_DATA_FLOAT:
-                return (float)*((float*)lossHost);
+                cudaMemcpy(&lossHost, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
+                assertCuda(__FILE__, __LINE__);
+                return lossHost;
             case CUDNN_DATA_DOUBLE:
-                return (float)*((double*)lossHost);
+                cudaMemcpy(&lossHostD, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
+                assertCuda(__FILE__, __LINE__);
+                return (float)lossHostD;
             case CUDNN_DATA_HALF:
-                return (float)*((half*)lossHost);
+                cudaMemcpy(&lossHostH, lossVal->data->data, calcBuf->desc.elementSize, cudaMemcpyDeviceToHost);
+                assertCuda(__FILE__, __LINE__);
+                return (float)lossHostH;
             default:
                 throw std::runtime_error("Unsupported data type");
         }

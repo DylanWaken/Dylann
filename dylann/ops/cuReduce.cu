@@ -19,10 +19,12 @@ namespace dylann{
     void initPermanetVecs(){
         if (oneVec10KF == nullptr) {
             cudaMalloc(&oneVec10KF, ONE_VEC_BUF_SIZE);
+            assertCuda(__FILE__, __LINE__);
         }
     }
     
     cuTensorBase* reduceOp(cuTensorBase* X, cuTensorBase* Y, int step){
+    
         initPermanetVecs();
         assert(X->desc.sizes.size % step == 0);
     
